@@ -12,4 +12,13 @@
     <welcome-file>NetCoder_GWT2.html</welcome-file>
   </welcome-file-list>
 
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>js</extension>
+        <mime-type>text/javascript</mime-type>
+    </mime-mapping>
+
 </web-app>
