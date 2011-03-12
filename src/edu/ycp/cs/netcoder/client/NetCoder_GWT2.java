@@ -39,12 +39,13 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		// HTML widget containing the javascript to create/initialize the CodeMirror
 		HTML codeMirrorInit = new HTML(
-				"<script type=\"text/javascript\">\n" +
-				"var cmElt = document.getElementById('code');\n" +
-				"var myCodeMirror = CodeMirror(function(elt) {\n" + 
-				"	  cmElt.parentNode.replaceChild(cmElt, elt);\n" +
-				"}, {mode: \"x-csrc\"});\n" +
-				"</script>\n"
+			   "<script>\n" +
+			   "   var editor = CodeMirror.fromTextArea(document.getElementById(\"code\"), {\n" +
+			   "     lineNumbers: true,\n" +
+			   "     matchBrackets: true,\n" +
+			   "     mode: \"text/x-csrc\"\n" +
+			   "   });\n" +
+			   " </script>\n"
 		);
 		
 		vPanel.add(topPanel);
