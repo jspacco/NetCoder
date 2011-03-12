@@ -26,43 +26,33 @@ public class NetCoder_GWT2 implements EntryPoint {
 		topPanel = new HorizontalPanel();
 		topPanel.add(new Label("Top stuff!"));
 		
-		/*
 		// HTML widget which will contain the CodeMirror
-		HTML codeMirrorDiv = new HTML("<div id='code'/>");
-		*/
+		HTML codeMirrorDiv = new HTML(
+				"<div style=\"border-top: 1px solid black; border-bottom: 1px solid black;\">\n" +
+				"<textarea id='code' name='code'></textarea>\n" +
+				"</div>\n"
+		);
 		
 		// Bottom panel
 		bottomPanel = new HorizontalPanel();
 		bottomPanel.add(new Label("Bottom stuff!"));
 		
-		/*
-		// HTML widget containg the CodeMirror script includes
-		String baseURL = GWT.getModuleBaseURL();
-		HTML codeMirrorInclude = new HTML(
-				"<script src=\"" + baseURL + "/lib/codemirror.js\"></script>\n" +
-				"<script src=\"" + baseURL + "/mode/clike/clike.js\"></script>\n"
-		);
-		*/
-		
-		/*
 		// HTML widget containing the javascript to create/initialize the CodeMirror
 		HTML codeMirrorInit = new HTML(
-				"<script>" +
+				"<script type=\"text/javascript\">\n" +
 				"var cmElt = document.getElementById('code');\n" +
 				"var myCodeMirror = CodeMirror(function(elt) {\n" + 
 				"	  cmElt.parentNode.replaceChild(cmElt, elt);\n" +
-				"}, {mode: \"clike\"});\n" +
-				"</script>"
+				"}, {mode: \"x-csrc\"});\n" +
+				"</script>\n"
 		);
-		*/
 		
 		vPanel.add(topPanel);
-		//vPanel.add(codeMirrorDiv);
+		vPanel.add(codeMirrorDiv);
 		vPanel.add(bottomPanel);
 		
 		// Add to RootPanel
-		//RootPanel.get().add(codeMirrorInclude);
 		RootPanel.get().add(vPanel);
-		//RootPanel.get().add(codeMirrorInit);
+		RootPanel.get().add(codeMirrorInit);
 	}
 }
