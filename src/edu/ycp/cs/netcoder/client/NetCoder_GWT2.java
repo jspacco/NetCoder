@@ -24,18 +24,29 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		// Top panel
 		topPanel = new HorizontalPanel();
+		topPanel.setWidth("100%");
 		topPanel.add(new Label("Top stuff!"));
 		
 		// HTML widget which will contain the CodeMirror
 		HTML codeMirrorDiv = new HTML(
-				"<div style=\"border-top: 1px solid black; border-bottom: 1px solid black;\">\n" +
-				"<textarea id='code' name='code'></textarea>\n" +
+				"<div>\n" +
+				"<textarea style='600px' id='code' name='code'></textarea>\n" +
 				"</div>\n"
 		);
+		codeMirrorDiv.setWidth("800px");
 		
 		// Bottom panel
 		bottomPanel = new HorizontalPanel();
+		bottomPanel.setWidth("100%");
 		bottomPanel.add(new Label("Bottom stuff!"));
+
+		// Add widgets to main layout panel
+		vPanel.add(topPanel);
+		vPanel.add(codeMirrorDiv);
+		vPanel.add(bottomPanel);
+		
+		// Add main layout panel to RootPanel
+		RootPanel.get().add(vPanel);
 		
 		// HTML widget containing the javascript to create/initialize the CodeMirror
 		HTML codeMirrorInit = new HTML(
@@ -48,12 +59,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 			   " </script>\n"
 		);
 		
-		vPanel.add(topPanel);
-		vPanel.add(codeMirrorDiv);
-		vPanel.add(bottomPanel);
-		
-		// Add to RootPanel
-		RootPanel.get().add(vPanel);
+		// Add CodeMirror init script to RootPanel
 		RootPanel.get().add(codeMirrorInit);
 	}
 }
