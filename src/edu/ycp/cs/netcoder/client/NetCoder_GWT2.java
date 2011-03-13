@@ -21,6 +21,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 	public void onModuleLoad() {
 		// Construct the UI
 		VerticalPanel vPanel = new VerticalPanel();
+		vPanel.setWidth("100%");
 		
 		// Top panel
 		topPanel = new HorizontalPanel();
@@ -33,7 +34,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 				"<textarea id='code' name='code'></textarea>\n" +
 				"</div>\n"
 		);
-		codeMirrorDiv.setWidth("800px");
+		//codeMirrorDiv.setWidth("800px");
 		
 		// Bottom panel
 		bottomPanel = new HorizontalPanel();
