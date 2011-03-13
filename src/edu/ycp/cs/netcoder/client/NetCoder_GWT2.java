@@ -30,7 +30,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		// HTML widget which will contain the CodeMirror
 		HTML codeMirrorDiv = new HTML(
 				"<div>\n" +
-				"<textarea style='600px' id='code' name='code'></textarea>\n" +
+				"<textarea id='code' name='code'></textarea>\n" +
 				"</div>\n"
 		);
 		codeMirrorDiv.setWidth("800px");
