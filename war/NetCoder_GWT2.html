@@ -56,5 +56,19 @@
         in order for this application to display correctly.
       </div>
     </noscript>
+    
+    <div id="topstuff">Top stuff</div>
+   	<div id="editor" style="height: 500px; width: 500px">some text</div>
+    <div id="bottomstuff">Bottom stuff</div>
+    
+    <script>
+	window.onload = function() {
+	    var editor = ace.edit("editor");
+	    editor.setTheme("ace/theme/twilight");
+	    var JavaMode = require("ace/mode/java").Mode;
+		editor.getSession().setMode(new JavaMode());
+	};
+	</script>
+    
   </body>
 </html>
