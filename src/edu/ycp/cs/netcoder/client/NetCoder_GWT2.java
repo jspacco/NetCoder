@@ -2,6 +2,9 @@ package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -15,10 +18,65 @@ public class NetCoder_GWT2 implements EntryPoint {
 	private HorizontalPanel topPanel;
 	private HorizontalPanel bottomPanel;
 	
+	private static final boolean USE_ACE = false;
+	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		if (USE_ACE) {
+			startACE();
+		} else {
+			startCodeMirror();
+		}
+	}
+
+	private void startACE() {
+		// Construct the UI
+		VerticalPanel vPanel = new VerticalPanel();
+		vPanel.setWidth("100%");
+		
+		// Top panel
+		topPanel = new HorizontalPanel();
+		topPanel.setWidth("100%");
+		topPanel.add(new Label("Top stuff!"));
+		
+		// HTML widget which will contain the CodeMirror
+		HTML codeMirrorDiv = new HTML(
+				"<div id='code' name='code'></div>\n"
+		);
+		
+		// Bottom panel
+		bottomPanel = new HorizontalPanel();
+		bottomPanel.setWidth("100%");
+		bottomPanel.add(new Label("Bottom stuff!"));
+		
+		Button startEditor = new Button("Start Editor");
+		startEditor.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				startEditor();
+			}
+		});
+		bottomPanel.add(startEditor);
+
+		// Add widgets to main layout panel
+		vPanel.add(topPanel);
+		vPanel.add(codeMirrorDiv);
+		vPanel.add(bottomPanel);
+		
+		// Add main layout panel to RootPanel
+		RootPanel.get().add(vPanel);
+	}
+	
+	private native void startEditor() /*-{
+		var editor = $wnd.ace.edit("code");
+		editor.setTheme("ace/theme/twilight");
+		var JavaMode = $wnd.require("ace/mode/java").Mode;
+		editor.getSession().setMode(new JavaMode());
+	}-*/;
+
+	private void startCodeMirror() {
 		// Construct the UI
 		VerticalPanel vPanel = new VerticalPanel();
 		vPanel.setWidth("100%");
