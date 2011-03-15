@@ -3,6 +3,11 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.HTML;
 
+/**
+ * A GWT widget for the Ajax.org Code Editor (ACE).
+ * 
+ * @see <a href="http://ace.ajax.org/">Ajax.org Code Editor</a>
+ */
 public class AceEditor extends HTML {
 	// Used to generate unique element ids for Ace widgets.
 	private static int nextId = 0;

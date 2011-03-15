@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class NetCoder_GWT2 implements EntryPoint {
 	private HorizontalPanel topPanel;
 	private HorizontalPanel bottomPanel;
+	private AceEditor editor;
 	
 	private static final boolean USE_ACE = true;
 	
@@ -31,9 +32,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		topPanel = new HorizontalPanel();
 		topPanel.add(new Label("Top stuff!"));
 		
-//		HTML aceDiv = new HTML("<div id=\"editor\" style=\"height: 500px; width: 500px\">some text</div>");
-		
-		AceEditor editor = new AceEditor();
+		editor = new AceEditor();
 		editor.setWidth("500px");
 		editor.setHeight("500px");
 		
@@ -42,21 +41,11 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(topPanel);
-		//rootPanel.add(aceDiv);
 		rootPanel.add(editor);
 		rootPanel.add(bottomPanel);
 		
 		editor.startEditor();
-		
-//		startEditor();
 	}
-	
-//	private native void startEditor() /*-{
-//		var editor = $wnd.ace.edit("editor");
-//		editor.setTheme("ace/theme/twilight");
-//		var JavaMode = $wnd.require("ace/mode/java").Mode;
-//		editor.getSession().setMode(new JavaMode());
-//	}-*/;
 
 	private void startCodeMirror() {
 		// Construct the UI
