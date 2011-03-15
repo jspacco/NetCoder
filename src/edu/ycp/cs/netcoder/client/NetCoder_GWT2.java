@@ -7,7 +7,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.TextArea;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -16,8 +15,6 @@ public class NetCoder_GWT2 implements EntryPoint {
 	private HorizontalPanel topPanel;
 	private HorizontalPanel bottomPanel;
 	private AceEditor editor;
-	
-	private TextArea textArea;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	
@@ -34,23 +31,19 @@ public class NetCoder_GWT2 implements EntryPoint {
 		bottomPanel = new HorizontalPanel();
 		bottomPanel.add(new Label("Bottom stuff"));
 		
-		textArea = new TextArea();
-		textArea.setWidth("100%");
-		textArea.setHeight("200px");
-		
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(topPanel);
 		rootPanel.add(editor);
 		rootPanel.add(bottomPanel);
-		rootPanel.add(textArea);
 		
 		editor.startEditor();
-		editor.setTheme("cobalt");
+		editor.setTheme("eclipse");
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.onChange(new AceEditorCallback() {
 			@Override
 			public void invoke(JavaScriptObject obj) {
+				// TODO: queue the change events so that they can be sent in batches
 				sendChangeToServer(obj);
 			}
 		});
@@ -67,7 +60,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				textArea.setText(textArea.getText() + "could not log code change: " + caught.getMessage() + "\n");
+				GWT.log("code change callback failed", caught);
 			}
 			
 			@Override
