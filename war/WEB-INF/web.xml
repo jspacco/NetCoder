@@ -12,13 +12,16 @@
     <welcome-file>NetCoder_GWT2.html</welcome-file>
   </welcome-file-list>
 
-    <mime-mapping>
-        <extension>css</extension>
-        <mime-type>text/css</mime-type>
-    </mime-mapping>
-    <mime-mapping>
-        <extension>js</extension>
-        <mime-type>text/javascript</mime-type>
-    </mime-mapping>
+  <servlet>
+    <servlet-name>LogCodeChange</servlet-name>
+    <servlet-class>
+      edu.ycp.cs.netcoder.server.LogCodeChangeServiceImpl
+    </servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>LogCodeChange</servlet-name>
+    <url-pattern>/netcoder_gwt2/logChange</url-pattern>
+  </servlet-mapping>
 
 </web-app>
