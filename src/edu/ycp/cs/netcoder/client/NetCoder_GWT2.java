@@ -42,7 +42,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		rootPanel.add(textArea);
 		
 		editor.startEditor();
-		editor.setTheme("twilight");
+		editor.setTheme("cobalt");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.onChange(new AceEditorCallback() {
 			@Override
