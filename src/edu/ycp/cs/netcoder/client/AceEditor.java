@@ -80,4 +80,13 @@ public class AceEditor extends HTML {
 			callback.@edu.ycp.cs.netcoder.client.AceEditorCallback::invoke(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
 		});
 	}-*/;
+	
+	/**
+	 * Set font size.
+	 */
+	public native void setFontSize(String fontSize) /*-{
+		var elementId = this.@edu.ycp.cs.netcoder.client.AceEditor::elementId;
+		var elt = $doc.getElementById(elementId);
+		elt.style.fontSize = fontSize;
+	}-*/;
 }

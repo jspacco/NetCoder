@@ -43,6 +43,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		editor.startEditor();
 		editor.setTheme("cobalt");
+		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.onChange(new AceEditorCallback() {
 			@Override
