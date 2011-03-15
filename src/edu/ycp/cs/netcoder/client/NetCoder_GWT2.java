@@ -45,6 +45,8 @@ public class NetCoder_GWT2 implements EntryPoint {
 		rootPanel.add(bottomPanel);
 		
 		editor.startEditor();
+		editor.setTheme("twilight");
+		editor.setMode(AceEditorMode.JAVA);
 	}
 
 	private void startCodeMirror() {
