@@ -37,9 +37,6 @@ public class AceEditor extends HTML {
 		var editor = $wnd.ace.edit(elementId);
 		return editor;
 	}-*/;
-//	editor.setTheme("ace/theme/twilight");
-//	var JavaMode = $wnd.require("ace/mode/java").Mode;
-//	editor.getSession().setMode(new JavaMode());
 	
 	/**
 	 * Set the theme.
