@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -25,8 +26,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		topPanel.add(new Label("Top stuff!"));
 		
 		editor = new AceEditor();
-		editor.setWidth("500px");
-		editor.setHeight("400px");
+		editor.setStylePrimaryName("NetCoderEditor");
 		
 		bottomPanel = new HorizontalPanel();
 		bottomPanel.add(new Label("Bottom stuff"));

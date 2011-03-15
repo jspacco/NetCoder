@@ -31,6 +31,8 @@
 	<script src="netcoder_gwt2/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
 	<script src="netcoder_gwt2/ace/mode-java.js" type="text/javascript" charset="utf-8"></script>
 	
+	<!--TODO: should define a single global stylesheet for all NetCoder-specific application styles -->
+
 	<!--
 		Important! Need relative positioning for ACE editor so it can
 	    participate in normal HTML layout.
@@ -38,6 +40,16 @@
 	<style>
 	.ace_editor {
 		position: relative; 
+	}
+	</style>
+	
+	<!-- center the ACE editor -->
+	<style>
+	.NetCoderEditor {
+		width: 90%;
+		height: 400px; 
+		margin-left: auto;
+		margin-right: auto;
 	}
 	</style>
 	
