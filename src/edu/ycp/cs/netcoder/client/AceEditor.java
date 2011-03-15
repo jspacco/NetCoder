@@ -29,13 +29,9 @@ public class AceEditor extends HTML {
 	 * Make sure that the widget has been attached to the page
 	 * before calling this method.
 	 */
-	public void startEditor() {
-		editor = startEditorImpl(elementId);
-	}
-
-	private native JavaScriptObject startEditorImpl(String elementId) /*-{
-		var editor = $wnd.ace.edit(elementId);
-		return editor;
+	public native void startEditor() /*-{
+		this.@edu.ycp.cs.netcoder.client.AceEditor::editor =
+			$wnd.ace.edit(this.@edu.ycp.cs.netcoder.client.AceEditor::elementId);
 	}-*/;
 	
 	/**
@@ -43,12 +39,9 @@ public class AceEditor extends HTML {
 	 * 
 	 * @param themeName the theme name (e.g., "twilight")
 	 */
-	public void setTheme(String themeName) {
-		setThemeImpl(editor, "ace/theme/" + themeName);
-	}
-	
-	private native void setThemeImpl(JavaScriptObject editor, String themeName) /*-{
-		editor.setTheme(themeName);
+	public native void setTheme(String themeName) /*-{
+		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		editor.setTheme("ace/theme/" + themeName);
 	}-*/;
 
 	/**
@@ -57,11 +50,11 @@ public class AceEditor extends HTML {
 	 * @param mode the mode (one of the values in the
 	 *             {@link AceEditorMode} enumeration)
 	 */
-	public void setMode(AceEditorMode mode) {
-		setModeImpl(editor, "ace/mode/" + mode.getName());
-	}
-	
-	public native void setModeImpl(JavaScriptObject editor, String modeName) /*-{
+	public native void setMode(AceEditorMode mode) /*-{
+		//setModeImpl(editor, "ace/mode/" + mode.getName());
+		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		var shortModeName = mode.@edu.ycp.cs.netcoder.client.AceEditorMode::name;
+		var modeName = "ace/mode/" + shortModeName;
 		var TheMode = $wnd.require(modeName).Mode;
 		editor.getSession().setMode(new TheMode());
 	}-*/;
@@ -71,11 +64,8 @@ public class AceEditor extends HTML {
 	 * 
 	 * @param callback the change event handler
 	 */
-	public void onChange(AceEditorCallback callback) {
-		onChangeImpl(editor, callback);
-	}
-	
-	private native void onChangeImpl(JavaScriptObject editor, AceEditorCallback callback) /*-{
+	public native void onChange(AceEditorCallback callback) /*-{
+		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
 		editor.getSession().on("change", function(e) {
 			callback.@edu.ycp.cs.netcoder.client.AceEditorCallback::invoke(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
 		});
