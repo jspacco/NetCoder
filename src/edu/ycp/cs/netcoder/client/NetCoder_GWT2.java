@@ -1,12 +1,6 @@
 package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -34,22 +28,6 @@ public class NetCoder_GWT2 implements EntryPoint {
 	}
 
 	private void startACE() {
-		/*
-		topPanel = new HorizontalPanel();
-		topPanel.setWidth("100%");
-		
-		topPanel.add(new Label("Top stuff!"));
-		
-		RootPanel.get("topstuff").add(topPanel);
-		
-		bottomPanel = new HorizontalPanel();
-		bottomPanel.setWidth("100%");
-		
-		bottomPanel.add(new Label("Bottom stuff!"));
-		
-		RootPanel.get("bottomstuff").add(bottomPanel);
-		*/
-		
 		topPanel = new HorizontalPanel();
 		topPanel.add(new Label("Top stuff!"));
 		
@@ -58,24 +36,10 @@ public class NetCoder_GWT2 implements EntryPoint {
 		bottomPanel = new HorizontalPanel();
 		bottomPanel.add(new Label("Bottom stuff"));
 		
-		/*
-		HTML aceInit = new HTML(
-			"    <script>\n" +
-			//"	window.onload = function() {\n" +
-			"	    var editor = ace.edit(\"editor\");\n" +
-			"	    editor.setTheme(\"ace/theme/twilight\");\n" +
-			"	    var JavaMode = require(\"ace/mode/java\").Mode;\n" +
-			"		editor.getSession().setMode(new JavaMode());\n" +
-			//"	};\n" +
-			"	</script>\n"
-		);
-		*/
-		
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(topPanel);
 		rootPanel.add(aceDiv);
 		rootPanel.add(bottomPanel);
-		//rootPanel.add(aceInit);
 		
 		startEditor();
 	}
