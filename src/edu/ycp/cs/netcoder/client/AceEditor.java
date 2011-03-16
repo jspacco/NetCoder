@@ -14,7 +14,6 @@ public class AceEditor extends HTML {
 	
 	private String elementId;
 	
-	@SuppressWarnings("unused")
 	private JavaScriptObject editor;
 	
 	/**

@@ -12,16 +12,28 @@
     <welcome-file>NetCoder_GWT2.html</welcome-file>
   </welcome-file-list>
 
+  <!--  Servlets -->
   <servlet>
     <servlet-name>LogCodeChange</servlet-name>
     <servlet-class>
       edu.ycp.cs.netcoder.server.LogCodeChangeServiceImpl
     </servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>Compile</servlet-name>
+    <servlet-class>
+      edu.ycp.cs.netcoder.server.CompileServiceImpl
+    </servlet-class>
+  </servlet>
 
+  <!--  Servlet mappings -->
   <servlet-mapping>
     <servlet-name>LogCodeChange</servlet-name>
     <url-pattern>/netcoder_gwt2/logChange</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>Compile</servlet-name>
+    <url-pattern>/netcoder_gwt2/compile</url-pattern>
   </servlet-mapping>
 
 </web-app>
