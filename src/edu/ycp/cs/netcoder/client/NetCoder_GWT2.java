@@ -106,7 +106,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param obj an ACE onChange event object
 	 */
 	private native void sendChangeToServer(JavaScriptObject obj) /*-{
-		var jsonText = JSON.stringify(obj);
+		var jsonText = $wnd.JSON.stringify(obj);
 		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(jsonText);
 	}-*/;
 	
