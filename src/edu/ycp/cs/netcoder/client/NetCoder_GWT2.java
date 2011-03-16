@@ -138,13 +138,13 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				statusLabel.setText("Compile failed");
+				statusLabel.setText("Error sending submission to server for compilation");
 				GWT.log("compile failed", caught);
 			}
 
 			@Override
 			public void onSuccess(Boolean result) {
-				statusLabel.setText("Compile succeeded");
+				statusLabel.setText(result ? "Compile succeeded" : "Compile failed");
 			}
 		};
 		
