@@ -65,10 +65,10 @@ public class AceEditor extends HTML {
 	 * 
 	 * @param callback the change event handler
 	 */
-	public native void onChange(AceEditorCallback callback) /*-{
+	public native void addOnChangeHandler(AceEditorCallback callback) /*-{
 		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
 		editor.getSession().on("change", function(e) {
-			callback.@edu.ycp.cs.netcoder.client.AceEditorCallback::invoke(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
+			callback.@edu.ycp.cs.netcoder.client.AceEditorCallback::invokeAceCallback(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
 		});
 	}-*/;
 	

@@ -5,19 +5,27 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint {
+public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private HorizontalPanel appPanel;
+	//private SplitLayoutPanel editorAndWidgetPanel;
+	private HorizontalPanel editorAndWidgetPanel;
 	private AceEditor editor;
+	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private Label statusLabel;
 	
@@ -32,10 +40,27 @@ public class NetCoder_GWT2 implements EntryPoint {
 		appPanel = new HorizontalPanel();
 		appPanel.add(new Label("Menus and logout button should go here"));
 		
-		// The editor occupies most of the vertical space
+		// The editor (left) and widget panel (right) occupy most of the vertical space
 		// TODO: make it expand vertically when window resizes
+		
+		editorAndWidgetPanel = new HorizontalPanel();
+		editorAndWidgetPanel.setWidth("100%");
+		
+		// Code editor
 		editor = new AceEditor();
 		editor.setStylePrimaryName("NetCoderEditor");
+		//editor.setWidth("70%");
+		
+		// Widget panel: for things like hints, affect data collection, etc.
+		widgetPanel = new VerticalPanel();
+		//widgetPanel.setWidth("30%");
+		widgetPanel.add(new Label("Hints should go here!"));   // TODO
+		widgetPanel.add(new Label("Affect data collection!")); // TODO
+
+		editorAndWidgetPanel.add(editor);
+		editorAndWidgetPanel.setCellWidth(editor, "70%");
+		editorAndWidgetPanel.add(widgetPanel);
+		editorAndWidgetPanel.setCellWidth(widgetPanel, "30%");
 		
 		// Button panel is for buttons
 		buttonPanel = new HorizontalPanel();
@@ -56,7 +81,8 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(appPanel);
-		rootPanel.add(editor);
+		//rootPanel.add(editor);
+		rootPanel.add(editorAndWidgetPanel);
 		rootPanel.add(buttonPanel);
 		rootPanel.add(statusPanel);
 		
@@ -64,16 +90,21 @@ public class NetCoder_GWT2 implements EntryPoint {
 		editor.setTheme("eclipse");
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
-		editor.onChange(new AceEditorCallback() {
-			@Override
-			public void invoke(JavaScriptObject obj) {
-				// TODO: queue the change events so that they can be sent in batches
-				sendChangeToServer(obj);
-			}
-		});
+		editor.addOnChangeHandler(this);
 		
+		//Window.addResizeHandler(this);
+		
+		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
 		compileService = (CompileServiceAsync) GWT.create(CompileService.class);
+	}
+
+	/**
+	 * Handles onChange events from the editor.
+	 */
+	@Override
+	public void invokeAceCallback(JavaScriptObject obj) {
+		sendChangeToServer(obj);
 	}
 
 	/**
@@ -81,7 +112,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 	 * 
 	 * @param obj an ACE onChange event object
 	 */
-	protected native void sendChangeToServer(JavaScriptObject obj) /*-{
+	private native void sendChangeToServer(JavaScriptObject obj) /*-{
 		var jsonText = JSON.stringify(obj);
 		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(jsonText);
 	}-*/;
@@ -126,4 +157,17 @@ public class NetCoder_GWT2 implements EntryPoint {
 		
 		compileService.compile(editor.getText(), callback);
 	}
+
+	/*
+	@Override
+	public void onResize(ResizeEvent event) {
+		int width = event.getWidth() - 30;
+		
+		int editorWidth = (int) (.7 * width);
+		int widgetPanelWidth = (int) (.3 * width);
+		
+		editor.setWidth(editorWidth + "px");
+		widgetPanel.setWidth(widgetPanelWidth + "px");
+	}
+	*/
 }
