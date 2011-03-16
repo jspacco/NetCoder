@@ -5,16 +5,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -22,7 +18,6 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private HorizontalPanel appPanel;
-	//private SplitLayoutPanel editorAndWidgetPanel;
 	private HorizontalPanel editorAndWidgetPanel;
 	private AceEditor editor;
 	private VerticalPanel widgetPanel;
@@ -49,14 +44,13 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		// Code editor
 		editor = new AceEditor();
 		editor.setStylePrimaryName("NetCoderEditor");
-		//editor.setWidth("70%");
 		
 		// Widget panel: for things like hints, affect data collection, etc.
 		widgetPanel = new VerticalPanel();
-		//widgetPanel.setWidth("30%");
 		widgetPanel.add(new Label("Hints should go here!"));   // TODO
 		widgetPanel.add(new Label("Affect data collection!")); // TODO
 
+		// Add the editor and widget panel so that it is a 70/30 split
 		editorAndWidgetPanel.add(editor);
 		editorAndWidgetPanel.setCellWidth(editor, "70%");
 		editorAndWidgetPanel.add(widgetPanel);
@@ -79,20 +73,19 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		statusPanel.add(statusLabel);
 		statusPanel.setWidth("100%");
 		
+		// Build the UI
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(appPanel);
-		//rootPanel.add(editor);
 		rootPanel.add(editorAndWidgetPanel);
 		rootPanel.add(buttonPanel);
 		rootPanel.add(statusPanel);
-		
+
+		// fire up the ACE editor
 		editor.startEditor();
 		editor.setTheme("eclipse");
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.addOnChangeHandler(this);
-		
-		//Window.addResizeHandler(this);
 		
 		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
@@ -157,17 +150,4 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		
 		compileService.compile(editor.getText(), callback);
 	}
-
-	/*
-	@Override
-	public void onResize(ResizeEvent event) {
-		int width = event.getWidth() - 30;
-		
-		int editorWidth = (int) (.7 * width);
-		int widgetPanelWidth = (int) (.3 * width);
-		
-		editor.setWidth(editorWidth + "px");
-		widgetPanel.setWidth(widgetPanelWidth + "px");
-	}
-	*/
 }
