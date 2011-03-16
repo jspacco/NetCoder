@@ -56,6 +56,7 @@ public class NetCoder_GWT2 implements EntryPoint {
 		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(jsonText);
 	}-*/;
 	
+	@SuppressWarnings("unused")
 	private void sendStringifiedChangeToServer(String s) {
 		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 			@Override

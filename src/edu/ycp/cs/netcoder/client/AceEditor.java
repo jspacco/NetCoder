@@ -13,6 +13,8 @@ public class AceEditor extends HTML {
 	private static int nextId = 0;
 	
 	private String elementId;
+	
+	@SuppressWarnings("unused")
 	private JavaScriptObject editor;
 	
 	/**
@@ -78,5 +80,25 @@ public class AceEditor extends HTML {
 		var elementId = this.@edu.ycp.cs.netcoder.client.AceEditor::elementId;
 		var elt = $doc.getElementById(elementId);
 		elt.style.fontSize = fontSize;
+	}-*/;
+	
+	/**
+	 * Get the complete text in the editor as a String.
+	 * 
+	 * @return the text in the editor
+	 */
+	public native String getText() /*-{
+		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		return editor.getSession().getValue();
+	}-*/;
+	
+	/**
+	 * Set the complete text in the editor from a String.
+	 * 
+	 * @param text the text to set in the editor
+	 */
+	public native void setText(String text) /*-{
+		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		editor.getSession().setValue(text);
 	}-*/;
 }
