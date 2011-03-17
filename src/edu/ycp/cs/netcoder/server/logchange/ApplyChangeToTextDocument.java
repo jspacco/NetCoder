@@ -4,6 +4,8 @@ package edu.ycp.cs.netcoder.server.logchange;
  * Apply a Change object to a TextDocument.
  */
 public class ApplyChangeToTextDocument {
+	private static final boolean DEBUG = true;
+
 	/**
 	 * Apply a Change object to a TextDocument.
 	 * 
@@ -38,8 +40,24 @@ public class ApplyChangeToTextDocument {
 				doc.insertLine(change.getStartRow() + i, change.getLine(i) + "\n");
 			}
 			break;
+		case REMOVE_LINES:
+			for (int i = 0; i < change.getNumLines(); i++) {
+				doc.removeLine(change.getStartRow());
+			}
+			break;
 		default:
-			throw new IllegalStateException("Not handled yet: " + change.getType());
+			throw new IllegalStateException("Not handled? " + change.getType());
+		}
+		
+		// check integrity of TextDocument
+		if (DEBUG) {
+			for (int i = 0; i < doc.getNumLines(); i++) {
+				String line = doc.getLine(i);
+				int nl = line.indexOf('\n');
+				if (nl >= 0 && nl != line.length() - 1) {
+					throw new IllegalStateException("Line has enbedded newline!");
+				}
+			}
 		}
 	}
 	
