@@ -51,6 +51,27 @@ public class TextDocument {
 	public void setLine(int index, String line) {
 		lineList.set(index, line);
 	}
+	
+	/**
+	 * Insert a line in a text document,
+	 * pushing lines at or below index down one line.
+	 * 
+	 * @param index where to insert the line
+	 * @param line line of text to insert
+	 */
+	public void insertLine(int index, String line) {
+		lineList.add(index, line);
+	}
+
+	/**
+	 * Remove line at given index.
+	 * Lines below are moved up.
+	 * 
+	 * @param index index of line to remove
+	 */
+	public void removeLine(int index) {
+		lineList.remove(index);
+	}
 
 	/**
 	 * @return complete text of document as string
@@ -58,8 +79,28 @@ public class TextDocument {
 	public String getText() {
 		StringBuilder buf = new StringBuilder();
 		
+		boolean lineNoNL = false;
+		
 		for (String s : lineList) {
-			buf.append(s);
+			if (lineNoNL) {
+				buf.append("[WTF?]");
+			}
+			
+			buf.append(">>");
+			if (s.endsWith("\n")) {
+				buf.append(s.substring(0, s.length() - 1));
+				buf.append("<<");
+				buf.append("\n");
+			} else if (s.contains("\n")) {
+				int nl = s.indexOf('\n');
+				buf.append(s.substring(0, nl));
+				buf.append("!\n");
+				buf.append(s.substring(nl+1));
+				buf.append("<<\n");
+			} else {
+				buf.append(s);
+				lineNoNL = true;
+			}
 		}
 		
 		return buf.toString();

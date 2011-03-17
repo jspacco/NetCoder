@@ -23,7 +23,7 @@ public class ApplyChangeToTextDocument {
 			}
 			s = doc.getLine(change.getStartRow());
 			up = s.substring(0, change.getStartColumn()) + change.getText() + s.substring(change.getStartColumn());
-			doc.setLine(change.getStartRow(), up);
+			changeLine(doc, change.getStartRow(), up);
 			break;
 		case REMOVE_TEXT:
 			if (change.getStartRow() != change.getEndRow()) {
@@ -35,6 +35,36 @@ public class ApplyChangeToTextDocument {
 			break;
 		default:
 			throw new IllegalStateException("Not handled yet: " + change.getType());
+		}
+	}
+	
+	/**
+	 * Change text at given line, inserting multiple lines as necessary
+	 * if text has embedded newlines.
+	 * 
+	 * @param doc   the TextDocument
+	 * @param index index of line to change
+	 * @param text  text to put at given index
+	 */
+	private void changeLine(TextDocument doc, int index, String text) {
+		int nl = text.indexOf('\n');
+
+		if (nl < 0 || nl == text.length() - 1) {
+			// Line either has no newline, or there is only one newline at
+			// the end of the line
+			doc.setLine(index, text);
+			return;
+		}
+		
+		// line contains embedded newlines: need to split
+		doc.removeLine(index);
+		boolean done = false;
+		while (!done) {
+			doc.insertLine(index, text.substring(0, nl+1));
+			index++;
+			text = text.substring(nl + 1);
+			nl = text.indexOf('\n');
+			done = (nl < 0);
 		}
 	}
 }
