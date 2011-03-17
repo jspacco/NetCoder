@@ -33,6 +33,11 @@ public class ApplyChangeToTextDocument {
 			up = s.substring(0, change.getStartColumn()) + s.substring(change.getEndColumn());
 			doc.setLine(change.getStartRow(), up);
 			break;
+		case INSERT_LINES:
+			for (int i = 0; i < change.getNumLines(); i++) {
+				doc.insertLine(change.getStartRow() + i, change.getLine(i) + "\n");
+			}
+			break;
 		default:
 			throw new IllegalStateException("Not handled yet: " + change.getType());
 		}
