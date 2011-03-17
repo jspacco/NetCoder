@@ -139,7 +139,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 				textOrLines = JSON.stringify(obj.data.lines);
 			}
 			
-			compactChangeString = compactAction + compactRange + ";" + textOrLines;
+			compactChangeString = compactAction + compactRange + "," + new Date().getTime() + ";" + textOrLines;
 		}
 		
 		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(
