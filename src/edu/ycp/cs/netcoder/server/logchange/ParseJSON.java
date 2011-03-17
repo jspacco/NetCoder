@@ -26,7 +26,7 @@ public class ParseJSON {
 				if (c == '"') {
 					// done
 					String s = buf.toString();
-					System.out.println("Got string!" + s);
+					//System.out.println("Got string!" + s);
 					callback.visitString(s);
 					mode = Mode.OUT;
 				} else if (c == '\\') {
