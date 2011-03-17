@@ -97,7 +97,14 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
 		compileService = (CompileServiceAsync) GWT.create(CompileService.class);
+		
+		// Make a javascript map to help compactify ACE onChange event data
+		makeOnChangeCompactificationMap();
 	}
+	
+	private native void makeOnChangeCompactificationMap() /*-{
+		$wnd.netCoderCompactify = {"insertText" : "IT", "insertLines" : "IL", "removeText" : "RT", "removeLines" : "RL"};
+	}-*/;
 
 	/**
 	 * Handles onChange events from the editor.
@@ -113,8 +120,32 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param obj an ACE onChange event object
 	 */
 	private native void sendChangeToServer(JavaScriptObject obj) /*-{
-		var jsonText = $wnd.JSON.stringify(obj);
-		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(jsonText);
+		//var jsonText = $wnd.JSON.stringify(obj);
+		
+		// Create a compact text representation of the change event object
+		var compactChangeString = "";
+		var type = obj.type;
+		if (type != "change") {
+			compactChangeString = "UnknownType" + type;
+		} else {
+			var action = obj.data.action;
+			var compactAction = $wnd.netCoderCompactify[action];
+			var compactRange = obj.data.range.start.row + "," + obj.data.range.start.column + "," + obj.data.range.end.row + "," + obj.data.range.end.column;
+			
+			var textOrLines = "";
+			if (compactAction == "IT" || compactAction == "RT") {
+				textOrLines = JSON.stringify(obj.data.text);
+			} else if (compactAction == "IL" || compactAction == "RL") {
+				textOrLines = JSON.stringify(obj.data.lines);
+			}
+			
+			compactChangeString = compactAction + compactRange + ";" + textOrLines;
+		}
+		
+		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(
+			compactChangeString
+			//+ " - " + jsonText
+		);
 	}-*/;
 	
 	/**
