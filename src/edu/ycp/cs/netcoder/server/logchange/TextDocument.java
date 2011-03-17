@@ -78,29 +78,9 @@ public class TextDocument {
 	 */
 	public String getText() {
 		StringBuilder buf = new StringBuilder();
-		
-		boolean lineNoNL = false;
-		
+
 		for (String s : lineList) {
-			if (lineNoNL) {
-				buf.append("[WTF?]");
-			}
-			
-			buf.append(">>");
-			if (s.endsWith("\n")) {
-				buf.append(s.substring(0, s.length() - 1));
-				buf.append("<<");
-				buf.append("\n");
-			} else if (s.contains("\n")) {
-				int nl = s.indexOf('\n');
-				buf.append(s.substring(0, nl));
-				buf.append("!\n");
-				buf.append(s.substring(nl+1));
-				buf.append("<<\n");
-			} else {
-				buf.append(s);
-				lineNoNL = true;
-			}
+			buf.append(s);
 		}
 		
 		return buf.toString();
