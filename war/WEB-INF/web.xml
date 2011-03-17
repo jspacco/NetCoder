@@ -25,13 +25,16 @@
       edu.ycp.cs.netcoder.server.CompileServiceImpl
     </servlet-class>
   </servlet>
+  
+  <!--
 	<servlet>
     <servlet-name>Submit</servlet-name>
     <servlet-class>
       edu.ycp.cs.netcoder.server.SubmitServiceImpl
     </servlet-class>
   </servlet>
-
+  -->
+  
   <!--  Servlet mappings -->
   <servlet-mapping>
     <servlet-name>LogCodeChange</servlet-name>
@@ -41,9 +44,11 @@
     <servlet-name>Compile</servlet-name>
     <url-pattern>/netcoder_gwt2/compile</url-pattern>
   </servlet-mapping>
+  <!--
   <servlet-mapping>
   	<servlet-name>Submit</servlet-name>
   	<url-pattern>/netcoder_gwt2/submit</url-pattern>
   </servlet-mapping>
+   -->
 
 </web-app>
