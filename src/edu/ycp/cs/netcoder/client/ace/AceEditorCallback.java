@@ -1,4 +1,4 @@
-package edu.ycp.cs.netcoder.client;
+package edu.ycp.cs.netcoder.client.ace;
 
 import com.google.gwt.core.client.JavaScriptObject;
 

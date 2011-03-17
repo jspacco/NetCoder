@@ -13,6 +13,10 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+import edu.ycp.cs.netcoder.client.ace.AceEditor;
+import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
+import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
+
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
