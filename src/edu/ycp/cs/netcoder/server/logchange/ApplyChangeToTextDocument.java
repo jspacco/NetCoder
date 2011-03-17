@@ -17,9 +17,6 @@ public class ApplyChangeToTextDocument {
 		
 		switch (change.getType()) {
 		case INSERT_TEXT:
-			if (change.getStartRow() != change.getEndRow() && !change.getText().equals("\n")) {
-				throw new IllegalArgumentException("Multi-line INSERT_TEXT change? " + change);
-			}
 			if (change.getStartRow() == doc.getNumLines()) {
 				doc.append("");
 			}
@@ -28,11 +25,18 @@ public class ApplyChangeToTextDocument {
 			changeLine(doc, change.getStartRow(), up);
 			break;
 		case REMOVE_TEXT:
-			if (change.getStartRow() != change.getEndRow()) {
-				throw new IllegalArgumentException("Multi-line REMOVE_TEXT change? " + change);
+			if (change.getText().equals("\n")) {
+				if (change.getStartRow() + 1 != change.getEndRow()) {
+					throw new IllegalArgumentException("unexpected REMOVE_TEXT to remove newline: " + change);
+				}
+				// combine with line below
+				s = doc.getLine(change.getStartRow());
+				up = s.substring(0, s.length() - 1) + doc.getLine(change.getEndRow());
+				doc.removeLine(change.getEndRow());
+			} else {
+				s = doc.getLine(change.getStartRow());
+				up = s.substring(0, change.getStartColumn()) + s.substring(change.getEndColumn());
 			}
-			s = doc.getLine(change.getStartRow());
-			up = s.substring(0, change.getStartColumn()) + s.substring(change.getEndColumn());
 			doc.setLine(change.getStartRow(), up);
 			break;
 		case INSERT_LINES:
