@@ -16,6 +16,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ycp.cs.netcoder.client.ace.AceEditor;
 import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
+import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -24,6 +25,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private HorizontalPanel appPanel;
 	private HorizontalPanel editorAndWidgetPanel;
 	private AceEditor editor;
+	private HintsWidget hintsWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private Label statusLabel;
@@ -51,7 +53,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		
 		// Widget panel: for things like hints, affect data collection, etc.
 		widgetPanel = new VerticalPanel();
-		widgetPanel.add(new Label("Hints should go here!"));   // TODO
+		hintsWidget = new HintsWidget();
+		widgetPanel.add(hintsWidget);
 		widgetPanel.add(new Label("Affect data collection!")); // TODO
 
 		// Add the editor and widget panel so that it is a 70/30 split
