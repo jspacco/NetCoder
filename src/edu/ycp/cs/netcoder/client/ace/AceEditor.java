@@ -1,4 +1,4 @@
-package edu.ycp.cs.netcoder.client;
+package edu.ycp.cs.netcoder.client.ace;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.HTML;
@@ -31,8 +31,8 @@ public class AceEditor extends HTML {
 	 * before calling this method.
 	 */
 	public native void startEditor() /*-{
-		this.@edu.ycp.cs.netcoder.client.AceEditor::editor =
-			$wnd.ace.edit(this.@edu.ycp.cs.netcoder.client.AceEditor::elementId);
+		this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor =
+			$wnd.ace.edit(this.@edu.ycp.cs.netcoder.client.ace.AceEditor::elementId);
 	}-*/;
 	
 	/**
@@ -41,7 +41,7 @@ public class AceEditor extends HTML {
 	 * @param themeName the theme name (e.g., "twilight")
 	 */
 	public native void setTheme(String themeName) /*-{
-		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		var editor = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor;
 		editor.setTheme("ace/theme/" + themeName);
 	}-*/;
 
@@ -53,8 +53,8 @@ public class AceEditor extends HTML {
 	 */
 	public native void setMode(AceEditorMode mode) /*-{
 		//setModeImpl(editor, "ace/mode/" + mode.getName());
-		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
-		var shortModeName = mode.@edu.ycp.cs.netcoder.client.AceEditorMode::name;
+		var editor = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor;
+		var shortModeName = mode.@edu.ycp.cs.netcoder.client.ace.AceEditorMode::name;
 		var modeName = "ace/mode/" + shortModeName;
 		var TheMode = $wnd.require(modeName).Mode;
 		editor.getSession().setMode(new TheMode());
@@ -66,9 +66,9 @@ public class AceEditor extends HTML {
 	 * @param callback the change event handler
 	 */
 	public native void addOnChangeHandler(AceEditorCallback callback) /*-{
-		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		var editor = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor;
 		editor.getSession().on("change", function(e) {
-			callback.@edu.ycp.cs.netcoder.client.AceEditorCallback::invokeAceCallback(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
+			callback.@edu.ycp.cs.netcoder.client.ace.AceEditorCallback::invokeAceCallback(Lcom/google/gwt/core/client/JavaScriptObject;)(e);
 		});
 	}-*/;
 	
@@ -76,7 +76,7 @@ public class AceEditor extends HTML {
 	 * Set font size.
 	 */
 	public native void setFontSize(String fontSize) /*-{
-		var elementId = this.@edu.ycp.cs.netcoder.client.AceEditor::elementId;
+		var elementId = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::elementId;
 		var elt = $doc.getElementById(elementId);
 		elt.style.fontSize = fontSize;
 	}-*/;
@@ -87,7 +87,7 @@ public class AceEditor extends HTML {
 	 * @return the text in the editor
 	 */
 	public native String getText() /*-{
-		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		var editor = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor;
 		return editor.getSession().getValue();
 	}-*/;
 	
@@ -97,7 +97,7 @@ public class AceEditor extends HTML {
 	 * @param text the text to set in the editor
 	 */
 	public native void setText(String text) /*-{
-		var editor = this.@edu.ycp.cs.netcoder.client.AceEditor::editor;
+		var editor = this.@edu.ycp.cs.netcoder.client.ace.AceEditor::editor;
 		editor.getSession().setValue(text);
 	}-*/;
 }

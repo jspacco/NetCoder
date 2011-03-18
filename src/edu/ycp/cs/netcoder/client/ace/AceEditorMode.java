@@ -1,4 +1,4 @@
-package edu.ycp.cs.netcoder.client;
+package edu.ycp.cs.netcoder.client.ace;
 
 public enum AceEditorMode {
 	JAVA("java");
