@@ -108,17 +108,13 @@ public class TestCreator
         
         String inputAsString() {
             // TODO: handle array types
-            return "\"input:<"+input+">\"";
-        }
-        String correctOutputAsString()
-        {
-            return "\"correct:<"+correctOutput+">\"";
+            return input.toString();
         }
         
         String toTestCase() {
             return "public void "+testName+"() throws Exception {\n"+
             "Interpreter bsh=new Interpreter();\n"+
-                "assertEquals("+inputAsString()+", "+
+                "assertEquals(\"input:<"+input+">\", "+
                 this.correctOutput+", bsh.eval(\""+body+"; "+
                     functionName+"("+this.input+")\"));\n}";
         }

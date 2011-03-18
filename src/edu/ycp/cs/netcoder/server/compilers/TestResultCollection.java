@@ -19,6 +19,9 @@ public class TestResultCollection implements Serializable
     public synchronized void addTestResult(TestResult result) {
         this.results.add(result);
     }
+    public void addAll(List<TestResult> outcomes){
+        this.results.addAll(outcomes);
+    }
     
     public String toString() {
         if (!compileResult.success) {
@@ -43,5 +46,4 @@ public class TestResultCollection implements Serializable
         }
         return buf.toString();
     }
-
 }

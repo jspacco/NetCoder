@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class TestResult implements Serializable
 {
     public static final long serialVersionUID=1L;
+    //TODO: store outcomes (pass, fail, timeout)?
     
     public final boolean success;
     public final String message;
