@@ -6,8 +6,15 @@ package edu.ycp.cs.netcoder.server.logchange;
 public class ParseJSON {
 	private enum Mode { OUT, IN, ESCAPE };
 	
-	public void parse(String jsonText, ParseJSONCallback callback) {
+	public String parse(String jsonText, ParseJSONCallback callback) {
 		 Mode mode = Mode.OUT;
+		 
+		 System.out.println("Parsing " + jsonText);
+		 
+		 boolean isArray = jsonText.startsWith("[");
+		 if (!isArray && !jsonText.startsWith("\"")) {
+			 throw new IllegalArgumentException("Not string or array: " + jsonText);
+		 }
 		 
 		 StringBuilder buf = new StringBuilder();
 		
@@ -16,6 +23,10 @@ public class ParseJSON {
 			
 			switch (mode) {
 			case OUT:
+				if (isArray && c == ']') {
+					// finished array
+					return jsonText.substring(i + 1);
+				}
 				if (c == '"') {
 					// beginning of string
 					mode = Mode.IN;
@@ -28,6 +39,12 @@ public class ParseJSON {
 					String s = buf.toString();
 					//System.out.println("Got string!" + s);
 					callback.visitString(s);
+					
+					if (!isArray) {
+						// done with single string
+						return jsonText.substring(i + 1);
+					}
+					
 					mode = Mode.OUT;
 				} else if (c == '\\') {
 					// start escape
@@ -66,5 +83,7 @@ public class ParseJSON {
 				mode = Mode.IN; // back to normal processing
 			}
 		}
+		
+		return ""; // should not happen 
 	}
 }

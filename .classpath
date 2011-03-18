@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="junit"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/junit.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>

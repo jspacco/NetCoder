@@ -17,53 +17,53 @@ public class Change {
 	private final long timestamp;
 	private List<String> text;
 
-	private static final Pattern META_PATTERN =
-		Pattern.compile("^(IT|RT|IL|RL)(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)$");
-	
-	/**
-	 * Create Change from compact string sent by NetCoder client's LogCodeChangeService.
-	 * 
-	 * @param s the compact string
-	 * @return the Change object
-	 */
-	public static Change fromCompactString(String s) {
-		int semi = s.indexOf(';');
-		if (semi < 0) {
-			throw new IllegalArgumentException("Invalid change string: " + s);
-		}
-
-		String meta = s.substring(0, semi);
-		Matcher m = META_PATTERN.matcher(meta);
-		if (!m.matches()) {
-			throw new IllegalArgumentException("Invalid change string: " + s);
-		}
-		
-		ChangeType type = ChangeType.fromCompactString(m.group(1));
-		int startRow = Integer.parseInt(m.group(2));
-		int startColumn = Integer.parseInt(m.group(3));
-		int endRow = Integer.parseInt(m.group(4));
-		int endColumn = Integer.parseInt(m.group(5));
-		long timestamp = Long.parseLong(m.group(6));
-		
-		String jsonTextOrLines = s.substring(semi+1);
-
-		final List<String> text = new ArrayList<String>();
-		
-		ParseJSONCallback callback = new ParseJSONCallback() {
-			@Override
-			public void visitString(String s) {
-				text.add(s);
-			}
-		};
-		ParseJSON parser = new ParseJSON();
-		parser.parse(jsonTextOrLines, callback);
-
-		if (type == ChangeType.INSERT_TEXT || type == ChangeType.REMOVE_TEXT) {
-			return new Change(type, startRow, startColumn, endRow, endColumn, timestamp, text.get(0));
-		} else {
-			return new Change(type, startRow, startColumn, endRow, endColumn, timestamp, text);
-		}
-	}
+//	private static final Pattern META_PATTERN =
+//		Pattern.compile("^(IT|RT|IL|RL)(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)$");
+//	
+//	/**
+//	 * Create Change from compact string sent by NetCoder client's LogCodeChangeService.
+//	 * 
+//	 * @param s the compact string
+//	 * @return the Change object
+//	 */
+//	public static Change fromCompactString(String s) {
+//		int semi = s.indexOf(';');
+//		if (semi < 0) {
+//			throw new IllegalArgumentException("Invalid change string: " + s);
+//		}
+//
+//		String meta = s.substring(0, semi);
+//		Matcher m = META_PATTERN.matcher(meta);
+//		if (!m.matches()) {
+//			throw new IllegalArgumentException("Invalid change string: " + s);
+//		}
+//		
+//		ChangeType type = ChangeType.fromCompactString(m.group(1));
+//		int startRow = Integer.parseInt(m.group(2));
+//		int startColumn = Integer.parseInt(m.group(3));
+//		int endRow = Integer.parseInt(m.group(4));
+//		int endColumn = Integer.parseInt(m.group(5));
+//		long timestamp = Long.parseLong(m.group(6));
+//		
+//		String jsonTextOrLines = s.substring(semi+1);
+//
+//		final List<String> text = new ArrayList<String>();
+//		
+//		ParseJSONCallback callback = new ParseJSONCallback() {
+//			@Override
+//			public void visitString(String s) {
+//				text.add(s);
+//			}
+//		};
+//		ParseJSON parser = new ParseJSON();
+//		parser.parse(jsonTextOrLines, callback);
+//
+//		if (type == ChangeType.INSERT_TEXT || type == ChangeType.REMOVE_TEXT) {
+//			return new Change(type, startRow, startColumn, endRow, endColumn, timestamp, text.get(0));
+//		} else {
+//			return new Change(type, startRow, startColumn, endRow, endColumn, timestamp, text);
+//		}
+//	}
 	
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
 		this.type = type;
@@ -74,12 +74,12 @@ public class Change {
 		this.timestamp = ts;
 	}
 	
-	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String text) {
+	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String text) {
 		this(type, sr, sc, er, ec, ts);
 		this.text = Collections.singletonList(text);
 	}
 	
-	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts, List<String> textToAdopt) {
+	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, List<String> textToAdopt) {
 		this(type, sr, sc, er, ec, ts);
 		this.text = textToAdopt;
 	}
