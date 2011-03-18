@@ -9,7 +9,7 @@ public class ParseJSON {
 	public String parse(String jsonText, ParseJSONCallback callback) {
 		 Mode mode = Mode.OUT;
 		 
-		 System.out.println("Parsing " + jsonText);
+		 //System.out.println("Parsing " + jsonText);
 		 
 		 boolean isArray = jsonText.startsWith("[");
 		 if (!isArray && !jsonText.startsWith("\"")) {

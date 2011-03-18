@@ -7,6 +7,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -36,6 +37,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private HorizontalPanel buttonPanel;
 	private Label statusLabel;
 	private StatusWidget statusWidget;
+	private Timer flushPendingChangeEventsTimer;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	private CompileServiceAsync compileService;
@@ -117,6 +119,32 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		editor.setMode(AceEditorMode.JAVA);
 		editor.addOnChangeHandler(this);
 		
+		// create timer to flush unsent change events periodically
+		flushPendingChangeEventsTimer = new Timer() {
+			@Override
+			public void run() {
+				if (changeList.getState() == ChangeList.State.UNSENT) {
+					String changeBatch = changeList.beginTransmit();
+					
+					AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							changeList.endTrasnmit(false);
+							GWT.log("Failed to send change batch to server");
+						}
+						
+						@Override
+						public void onSuccess(Boolean result) {
+							changeList.endTrasnmit(true);
+						}
+					};
+					
+					logCodeChangeService.logChange(changeBatch, callback);
+				}
+			}
+		};
+		flushPendingChangeEventsTimer.scheduleRepeating(1000);
+		
 		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
 		compileService = (CompileServiceAsync) GWT.create(CompileService.class);
@@ -144,8 +172,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param obj an ACE onChange event object
 	 */
 	private native void sendChangeToServer(JavaScriptObject obj) /*-{
-		//var jsonText = $wnd.JSON.stringify(obj);
-		
 		// Create a compact text representation of the change event object
 		var compactChangeString = "";
 		var type = obj.type;
@@ -166,10 +192,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 			compactChangeString = compactAction + compactRange + "," + new Date().getTime() + ";" + textOrLines;
 		}
 		
-		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(
-			compactChangeString
-			//+ " - " + jsonText
-		);
+		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(compactChangeString);
 	}-*/;
 	
 	/**
@@ -178,36 +201,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param changeEvent a JSON-stringified ACE onChange event object
 	 */
 	private void sendStringifiedChangeToServer(String changeEvent) {
-		
-		// Send changes in batches. Right now, only communicate with server on every 10th change.
-		// FIXME: should use a timer to ensure that unsent changes don't accumulate indefinitely
-		
-		changeList.addChange(changeEvent);
-		
-		if (changeList.getNumUnsentChanges() >= 10 && changeList.getState() != ChangeList.State.TRANSMISSION) {
-			List<String> changesToBeSent = changeList.beginTransmit();
-			StringBuilder buf = new StringBuilder();
-			for (String s : changesToBeSent) {
-				buf.append(s);
-			}
-			
-			String changeBatch = buf.toString();
-			
-			AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					changeList.endTrasnmit(false);
-					GWT.log("Failed to send change batch to server");
-				}
-				
-				@Override
-				public void onSuccess(Boolean result) {
-					changeList.endTrasnmit(true);
-				}
-			};
-			
-			logCodeChangeService.logChange(changeBatch, callback);
-		}
+		changeList.addChange(changeEvent); // will get sent eventually based on timer events
 	}
 	
 	/**

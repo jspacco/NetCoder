@@ -49,7 +49,7 @@ public class ChangeList extends Observable {
 		}
 	}
 	
-	public List<String> beginTransmit() {
+	public String beginTransmit() {
 		assert state == State.UNSENT;
 		assert !unsent.isEmpty();
 		assert inTransmission.isEmpty() || !transmitSuccess;
@@ -61,7 +61,12 @@ public class ChangeList extends Observable {
 		setChanged();
 		notifyObservers();
 		
-		return Collections.unmodifiableList(inTransmission);
+		// return a single string containing the entire batch of changes
+		StringBuilder buf = new StringBuilder();
+		for (String s : inTransmission) {
+			buf.append(s);
+		}
+		return buf.toString();
 	}
 	
 	public void endTrasnmit(boolean success) {
