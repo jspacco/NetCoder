@@ -1,5 +1,7 @@
 package edu.ycp.cs.netcoder.client;
 
+import java.util.List;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -17,11 +19,15 @@ import edu.ycp.cs.netcoder.client.ace.AceEditor;
 import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
+import edu.ycp.cs.netcoder.client.logchange.ChangeList;
+import edu.ycp.cs.netcoder.client.status.StatusWidget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
+	private ChangeList changeList;
+
 	private HorizontalPanel appPanel;
 	private HorizontalPanel editorAndWidgetPanel;
 	private AceEditor editor;
@@ -29,6 +35,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private Label statusLabel;
+	private StatusWidget statusWidget;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	private CompileServiceAsync compileService;
@@ -38,6 +45,9 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		// Model (data) objects
+		changeList = new ChangeList();
+
 		// The app panel can be for logout button, menus, etc.
 		appPanel = new HorizontalPanel();
 		appPanel.add(new Label("Menus and logout button should go here"));
@@ -86,6 +96,9 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		
 		// Status label - need to think more about what feedback to provide and how
 		FlowPanel statusPanel = new FlowPanel();
+		statusWidget = new StatusWidget();
+		changeList.addObserver(statusWidget);
+		statusPanel.add(statusWidget);
 		statusLabel = new Label();
 		statusPanel.add(statusLabel);
 		statusPanel.setWidth("100%");
@@ -165,19 +178,36 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param changeEvent a JSON-stringified ACE onChange event object
 	 */
 	private void sendStringifiedChangeToServer(String changeEvent) {
-		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				GWT.log("send code change failed", caught);
+		
+		// Send changes in batches. Right now, only communicate with server on every 10th change.
+		// FIXME: should use a timer to ensure that unsent changes don't accumulate indefinitely
+		
+		changeList.addChange(changeEvent);
+		
+		if (changeList.getNumUnsentChanges() >= 10 && changeList.getState() != ChangeList.State.TRANSMISSION) {
+			List<String> changesToBeSent = changeList.beginTransmit();
+			StringBuilder buf = new StringBuilder();
+			for (String s : changesToBeSent) {
+				buf.append(s);
 			}
 			
-			@Override
-			public void onSuccess(Boolean result) {
-				// TODO: clear queue of change events
-			}
-		};
-		
-		logCodeChangeService.logChange(changeEvent, callback);
+			String changeBatch = buf.toString();
+			
+			AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					changeList.endTrasnmit(false);
+					GWT.log("Failed to send change batch to server");
+				}
+				
+				@Override
+				public void onSuccess(Boolean result) {
+					changeList.endTrasnmit(true);
+				}
+			};
+			
+			logCodeChangeService.logChange(changeBatch, callback);
+		}
 	}
 	
 	/**

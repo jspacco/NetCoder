@@ -28,6 +28,10 @@ public class ChangeList extends Observable {
 		this.inTransmission = new ArrayList<String>();
 	}
 	
+	public int getNumUnsentChanges() {
+		return unsent.size();
+	}
+	
 	public State getState() {
 		return state;
 	}
