@@ -26,6 +26,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	private CompileServiceAsync compileService;
+	private SubmitServiceAsync submitService;
 	
 	/**
 	 * This is the entry point method.
@@ -67,6 +68,15 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		});
 		buttonPanel.add(compileButton);
 		
+		Button submitButton=new Button("Submit");
+		submitButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event){
+                submitCode();
+            }
+        });
+		buttonPanel.add(submitButton);
+		
 		// Status label - need to think more about what feedback to provide and how
 		FlowPanel statusPanel = new FlowPanel();
 		statusLabel = new Label();
@@ -90,6 +100,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
 		compileService = (CompileServiceAsync) GWT.create(CompileService.class);
+		submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
 	}
 
 	/**
@@ -149,5 +160,23 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		};
 		
 		compileService.compile(editor.getText(), callback);
+	}
+	
+	protected void submitCode() {
+	    AsyncCallback<String> callback = new AsyncCallback<String>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                statusLabel.setText("Error sending submission to server for compilation");
+                GWT.log("compile failed", caught);
+            }
+
+            @Override
+            public void onSuccess(String result) {
+                statusLabel.setText(result);
+            }
+        };
+        String problemId = com.google.gwt.user.client.Window.Location.getParameter("problemId");
+        // XXX Probably needs only the problem's unique ID
+        submitService.submit(problemId, editor.getText(), callback);
 	}
 }

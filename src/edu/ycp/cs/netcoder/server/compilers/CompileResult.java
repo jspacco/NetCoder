@@ -1,11 +1,15 @@
 package edu.ycp.cs.netcoder.server.compilers;
 
+import java.io.Serializable;
+
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaFileObject;
 
-public class CompileResult
+public class CompileResult implements Serializable
 {
+    public static final long serialVersionUID=1;
+    //TODO: May have to convert Diagnotics into something properly serializable
     public final DiagnosticCollector<JavaFileObject> diagnostics;
     public final boolean success;
     

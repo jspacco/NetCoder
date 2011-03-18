@@ -9,8 +9,9 @@ import org.junit.runner.notification.Failure;
 public class BeanTestDriver
 {
     public static void main(String[] args)
+    throws Exception
     {
-        TestCreator creator=new TestCreator("RunTest", 
+        TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.junit.online", "Run", 
                 "sq", 
                 "public int sq(int x) { "+
                     "if (x==10) throw new RuntimeException(); "+    
@@ -18,13 +19,14 @@ public class BeanTestDriver
                     "return x*x; " +
                     "}");
         creator.addTest(5, 25);
-        creator.addTest(3, 9);
-        creator.addTest(10, 100);
-        creator.addTest(-1, 1);
+        //creator.addTest(3, 9);
+        //creator.addTest(10, 100);
+        //creator.addTest(-1, 1);
         
         //System.out.println(creator.toString());
         
-        TestRunner runner=new TestRunner(creator);
-        runner.run();
+        TestRunner runner=new TestRunner();
+        TestResultCollection results=runner.run(creator);
+        System.out.println(results);
     }
 }
