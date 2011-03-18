@@ -2,6 +2,7 @@ package edu.ycp.cs.netcoder.server.compilers;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,14 +31,14 @@ public class OnTheFlyCompiler extends ClassLoader
     private List<String> optionsList;
     
     public OnTheFlyCompiler() {
+        super(OnTheFlyCompiler.class.getClassLoader()); 
         this.compiler=ToolProvider.getSystemJavaCompiler();
         this.memoryFileManager=new MemoryFileManager(this.compiler);
         this.classpath=new LinkedList<String>();
         this.optionsList=new LinkedList<String>();
         addToClasspath(System.getProperty("java.class.path"));
         
-        //TODO: What is java.class.path to the server app?
-        // Will we need to hard-code some paths?  sort of like the enxt line
+        // Will we need to hard-code some paths?  sort of like the next line
         //addToClasspath("war/WEB-INF/lib/junit.jar");
     }
     
@@ -63,6 +64,7 @@ public class OnTheFlyCompiler extends ClassLoader
         
         // set compiler's classpath to be same as the runtime's
         optionsList.addAll(Arrays.asList("-classpath",getClasspath()));
+        System.out.println("Classpath: "+getClasspath());
 
         Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(source);
 
@@ -140,15 +142,18 @@ public class OnTheFlyCompiler extends ClassLoader
         }
     }
   
+    
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         synchronized (memoryFileManager) {
+            //System.out.println("Fly classloader is loading: "+name);
             Output mc = memoryFileManager.get(name);
             if (mc != null) {
                 byte[] array = mc.toByteArray();
                 return defineClass(name, array, 0, array.length);
             }
         }
+        //System.out.println("Asking parent classloader for "+name);
         return super.findClass(name);
     }
 }
