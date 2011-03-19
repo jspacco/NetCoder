@@ -72,9 +72,9 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 
 		// Add the editor and widget panel so that it is a 70/30 split
 		editorAndWidgetPanel.add(editor);
-		editorAndWidgetPanel.setCellWidth(editor, "70%");
+		editorAndWidgetPanel.setCellWidth(editor, "80%");
 		editorAndWidgetPanel.add(widgetPanel);
-		editorAndWidgetPanel.setCellWidth(widgetPanel, "30%");
+		editorAndWidgetPanel.setCellWidth(widgetPanel, "20%");
 		
 		// Button panel is for buttons
 		buttonPanel = new HorizontalPanel();
