@@ -109,8 +109,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		RootPanel rootPanel = RootPanel.get();
 		rootPanel.add(appPanel);
 		rootPanel.add(editorAndWidgetPanel);
-		rootPanel.add(buttonPanel);
 		rootPanel.add(statusPanel);
+		rootPanel.add(buttonPanel);
 
 		// fire up the ACE editor
 		editor.startEditor();

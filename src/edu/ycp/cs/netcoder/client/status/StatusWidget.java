@@ -7,9 +7,12 @@ import edu.ycp.cs.netcoder.client.util.Observable;
 import edu.ycp.cs.netcoder.client.util.Observer;
 
 public class StatusWidget extends Label implements Observer {
+	private static final String NORMAL = "NetCoderStatusNormal";
+	private static final String XMIT_FAILURE = "NetCoderStatusTransmitFailure";
 
 	public StatusWidget() {
-		setWidth("40px");
+		setText("---");
+		setStylePrimaryName(NORMAL);
 	}
 	
 	@Override
@@ -18,19 +21,22 @@ public class StatusWidget extends Label implements Observer {
 		
 		switch (model.getState()) {
 		case CLEAN:
-			setStylePrimaryName("NetCoder-Status-Clean");
-			setText("-----");
+			setText("---");
 			break;
 			
 		case TRANSMISSION:
-			setStylePrimaryName("NetCoder-Status-Tranmission");
-			setText("<--->");
+			setText("<->");
 			break;
 			
 		case UNSENT:
-			setStylePrimaryName("NetCoder-Status-Unsent");
-			setText("--*--");
+			setText("-*-");
 			break;
+		}
+		
+		if (model.isTransmitSuccess()) {
+			setStylePrimaryName(NORMAL);
+		} else {
+			setStylePrimaryName(XMIT_FAILURE);
 		}
 	}
 }
