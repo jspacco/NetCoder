@@ -1,7 +1,5 @@
 package edu.ycp.cs.netcoder.client;
 
-import java.util.List;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -17,9 +15,9 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.ycp.cs.netcoder.client.ace.AceEditor;
@@ -48,7 +46,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private EditorStatusWidget statusWidget;
-	private Label statusLabel;
+	private InlineLabel statusLabel;
 	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
 	
@@ -102,7 +100,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		statusWidget = new EditorStatusWidget();
 		changeList.addObserver(statusWidget);
 		statusPanel.add(statusWidget);
-		statusLabel = new Label();
+		statusLabel = new InlineLabel();
 		statusPanel.add(statusLabel);
 		statusPanel.setWidth("100%");
 		mainPanel.addSouth(statusPanel, STATUS_PANEL_HEIGHT_PX);
@@ -271,10 +269,11 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	}
 
 	private void resize(int width, int height) {
-		int availHeight = (height - NORTH_SOUTH_PANELS_HEIGHT_PX) - 6;
-		// minimum height for editor/widget panel is 300px
-		if (availHeight < 300) {
-			availHeight = 300;
+		// Let the editor and widget panel take up all of the vertical
+		// height not consumed by the north/south panels.
+		int availHeight = (height - NORTH_SOUTH_PANELS_HEIGHT_PX) - 10;
+		if (availHeight < 0) {
+			availHeight = 0;
 		}
 		editor.setHeight(availHeight + "px");
 	}

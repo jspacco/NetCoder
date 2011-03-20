@@ -1,12 +1,12 @@
 package edu.ycp.cs.netcoder.client.status;
 
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.InlineLabel;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.util.Observable;
 import edu.ycp.cs.netcoder.client.util.Observer;
 
-public class EditorStatusWidget extends Label implements Observer {
+public class EditorStatusWidget extends InlineLabel implements Observer {
 	private static final String NORMAL = "NetCoderEditorStatusNormal";
 	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
 
