@@ -56,8 +56,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
 	
-	private static final boolean START_EDITOR = true;
-	
 	/**
 	 * This is the entry point method.
 	 */
@@ -73,9 +71,9 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		appPanel.add(new Label("Menus and logout button should go here"));
 		mainPanel.addNorth(appPanel, APP_PANEL_HEIGHT_PX);
 		
-		// The editor (left) and widget panel (right) occupy most of the vertical space
-		// TODO: make it expand vertically when window resizes
-		
+		// The editor (left) and widget panel (right) occupy the center location
+		// in the DockLayoutPanel, and expand to fill space not occupied by
+		// docked panels.
 		editorAndWidgetPanel = new HorizontalPanel();
 		editorAndWidgetPanel.setWidth("100%");
 		
@@ -127,25 +125,23 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		editorAndWidgetPanel.setCellWidth(widgetPanel, "20%");
 		mainPanel.add(editorAndWidgetPanel);
 		
-		// Build the UI
-//		RootPanel rootPanel = RootPanel.get();
-//		rootPanel.add(appPanel);
-//		rootPanel.add(editorAndWidgetPanel);
-//		rootPanel.add(statusPanel);
-//		rootPanel.add(buttonPanel);
+		// Add the main panel to the window
 		RootLayoutPanel.get().add(mainPanel);
 		
+		// Size the editor and widget panel to fill available space
 		resize(Window.getClientWidth(), Window.getClientHeight());
+		
+		// Add window resize handler so that we can make editor and widget
+		// panel expand vertically as necessary
+		Window.addResizeHandler(this);
 
 		// fire up the ACE editor
-		if (START_EDITOR) {
-			editor.startEditor();
-			editor.setTheme("eclipse");
-			editor.setFontSize("14px");
-			editor.setMode(AceEditorMode.JAVA);
-			editor.addOnChangeHandler(this);
-		}
-		
+		editor.startEditor();
+		editor.setTheme("eclipse");
+		editor.setFontSize("14px");
+		editor.setMode(AceEditorMode.JAVA);
+		editor.addOnChangeHandler(this);
+	
 		// create timer to flush unsent change events periodically
 		flushPendingChangeEventsTimer = new Timer() {
 			@Override
@@ -179,10 +175,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		
 		// Make a javascript map to help compactify ACE onChange event data
 		makeOnChangeCompactificationMap();
-		
-		// add window resize handler so that we can make editor and widget
-		// panel expand vertically as necessary
-		Window.addResizeHandler(this);
 	}
 	
 	private native void makeOnChangeCompactificationMap() /*-{
