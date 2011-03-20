@@ -6,11 +6,11 @@ import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.util.Observable;
 import edu.ycp.cs.netcoder.client.util.Observer;
 
-public class StatusWidget extends Label implements Observer {
-	private static final String NORMAL = "NetCoderStatusNormal";
-	private static final String XMIT_FAILURE = "NetCoderStatusTransmitFailure";
+public class EditorStatusWidget extends Label implements Observer {
+	private static final String NORMAL = "NetCoderEditorStatusNormal";
+	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
 
-	public StatusWidget() {
+	public EditorStatusWidget() {
 		setText("---");
 		setStylePrimaryName(NORMAL);
 	}

@@ -27,7 +27,7 @@ import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.client.status.StatusWidget;
+import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -47,7 +47,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private HintsWidget hintsWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
-	private StatusWidget statusWidget;
+	private EditorStatusWidget statusWidget;
 	private Label statusLabel;
 	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
@@ -99,7 +99,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		
 		// Status panel - need to think more about what feedback to provide and how
 		FlowPanel statusPanel = new FlowPanel();
-		statusWidget = new StatusWidget();
+		statusWidget = new EditorStatusWidget();
 		changeList.addObserver(statusWidget);
 		statusPanel.add(statusWidget);
 		statusLabel = new Label();
