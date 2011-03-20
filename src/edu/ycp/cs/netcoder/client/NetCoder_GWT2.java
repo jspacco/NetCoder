@@ -8,7 +8,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -29,7 +32,7 @@ import edu.ycp.cs.netcoder.client.status.StatusWidget;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
+public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandler {
 	private static final int APP_PANEL_HEIGHT_PX = 30;
 	private static final int STATUS_PANEL_HEIGHT_PX = 30;
 	private static final int BUTTON_PANEL_HEIGHT_PX = 40;
@@ -131,6 +134,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 //		rootPanel.add(statusPanel);
 //		rootPanel.add(buttonPanel);
 		RootLayoutPanel.get().add(mainPanel);
+		
+		resize(Window.getClientWidth(), Window.getClientHeight());
 
 		// fire up the ACE editor
 		if (START_EDITOR) {
@@ -174,6 +179,10 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		
 		// Make a javascript map to help compactify ACE onChange event data
 		makeOnChangeCompactificationMap();
+		
+		// add window resize handler so that we can make editor and widget
+		// panel expand vertically as necessary
+		Window.addResizeHandler(this);
 	}
 	
 	private native void makeOnChangeCompactificationMap() /*-{
@@ -262,5 +271,19 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
         String problemId = com.google.gwt.user.client.Window.Location.getParameter("problemId");
         // XXX Probably needs only the problem's unique ID
         submitService.submit(problemId, editor.getText(), callback);
+	}
+	
+	@Override
+	public void onResize(ResizeEvent event) {
+		resize(Window.getClientWidth(), Window.getClientHeight());
+	}
+
+	private void resize(int width, int height) {
+		int availHeight = (height - NORTH_SOUTH_PANELS_HEIGHT_PX) - 6;
+		// minimum height for editor/widget panel is 300px
+		if (availHeight < 300) {
+			availHeight = 300;
+		}
+		editor.setHeight(availHeight + "px");
 	}
 }
