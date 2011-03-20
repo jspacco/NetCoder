@@ -5,14 +5,17 @@ import java.util.List;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -27,6 +30,13 @@ import edu.ycp.cs.netcoder.client.status.StatusWidget;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
+	private static final int APP_PANEL_HEIGHT_PX = 30;
+	private static final int STATUS_PANEL_HEIGHT_PX = 30;
+	private static final int BUTTON_PANEL_HEIGHT_PX = 40;
+	
+	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
+		APP_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
+	
 	private ChangeList changeList;
 
 	private HorizontalPanel appPanel;
@@ -43,22 +53,58 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
 	
+	private static final boolean START_EDITOR = true;
+	
 	/**
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
 		// Model (data) objects
 		changeList = new ChangeList();
-
+		
+		
+		DockLayoutPanel mainPanel = new DockLayoutPanel(Unit.PX);
+		
 		// The app panel can be for logout button, menus, etc.
 		appPanel = new HorizontalPanel();
 		appPanel.add(new Label("Menus and logout button should go here"));
+		mainPanel.addNorth(appPanel, APP_PANEL_HEIGHT_PX);
 		
 		// The editor (left) and widget panel (right) occupy most of the vertical space
 		// TODO: make it expand vertically when window resizes
 		
 		editorAndWidgetPanel = new HorizontalPanel();
 		editorAndWidgetPanel.setWidth("100%");
+		
+		// Button panel is for buttons
+		buttonPanel = new HorizontalPanel();
+		Button compileButton = new Button("Compile");
+		compileButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				compileCode();
+			}
+		});
+		buttonPanel.add(compileButton);
+		Button submitButton=new Button("Submit");
+		submitButton.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event){
+                submitCode();
+            }
+        });
+		buttonPanel.add(submitButton);
+		mainPanel.addSouth(buttonPanel, BUTTON_PANEL_HEIGHT_PX);
+		
+		// Status panel - need to think more about what feedback to provide and how
+		FlowPanel statusPanel = new FlowPanel();
+		statusWidget = new StatusWidget();
+		changeList.addObserver(statusWidget);
+		statusPanel.add(statusWidget);
+		statusLabel = new Label();
+		statusPanel.add(statusLabel);
+		statusPanel.setWidth("100%");
+		mainPanel.addSouth(statusPanel, STATUS_PANEL_HEIGHT_PX);
 		
 		// Code editor
 		editor = new AceEditor();
@@ -71,54 +117,29 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		widgetPanel.add(hintsWidget);
 		widgetPanel.add(new Label("Affect data collection!")); // TODO
 
-		// Add the editor and widget panel so that it is a 70/30 split
+		// Add the editor and widget panel so that it is a 80/20 split
 		editorAndWidgetPanel.add(editor);
 		editorAndWidgetPanel.setCellWidth(editor, "80%");
 		editorAndWidgetPanel.add(widgetPanel);
 		editorAndWidgetPanel.setCellWidth(widgetPanel, "20%");
-		
-		// Button panel is for buttons
-		buttonPanel = new HorizontalPanel();
-		Button compileButton = new Button("Compile");
-		compileButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				compileCode();
-			}
-		});
-		buttonPanel.add(compileButton);
-		
-		Button submitButton=new Button("Submit");
-		submitButton.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event){
-                submitCode();
-            }
-        });
-		buttonPanel.add(submitButton);
-		
-		// Status label - need to think more about what feedback to provide and how
-		FlowPanel statusPanel = new FlowPanel();
-		statusWidget = new StatusWidget();
-		changeList.addObserver(statusWidget);
-		statusPanel.add(statusWidget);
-		statusLabel = new Label();
-		statusPanel.add(statusLabel);
-		statusPanel.setWidth("100%");
+		mainPanel.add(editorAndWidgetPanel);
 		
 		// Build the UI
-		RootPanel rootPanel = RootPanel.get();
-		rootPanel.add(appPanel);
-		rootPanel.add(editorAndWidgetPanel);
-		rootPanel.add(statusPanel);
-		rootPanel.add(buttonPanel);
+//		RootPanel rootPanel = RootPanel.get();
+//		rootPanel.add(appPanel);
+//		rootPanel.add(editorAndWidgetPanel);
+//		rootPanel.add(statusPanel);
+//		rootPanel.add(buttonPanel);
+		RootLayoutPanel.get().add(mainPanel);
 
 		// fire up the ACE editor
-		editor.startEditor();
-		editor.setTheme("eclipse");
-		editor.setFontSize("14px");
-		editor.setMode(AceEditorMode.JAVA);
-		editor.addOnChangeHandler(this);
+		if (START_EDITOR) {
+			editor.startEditor();
+			editor.setTheme("eclipse");
+			editor.setFontSize("14px");
+			editor.setMode(AceEditorMode.JAVA);
+			editor.addOnChangeHandler(this);
+		}
 		
 		// create timer to flush unsent change events periodically
 		flushPendingChangeEventsTimer = new Timer() {
