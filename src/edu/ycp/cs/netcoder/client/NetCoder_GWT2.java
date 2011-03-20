@@ -31,12 +31,12 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 
 	private HorizontalPanel appPanel;
 	private HorizontalPanel editorAndWidgetPanel;
-	private AceEditor editor;
 	private HintsWidget hintsWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
-	private Label statusLabel;
 	private StatusWidget statusWidget;
+	private Label statusLabel;
+	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
@@ -63,6 +63,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		// Code editor
 		editor = new AceEditor();
 		editor.setStylePrimaryName("NetCoderEditor");
+		editor.setHeight("500px");
 		
 		// Widget panel: for things like hints, affect data collection, etc.
 		widgetPanel = new VerticalPanel();
