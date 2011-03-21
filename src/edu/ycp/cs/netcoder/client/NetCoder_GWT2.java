@@ -3,32 +3,52 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.ycp.cs.netcoder.client.ace.AceEditor;
 import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
+import edu.ycp.cs.netcoder.client.logchange.ChangeList;
+import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
+public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandler {
+	private static final int APP_PANEL_HEIGHT_PX = 30;
+	private static final int STATUS_PANEL_HEIGHT_PX = 30;
+	private static final int BUTTON_PANEL_HEIGHT_PX = 40;
+	
+	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
+		APP_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
+	
+	private ChangeList changeList;
+
 	private HorizontalPanel appPanel;
 	private HorizontalPanel editorAndWidgetPanel;
-	private AceEditor editor;
 	private HintsWidget hintsWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
-	private Label statusLabel;
+	private EditorStatusWidget statusWidget;
+	private InlineLabel statusLabel;
+	private AceEditor editor;
+	private Timer flushPendingChangeEventsTimer;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	private CompileServiceAsync compileService;
@@ -38,31 +58,22 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
+		// Model (data) objects
+		changeList = new ChangeList();
+		
+		
+		DockLayoutPanel mainPanel = new DockLayoutPanel(Unit.PX);
+		
 		// The app panel can be for logout button, menus, etc.
 		appPanel = new HorizontalPanel();
 		appPanel.add(new Label("Menus and logout button should go here"));
+		mainPanel.addNorth(appPanel, APP_PANEL_HEIGHT_PX);
 		
-		// The editor (left) and widget panel (right) occupy most of the vertical space
-		// TODO: make it expand vertically when window resizes
-		
+		// The editor (left) and widget panel (right) occupy the center location
+		// in the DockLayoutPanel, and expand to fill space not occupied by
+		// docked panels.
 		editorAndWidgetPanel = new HorizontalPanel();
 		editorAndWidgetPanel.setWidth("100%");
-		
-		// Code editor
-		editor = new AceEditor();
-		editor.setStylePrimaryName("NetCoderEditor");
-		
-		// Widget panel: for things like hints, affect data collection, etc.
-		widgetPanel = new VerticalPanel();
-		hintsWidget = new HintsWidget();
-		widgetPanel.add(hintsWidget);
-		widgetPanel.add(new Label("Affect data collection!")); // TODO
-
-		// Add the editor and widget panel so that it is a 70/30 split
-		editorAndWidgetPanel.add(editor);
-		editorAndWidgetPanel.setCellWidth(editor, "70%");
-		editorAndWidgetPanel.add(widgetPanel);
-		editorAndWidgetPanel.setCellWidth(widgetPanel, "30%");
 		
 		// Button panel is for buttons
 		buttonPanel = new HorizontalPanel();
@@ -74,7 +85,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 			}
 		});
 		buttonPanel.add(compileButton);
-		
 		Button submitButton=new Button("Submit");
 		submitButton.addClickHandler(new ClickHandler() {
             @Override
@@ -83,19 +93,45 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
             }
         });
 		buttonPanel.add(submitButton);
+		mainPanel.addSouth(buttonPanel, BUTTON_PANEL_HEIGHT_PX);
 		
-		// Status label - need to think more about what feedback to provide and how
+		// Status panel - need to think more about what feedback to provide and how
 		FlowPanel statusPanel = new FlowPanel();
-		statusLabel = new Label();
+		statusWidget = new EditorStatusWidget();
+		changeList.addObserver(statusWidget);
+		statusPanel.add(statusWidget);
+		statusLabel = new InlineLabel();
 		statusPanel.add(statusLabel);
 		statusPanel.setWidth("100%");
+		mainPanel.addSouth(statusPanel, STATUS_PANEL_HEIGHT_PX);
 		
-		// Build the UI
-		RootPanel rootPanel = RootPanel.get();
-		rootPanel.add(appPanel);
-		rootPanel.add(editorAndWidgetPanel);
-		rootPanel.add(buttonPanel);
-		rootPanel.add(statusPanel);
+		// Code editor
+		editor = new AceEditor();
+		editor.setStylePrimaryName("NetCoderEditor");
+		editor.setHeight("500px");
+		
+		// Widget panel: for things like hints, affect data collection, etc.
+		widgetPanel = new VerticalPanel();
+		hintsWidget = new HintsWidget();
+		widgetPanel.add(hintsWidget);
+		widgetPanel.add(new Label("Affect data collection!")); // TODO
+
+		// Add the editor and widget panel so that it is a 80/20 split
+		editorAndWidgetPanel.add(editor);
+		editorAndWidgetPanel.setCellWidth(editor, "80%");
+		editorAndWidgetPanel.add(widgetPanel);
+		editorAndWidgetPanel.setCellWidth(widgetPanel, "20%");
+		mainPanel.add(editorAndWidgetPanel);
+		
+		// Add the main panel to the window
+		RootLayoutPanel.get().add(mainPanel);
+		
+		// Size the editor and widget panel to fill available space
+		resize(Window.getClientWidth(), Window.getClientHeight());
+		
+		// Add window resize handler so that we can make editor and widget
+		// panel expand vertically as necessary
+		Window.addResizeHandler(this);
 
 		// fire up the ACE editor
 		editor.startEditor();
@@ -103,6 +139,32 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.addOnChangeHandler(this);
+	
+		// create timer to flush unsent change events periodically
+		flushPendingChangeEventsTimer = new Timer() {
+			@Override
+			public void run() {
+				if (changeList.getState() == ChangeList.State.UNSENT) {
+					String changeBatch = changeList.beginTransmit();
+					
+					AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							changeList.endTrasnmit(false);
+							GWT.log("Failed to send change batch to server");
+						}
+						
+						@Override
+						public void onSuccess(Boolean result) {
+							changeList.endTrasnmit(true);
+						}
+					};
+					
+					logCodeChangeService.logChange(changeBatch, callback);
+				}
+			}
+		};
+		flushPendingChangeEventsTimer.scheduleRepeating(1000);
 		
 		// Create async service objects for communication with server
 		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
@@ -131,8 +193,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param obj an ACE onChange event object
 	 */
 	private native void sendChangeToServer(JavaScriptObject obj) /*-{
-		//var jsonText = $wnd.JSON.stringify(obj);
-		
 		// Create a compact text representation of the change event object
 		var compactChangeString = "";
 		var type = obj.type;
@@ -153,10 +213,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 			compactChangeString = compactAction + compactRange + "," + new Date().getTime() + ";" + textOrLines;
 		}
 		
-		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(
-			compactChangeString
-			//+ " - " + jsonText
-		);
+		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(compactChangeString);
 	}-*/;
 	
 	/**
@@ -165,19 +222,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
 	 * @param changeEvent a JSON-stringified ACE onChange event object
 	 */
 	private void sendStringifiedChangeToServer(String changeEvent) {
-		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				GWT.log("send code change failed", caught);
-			}
-			
-			@Override
-			public void onSuccess(Boolean result) {
-				// TODO: clear queue of change events
-			}
-		};
-		
-		logCodeChangeService.logChange(changeEvent, callback);
+		changeList.addChange(changeEvent); // will get sent eventually based on timer events
 	}
 	
 	/**
@@ -216,5 +261,20 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback {
         String problemId = com.google.gwt.user.client.Window.Location.getParameter("problemId");
         // XXX Probably needs only the problem's unique ID
         submitService.submit(problemId, editor.getText(), callback);
+	}
+	
+	@Override
+	public void onResize(ResizeEvent event) {
+		resize(Window.getClientWidth(), Window.getClientHeight());
+	}
+
+	private void resize(int width, int height) {
+		// Let the editor and widget panel take up all of the vertical
+		// height not consumed by the north/south panels.
+		int availHeight = (height - NORTH_SOUTH_PANELS_HEIGHT_PX) - 10;
+		if (availHeight < 0) {
+			availHeight = 0;
+		}
+		editor.setHeight(availHeight + "px");
 	}
 }
