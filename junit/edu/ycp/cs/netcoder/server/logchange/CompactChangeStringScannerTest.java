@@ -1,8 +1,8 @@
 package edu.ycp.cs.netcoder.server.logchange;
 
+import junit.framework.TestCase;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
-import junit.framework.TestCase;
 
 public class CompactChangeStringScannerTest extends TestCase {
 	private CompactChangeStringScanner empty;

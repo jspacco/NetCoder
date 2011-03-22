@@ -1,7 +1,6 @@
 package edu.ycp.cs.netcoder.client.logchange;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import edu.ycp.cs.netcoder.client.util.Observable;
