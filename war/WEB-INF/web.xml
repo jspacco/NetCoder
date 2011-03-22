@@ -33,6 +33,14 @@
     </servlet-class>
   </servlet>
   
+  <servlet>
+  	<servlet-name>LoadExercise</servlet-name>
+  	<servlet-class>
+  	  edu.ycp.cs.netcoder.server.LoadExerciseServiceImpl
+  	</servlet-class>
+  </servlet>
+  
+  
   <!--  Servlet mappings -->
   <servlet-mapping>
     <servlet-name>LogCodeChange</servlet-name>
@@ -45,6 +53,10 @@
   <servlet-mapping>
   	<servlet-name>Submit</servlet-name>
   	<url-pattern>/netcoder_gwt2/submit</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>LoadExercise</servlet-name>
+  	<url-pattern>/netcoder_gwt2/loadExercise</url-pattern>
   </servlet-mapping>
 
 </web-app>

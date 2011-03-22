@@ -17,6 +17,8 @@ import java.util.List;
  * those tasks should be able to be stop()ed without any
  * negative repercussions.
  * 
+ * TODO: Track stdout and stderr and return with TestResult.
+ * 
  * 
  * @author jspacco
  *

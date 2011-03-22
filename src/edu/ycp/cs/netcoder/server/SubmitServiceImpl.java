@@ -19,7 +19,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
      * @see edu.ycp.cs.netcoder.client.SubmitService#submit(java.lang.String, java.lang.String)
      */
     @Override
-    public String submit(String problemId, String programText)
+    public String submit(int problemId, String programText)
     {
         // TODO return type should be either a CompileResult or TestResults
         // TODO use problemID to look up the problem in filesystem/DB

@@ -31,9 +31,12 @@ import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandler {
-	private static final int APP_PANEL_HEIGHT_PX = 30;
+    private static final int APP_PANEL_HEIGHT_PX = 30;
+    private static final int DESC_PANEL_HEIGHT_PX = 70;
 	private static final int STATUS_PANEL_HEIGHT_PX = 30;
 	private static final int BUTTON_PANEL_HEIGHT_PX = 40;
+	
+	private static final String PROBLEM_ID="problemId";
 	
 	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
 		APP_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
@@ -41,18 +44,21 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private ChangeList changeList;
 
 	private HorizontalPanel appPanel;
+	private HorizontalPanel descPanel;
 	private HorizontalPanel editorAndWidgetPanel;
 	private HintsWidget hintsWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private EditorStatusWidget statusWidget;
 	private InlineLabel statusLabel;
+	private InlineLabel descLabel;
 	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
-	private CompileServiceAsync compileService;
+	//private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
+	private LoadExerciseServiceAsync loadService;
 	
 	/**
 	 * This is the entry point method.
@@ -61,6 +67,11 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		// Model (data) objects
 		changeList = new ChangeList();
 		
+		// Id of the problem we're solving
+		// currently this is a request parameter
+		Integer problemId = getProblemId();
+		    
+		createServices();
 		
 		DockLayoutPanel mainPanel = new DockLayoutPanel(Unit.PX);
 		
@@ -68,6 +79,14 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		appPanel = new HorizontalPanel();
 		appPanel.add(new Label("Menus and logout button should go here"));
 		mainPanel.addNorth(appPanel, APP_PANEL_HEIGHT_PX);
+		
+		// The description panel is for the problem description
+		descPanel=new HorizontalPanel();
+		descLabel = new InlineLabel();
+		descPanel.add(descLabel);
+		mainPanel.addNorth(descPanel, DESC_PANEL_HEIGHT_PX);
+		// Load the problem (will update the description panel created above)
+		loadExerciseDescription(problemId);
 		
 		// The editor (left) and widget panel (right) occupy the center location
 		// in the DockLayoutPanel, and expand to fill space not occupied by
@@ -77,14 +96,14 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		
 		// Button panel is for buttons
 		buttonPanel = new HorizontalPanel();
-		Button compileButton = new Button("Compile");
-		compileButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				compileCode();
-			}
-		});
-		buttonPanel.add(compileButton);
+//		Button compileButton = new Button("Compile");
+//		compileButton.addClickHandler(new ClickHandler() {
+//			@Override
+//			public void onClick(ClickEvent event) {
+//				compileCode();
+//			}
+//		});
+//		buttonPanel.add(compileButton);
 		Button submitButton=new Button("Submit");
 		submitButton.addClickHandler(new ClickHandler() {
             @Override
@@ -165,14 +184,17 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 			}
 		};
 		flushPendingChangeEventsTimer.scheduleRepeating(1000);
-		
-		// Create async service objects for communication with server
-		logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
-		compileService = (CompileServiceAsync) GWT.create(CompileService.class);
-		submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
-		
+
 		// Make a javascript map to help compactify ACE onChange event data
 		makeOnChangeCompactificationMap();
+	}
+	
+	private void createServices() {
+	    // Create async service objects for communication with server
+        logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
+        //compileService = (CompileServiceAsync) GWT.create(CompileService.class);
+        submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
+        loadService =(LoadExerciseServiceAsync) GWT.create(LoadExerciseService.class);
 	}
 	
 	private native void makeOnChangeCompactificationMap() /*-{
@@ -228,21 +250,37 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	/**
 	 * Send the current text in the editor to the server to be compiled.
 	 */
-	protected void compileCode() {
-		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				statusLabel.setText("Error sending submission to server for compilation");
-				GWT.log("compile failed", caught);
-			}
+//	protected void compileCode() {
+//		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				statusLabel.setText("Error sending submission to server for compilation");
+//				GWT.log("compile failed", caught);
+//			}
+//
+//			@Override
+//			public void onSuccess(Boolean result) {
+//				statusLabel.setText(result ? "Compile succeeded" : "Compile failed");
+//			}
+//		};
+//		
+//		compileService.compile(editor.getText(), callback);
+//	}
+	
+	protected void loadExerciseDescription(int problemId) {
+	    AsyncCallback<String> callback = new AsyncCallback<String>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                descLabel.setText("Error loading exercise");
+                GWT.log("loading exercise description failed", caught);
+            }
 
-			@Override
-			public void onSuccess(Boolean result) {
-				statusLabel.setText(result ? "Compile succeeded" : "Compile failed");
-			}
-		};
-		
-		compileService.compile(editor.getText(), callback);
+            @Override
+            public void onSuccess(String result) {
+                descLabel.setText(result);
+            }
+        };
+        loadService.load(problemId, callback);
 	}
 	
 	protected void submitCode() {
@@ -258,8 +296,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
                 statusLabel.setText(result);
             }
         };
-        String problemId = com.google.gwt.user.client.Window.Location.getParameter("problemId");
-        // XXX Probably needs only the problem's unique ID
+        int problemId=getProblemId();
         submitService.submit(problemId, editor.getText(), callback);
 	}
 	
@@ -268,6 +305,14 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		resize(Window.getClientWidth(), Window.getClientHeight());
 	}
 
+	private int getProblemId() {
+	    String problemIdStr=Window.Location.getParameter(PROBLEM_ID);
+	    if (problemIdStr==null) {
+	        return 0;
+	    }
+	    return Integer.parseInt(problemIdStr);
+	}
+	
 	private void resize(int width, int height) {
 		// Let the editor and widget panel take up all of the vertical
 		// height not consumed by the north/south panels.

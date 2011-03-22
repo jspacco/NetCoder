@@ -2,10 +2,13 @@ package edu.ycp.cs.netcoder.server.compilers;
 
 import java.util.List;
 
+import org.junit.Test;
+
 
 public class BeanTestDriver
 {
-    public static void main(String[] args)
+    @Test
+    public void testRun()
     throws Exception
     {
         TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.junit.online", "Run", 

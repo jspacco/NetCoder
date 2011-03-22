@@ -1,10 +1,7 @@
 package edu.ycp.cs.netcoder.server.logchange;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Object representing a textual change.
@@ -12,6 +9,10 @@ import java.util.regex.Pattern;
  * can capture the user's edit history.
  */
 public class Change {
+    private long id;
+    private long userId;
+    private long problemId;
+    
 	private final ChangeType type;
 	private final int startRow, startColumn, endRow, endColumn;
 	private final long timestamp;
