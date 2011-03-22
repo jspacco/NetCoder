@@ -1,5 +1,7 @@
 package edu.ycp.cs.netcoder.server.logchange;
 
+import edu.ycp.cs.netcoder.shared.logchange.Change;
+
 /**
  * Apply a Change object to a TextDocument.
  */

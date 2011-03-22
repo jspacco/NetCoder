@@ -7,9 +7,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
-import edu.ycp.cs.netcoder.server.logchange.Change;
 import edu.ycp.cs.netcoder.server.logchange.CompactChangeStringScanner;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
+import edu.ycp.cs.netcoder.shared.logchange.Change;
 
 public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
 	private static final long serialVersionUID = 1L;

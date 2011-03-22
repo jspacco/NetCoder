@@ -1,4 +1,4 @@
-package edu.ycp.cs.netcoder.server.logchange;
+package edu.ycp.cs.netcoder.shared.logchange;
 
 import java.util.HashMap;
 import java.util.Map;

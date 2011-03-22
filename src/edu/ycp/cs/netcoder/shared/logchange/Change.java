@@ -1,7 +1,8 @@
-package edu.ycp.cs.netcoder.server.logchange;
+package edu.ycp.cs.netcoder.shared.logchange;
 
 import java.util.Collections;
 import java.util.List;
+
 
 /**
  * Object representing a textual change.

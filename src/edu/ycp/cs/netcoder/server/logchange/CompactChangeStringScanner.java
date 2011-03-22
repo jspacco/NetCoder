@@ -6,6 +6,9 @@ import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
+
 public class CompactChangeStringScanner {
 	private static final Pattern META_PATTERN =
 		Pattern.compile("^(IT|RT|IL|RL)(\\d+),(\\d+),(\\d+),(\\d+),(\\d+)$");
