@@ -10,17 +10,18 @@ import java.util.List;
  * can capture the user's edit history.
  */
 public class Change {
+	/*
     private long id;
     private long userId;
     private long problemId;
-    
-	private final ChangeType type;
+    */
+	private final String type;
 	private final int startRow, startColumn, endRow, endColumn;
 	private final long timestamp;
 	private List<String> text;
 	
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
-		this.type = type;
+		this.type = type.toString();
 		this.startRow = sr;
 		this.startColumn = sc;
 		this.endRow = er;
@@ -39,7 +40,7 @@ public class Change {
 	}
 	
 	public ChangeType getType() {
-		return type;
+		return ChangeType.valueOf(type);
 	}
 	
 	/**
