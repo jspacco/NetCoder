@@ -39,7 +39,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private static final String PROBLEM_ID="problemId";
 	
 	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
-		APP_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
+		APP_PANEL_HEIGHT_PX + DESC_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
 	
 	private ChangeList changeList;
 
