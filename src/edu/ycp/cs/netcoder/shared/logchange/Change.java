@@ -18,7 +18,8 @@ public class Change {
 	private final String type;
 	private final int startRow, startColumn, endRow, endColumn;
 	private final long timestamp;
-	private List<String> text;
+	//private List<String> text;
+	private String[] text;
 	
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
 		this.type = type.toString();
@@ -31,12 +32,13 @@ public class Change {
 	
 	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String text) {
 		this(type, sr, sc, er, ec, ts);
-		this.text = Collections.singletonList(text);
+		//this.text = Collections.singletonList(text);
+		this.text = new String[]{ text };
 	}
 	
 	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, List<String> textToAdopt) {
 		this(type, sr, sc, er, ec, ts);
-		this.text = textToAdopt;
+		this.text = textToAdopt.toArray(new String[textToAdopt.size()]);
 	}
 	
 	public ChangeType getType() {
@@ -49,8 +51,8 @@ public class Change {
 	 * @return chunk of text inserted or removed
 	 */
 	public String getText() {
-		assert text.size() == 1;
-		return text.get(0);
+		assert text.length == 1;
+		return text[0];
 	}
 
 	/**
@@ -60,7 +62,7 @@ public class Change {
 	 * @return the inserted or removed line
 	 */
 	public String getLine(int index) {
-		return text.get(index);
+		return text[index];
 	}
 	
 	/**
@@ -71,7 +73,7 @@ public class Change {
 	 * @return number of lines
 	 */
 	public int getNumLines() {
-		return text.size();
+		return text.length;
 	}
 	
 	/**
