@@ -24,8 +24,10 @@ import edu.ycp.cs.netcoder.client.ace.AceEditor;
 import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
+import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
+import edu.ycp.cs.netcoder.shared.logchange.Change;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -164,18 +166,18 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 			@Override
 			public void run() {
 				if (changeList.getState() == ChangeList.State.UNSENT) {
-					String changeBatch = changeList.beginTransmit();
+					Change[] changeBatch = changeList.beginTransmit();
 					
 					AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							changeList.endTrasnmit(false);
+							changeList.endTransmit(false);
 							GWT.log("Failed to send change batch to server");
 						}
 						
 						@Override
 						public void onSuccess(Boolean result) {
-							changeList.endTrasnmit(true);
+							changeList.endTransmit(true);
 						}
 					};
 					
@@ -184,9 +186,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 			}
 		};
 		flushPendingChangeEventsTimer.scheduleRepeating(1000);
-
-		// Make a javascript map to help compactify ACE onChange event data
-		makeOnChangeCompactificationMap();
 	}
 	
 	private void createServices() {
@@ -196,55 +195,13 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
         submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
         loadService =(LoadExerciseServiceAsync) GWT.create(LoadExerciseService.class);
 	}
-	
-	private native void makeOnChangeCompactificationMap() /*-{
-		$wnd.netCoderCompactify = {"insertText" : "IT", "insertLines" : "IL", "removeText" : "RT", "removeLines" : "RL"};
-	}-*/;
 
 	/**
 	 * Handles onChange events from the editor.
 	 */
 	@Override
 	public void invokeAceCallback(JavaScriptObject obj) {
-		sendChangeToServer(obj);
-	}
-
-	/**
-	 * Send an ACE onChange event to the server.
-	 * 
-	 * @param obj an ACE onChange event object
-	 */
-	private native void sendChangeToServer(JavaScriptObject obj) /*-{
-		// Create a compact text representation of the change event object
-		var compactChangeString = "";
-		var type = obj.type;
-		if (type != "change") {
-			compactChangeString = "UnknownType" + type;
-		} else {
-			var action = obj.data.action;
-			var compactAction = $wnd.netCoderCompactify[action];
-			var compactRange = obj.data.range.start.row + "," + obj.data.range.start.column + "," + obj.data.range.end.row + "," + obj.data.range.end.column;
-			
-			var textOrLines = "";
-			if (compactAction == "IT" || compactAction == "RT") {
-				textOrLines = JSON.stringify(obj.data.text);
-			} else if (compactAction == "IL" || compactAction == "RL") {
-				textOrLines = JSON.stringify(obj.data.lines);
-			}
-			
-			compactChangeString = compactAction + compactRange + "," + new Date().getTime() + ";" + textOrLines;
-		}
-		
-		this.@edu.ycp.cs.netcoder.client.NetCoder_GWT2::sendStringifiedChangeToServer(Ljava/lang/String;)(compactChangeString);
-	}-*/;
-	
-	/**
-	 * Send a code change to the server.
-	 * 
-	 * @param changeEvent a JSON-stringified ACE onChange event object
-	 */
-	private void sendStringifiedChangeToServer(String changeEvent) {
-		changeList.addChange(changeEvent); // will get sent eventually based on timer events
+		changeList.addChange(ChangeFromAceOnChangeEvent.convert(obj));
 	}
 	
 	/**

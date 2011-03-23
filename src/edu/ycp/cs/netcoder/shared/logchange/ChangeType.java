@@ -19,6 +19,7 @@ public enum ChangeType {
 	/** Removal of one or more lines. */
 	REMOVE_LINES;
 	
+	/*
 	private static final Map<String, ChangeType> compactStringToChangeTypeMap = new HashMap<String, ChangeType>();
 	static {
 		compactStringToChangeTypeMap.put("IT", INSERT_TEXT);
@@ -26,18 +27,34 @@ public enum ChangeType {
 		compactStringToChangeTypeMap.put("IL", INSERT_LINES);
 		compactStringToChangeTypeMap.put("RL", REMOVE_LINES);
 	}
+	*/
 
-	/**
-	 * Get change type from "compact string" (as sent by NetCoder client.)
-	 * 
-	 * @param s compact string representing change type.
-	 * @return the ChangeType
-	 */
-	public static ChangeType fromCompactString(String s) {
-		ChangeType changeType = compactStringToChangeTypeMap.get(s);
-		if (changeType == null) {
-			throw new IllegalArgumentException("Invalid compact change type string: " + s);
-		}
-		return changeType;
+//	/**
+//	 * Get change type from "compact string" (as sent by NetCoder client.)
+//	 * 
+//	 * @param s compact string representing change type.
+//	 * @return the ChangeType
+//	 */
+//	public static ChangeType fromCompactString(String s) {
+//		ChangeType changeType = compactStringToChangeTypeMap.get(s);
+//		if (changeType == null) {
+//			throw new IllegalArgumentException("Invalid compact change type string: " + s);
+//		}
+//		return changeType;
+//	}
+	
+	private static final Map<String, ChangeType> aceChangeTypeToChangeTypeMap =
+		new HashMap<String, ChangeType>();
+	static {
+		// {"insertText" : "IT", "insertLines" : "IL", "removeText" : "RT", "removeLines" : "RL"}
+		aceChangeTypeToChangeTypeMap.put("insertText", INSERT_TEXT);
+		aceChangeTypeToChangeTypeMap.put("removeText", REMOVE_TEXT);
+		aceChangeTypeToChangeTypeMap.put("insertLines", INSERT_LINES);
+		aceChangeTypeToChangeTypeMap.put("removeLines", REMOVE_LINES);
+	}
+	
+	public static ChangeType fromAceChangeType(String aceChangeType) {
+		return aceChangeTypeToChangeTypeMap.get(aceChangeType);
 	}
 }
+

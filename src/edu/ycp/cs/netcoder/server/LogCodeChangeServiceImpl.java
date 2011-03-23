@@ -7,7 +7,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
-import edu.ycp.cs.netcoder.server.logchange.CompactChangeStringScanner;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 
@@ -15,7 +14,7 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public Boolean logChange(String s) {
+	public Boolean logChange(Change[] changeList) {
 		HttpServletRequest req = this.getThreadLocalRequest();
 		HttpSession session = req.getSession();
 		
@@ -24,29 +23,12 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 			doc = new TextDocument();
 			session.setAttribute("doc", doc);
 		}
-		
-		System.out.println("Code change: " + s);
 
-		CompactChangeStringScanner scanner = new CompactChangeStringScanner(s);
 		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-		while (scanner.hasNext()) {
-			Change change = scanner.next();
+		for (Change change : changeList) {
 			applicator.apply(change, doc);
 		}
 		System.out.println("Document is now:\n" + doc.getText());
-		
-		/*
-		Change change = Change.fromCompactString(s);
-		System.out.println(change);
-		
-		try {
-			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-			applicator.apply(change, doc);
-			System.out.println("Document is now:\n" + doc.getText());
-		} catch (Exception e) {
-			System.out.println("Oops: could not apply change to document: " + e.getMessage());
-		}
-		*/
 		
 		return true;
 	}

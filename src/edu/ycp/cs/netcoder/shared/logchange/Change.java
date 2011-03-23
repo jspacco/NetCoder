@@ -1,23 +1,26 @@
 package edu.ycp.cs.netcoder.shared.logchange;
 
-import java.util.List;
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * Object representing a textual change.
  * The client sends these to the server so that we
  * can capture the user's edit history.
  */
-public class Change {
+public class Change implements IsSerializable {
 	/*
     private long id;
     private long userId;
     private long problemId;
     */
-	private final String type;
-	private final int startRow, startColumn, endRow, endColumn;
-	private final long timestamp;
-	//private List<String> text;
+	private String type;
+	private int startRow, startColumn, endRow, endColumn;
+	private long timestamp;
 	private String[] text;
+
+	// Zero-arg constructor - required for serialization
+	public Change() {
+	}
 	
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
 		this.type = type.toString();
@@ -34,9 +37,9 @@ public class Change {
 		this.text = new String[]{ text };
 	}
 	
-	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, List<String> textToAdopt) {
+	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String[] textToAdopt) {
 		this(type, sr, sc, er, ec, ts);
-		this.text = textToAdopt.toArray(new String[textToAdopt.size()]);
+		this.text = textToAdopt;
 	}
 	
 	public ChangeType getType() {
