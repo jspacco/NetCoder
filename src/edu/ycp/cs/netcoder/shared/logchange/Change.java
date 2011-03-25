@@ -1,5 +1,7 @@
 package edu.ycp.cs.netcoder.shared.logchange;
 
+import java.util.Arrays;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -114,6 +116,6 @@ public class Change implements IsSerializable {
 	
 	@Override
 	public String toString() {
-		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn + "," + timestamp + "," + text;
+		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn + "," + timestamp + "," + Arrays.asList(text);
 	}
 }
