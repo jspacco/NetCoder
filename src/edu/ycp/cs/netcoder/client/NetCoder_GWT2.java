@@ -14,6 +14,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
@@ -117,14 +118,19 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		mainPanel.addSouth(buttonPanel, BUTTON_PANEL_HEIGHT_PX);
 		
 		// Status panel - need to think more about what feedback to provide and how
-		FlowPanel statusPanel = new FlowPanel();
+		HorizontalPanel statusPanel = new HorizontalPanel();
 		statusWidget = new EditorStatusWidget();
 		changeList.addObserver(statusWidget);
 		statusPanel.add(statusWidget);
 		statusLabel = new InlineLabel();
 		statusPanel.add(statusLabel);
 		statusPanel.setWidth("100%");
-		mainPanel.addSouth(statusPanel, STATUS_PANEL_HEIGHT_PX);
+		
+		VerticalPanel shimAndStatusPanel = new VerticalPanel();
+		HTML shim = new HTML("<div style='height: 6px;'></div>");
+		shimAndStatusPanel.add(shim);
+		shimAndStatusPanel.add(statusPanel);
+		mainPanel.addSouth(shimAndStatusPanel, STATUS_PANEL_HEIGHT_PX);
 		
 		// Code editor
 		editor = new AceEditor();
