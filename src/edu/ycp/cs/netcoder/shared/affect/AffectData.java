@@ -5,6 +5,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class AffectData implements IsSerializable {
 	private String emotion;
 	private String otherEmotion;
+	private int boredomLevel;
 	
 	public AffectData() {
 		
@@ -24,5 +25,13 @@ public class AffectData implements IsSerializable {
 	
 	public String getOtherEmotion() {
 		return otherEmotion;
+	}
+	
+	public void setBoredomLevel(int boredomLevel) {
+		this.boredomLevel = boredomLevel;
+	}
+	
+	public int getBoredomLevel() {
+		return boredomLevel;
 	}
 }
