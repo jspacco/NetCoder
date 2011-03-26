@@ -28,6 +28,7 @@ import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
+import edu.ycp.cs.netcoder.shared.affect.AffectData;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 
 /**
@@ -45,6 +46,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		APP_PANEL_HEIGHT_PX + DESC_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
 	
 	private ChangeList changeList;
+	private AffectData affectData;
 
 	private HorizontalPanel appPanel;
 	private HorizontalPanel descPanel;
@@ -70,6 +72,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	public void onModuleLoad() {
 		// Model (data) objects
 		changeList = new ChangeList();
+		affectData = new AffectData();
 		
 		// Id of the problem we're solving
 		// currently this is a request parameter
@@ -144,7 +147,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		hintsWidget.setWidth("100%");
 		widgetPanel.add(hintsWidget);
 		//widgetPanel.add(new HTML("<div style='height: 6px; width: 0px;'></div>")); // hack
-		affectWidget = new AffectWidget();
+		affectWidget = new AffectWidget(affectData);
 		affectWidget.setWidth("100%");
 		affectWidget.setHeight("300px");
 		widgetPanel.add(affectWidget);
