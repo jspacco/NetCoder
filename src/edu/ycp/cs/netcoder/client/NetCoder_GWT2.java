@@ -13,7 +13,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -24,6 +23,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ycp.cs.netcoder.client.ace.AceEditor;
 import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
 import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
+import edu.ycp.cs.netcoder.client.affect.AffectWidget;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
@@ -50,6 +50,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private HorizontalPanel descPanel;
 	private HorizontalPanel editorAndWidgetPanel;
 	private HintsWidget hintsWidget;
+	private AffectWidget affectWidget;
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private EditorStatusWidget statusWidget;
@@ -127,8 +128,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		statusPanel.setWidth("100%");
 		
 		VerticalPanel shimAndStatusPanel = new VerticalPanel();
-		HTML shim = new HTML("<div style='height: 6px;'></div>");
-		shimAndStatusPanel.add(shim);
+		shimAndStatusPanel.add(new HTML("<div style='height: 6px;'></div>"));
 		shimAndStatusPanel.add(statusPanel);
 		mainPanel.addSouth(shimAndStatusPanel, STATUS_PANEL_HEIGHT_PX);
 		
@@ -139,9 +139,15 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		
 		// Widget panel: for things like hints, affect data collection, etc.
 		widgetPanel = new VerticalPanel();
+		widgetPanel.setWidth("100%");
 		hintsWidget = new HintsWidget();
+		hintsWidget.setWidth("100%");
 		widgetPanel.add(hintsWidget);
-		widgetPanel.add(new Label("Affect data collection!")); // TODO
+		//widgetPanel.add(new HTML("<div style='height: 6px; width: 0px;'></div>")); // hack
+		affectWidget = new AffectWidget();
+		affectWidget.setWidth("100%");
+		affectWidget.setHeight("300px");
+		widgetPanel.add(affectWidget);
 
 		// Add the editor and widget panel so that it is a 80/20 split
 		editorAndWidgetPanel.add(editor);
