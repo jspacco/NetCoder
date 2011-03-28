@@ -20,9 +20,10 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import edu.ycp.cs.netcoder.client.ace.AceEditor;
-import edu.ycp.cs.netcoder.client.ace.AceEditorCallback;
-import edu.ycp.cs.netcoder.client.ace.AceEditorMode;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 import edu.ycp.cs.netcoder.client.affect.AffectWidget;
 import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
@@ -171,7 +172,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 
 		// fire up the ACE editor
 		editor.startEditor();
-		editor.setTheme("eclipse");
+		editor.setTheme(AceEditorTheme.ECLIPSE);
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
 		editor.addOnChangeHandler(this);
