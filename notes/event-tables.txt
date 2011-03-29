@@ -1,0 +1,56 @@
+-- Sketch of database design for having event "subclasses" for
+-- specific kinds of events, linked from a central events table
+
+events table
+   event_id    integer 
+       -- autoincrement primary key, size large enough for "all events for all users for all problems, forever"
+  
+   user_id     integer
+
+   problem_id  integer
+
+   timestamp   datetime
+       -- could also just be an integer
+
+   event_type  enum('change_event', 'submit_event', 'affect_event')
+       -- others?
+
+   other_id    integer
+       -- id of row in "subclass" table (change_events, submit_events, affect_events, etc.)
+
+
+change_events table
+  change_id   integer
+     -- autoincrement primary key
+
+  event_id    integer
+      -- id of corresponding row in events table
+
+  change_type  enum('insert_text', 'remove_text', 'insert_lines', 'remove_lines')
+
+  start_row   integer
+
+  end_row   integer
+
+  start_column   integer
+
+  end_column   integer
+
+  text      mediumtext
+
+
+affect_events table
+
+  affect_id    integer
+     -- autoincrement primary key
+
+  emotion    enum('BORED', 'CONFUSED', 'DELIGHTED', 'NEUTRAL', 'FOCUSED', 'OTHER', 'FRUSTRATED')
+
+  other_emotion  string
+
+  emotion_level  integer in range 1 .. 5
+
+  boredom_level  integer in range 1 .. 5
+
+
+
