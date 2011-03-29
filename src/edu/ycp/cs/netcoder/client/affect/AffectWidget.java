@@ -74,6 +74,7 @@ public class AffectWidget extends TabLayoutPanel {
 	}
 	
 	private Emotion[] randomizeEmotions() {
+		// GWT (as of version 2.2) does not have Collections.shuffle, sigh
 	    Emotion[] orig=Emotion.values();
 	    Emotion[] result=new Emotion[orig.length];
 	    for (int i=0; i<orig.length; i++) {
