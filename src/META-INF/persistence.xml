@@ -12,6 +12,7 @@
   	<non-jta-data-source>jdbc/DatabaseNonJTA</non-jta-data-source>
 	-->
 		<class>edu.ycp.cs.netcoder.server.problems.Problem</class>
+		<class>edu.ycp.cs.netcoder.shared.logchange.Change</class>
 		<properties>
 		<!-- 
 			<property name="javax.persistence.jdbc.connection.url" value="jdbc:mysql://127.0.0.1:8889/netcoder" />

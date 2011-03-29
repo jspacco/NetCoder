@@ -3,6 +3,7 @@ package edu.ycp.cs.netcoder.client.affect;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
@@ -71,6 +72,21 @@ public class AffectWidget extends TabLayoutPanel {
 			onFinished();
 		}
 	}
+	
+	private Emotion[] randomizeEmotions() {
+	    Emotion[] orig=Emotion.values();
+	    Emotion[] result=new Emotion[orig.length];
+	    for (int i=0; i<orig.length; i++) {
+	        result[i]=orig[i];
+	    }
+	    for (int i=0; i<result.length; i++){
+	        int swap=Random.nextInt(result.length);
+	        Emotion tmp=result[i];
+	        result[i]=result[swap];
+	        result[swap]=tmp;
+	    }
+	    return result;
+	}
 
 	public AffectWidget(AffectData affectData) {
 		super(0.0, Unit.PX); // don't show tab bar!
@@ -81,7 +97,9 @@ public class AffectWidget extends TabLayoutPanel {
 		FlowPanel emotionPanel = new FlowPanel();
 		emotionPanel.setWidth(TAB_WIDTH);
 		emotionPanel.add(new Label("Which of these best describes your emotion?"));
-		for (Emotion e : Emotion.values()) {
+		
+		Emotion[] currentEmotionOrder=randomizeEmotions();
+		for (Emotion e : currentEmotionOrder) {
 			emotionPanel.add(new EmotionButton(e));
 		}
 		add(emotionPanel, "");

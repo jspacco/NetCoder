@@ -1,5 +1,6 @@
 package edu.ycp.cs.netcoder.server;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -8,6 +9,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
+import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 
 public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
@@ -24,9 +26,14 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 			session.setAttribute("doc", doc);
 		}
 
+		EntityManager eman=HibernateUtil.getManager();
+		
 		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
 		for (Change change : changeList) {
 			applicator.apply(change, doc);
+			eman.getTransaction().begin();
+			eman.persist(change);
+			eman.getTransaction().commit();
 		}
 		System.out.println("Document is now:\n" + doc.getText());
 		
