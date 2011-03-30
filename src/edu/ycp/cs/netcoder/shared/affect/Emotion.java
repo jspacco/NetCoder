@@ -19,4 +19,11 @@ public enum Emotion {
 		String s = toString();
 		return s.charAt(0) + s.substring(1).toLowerCase();
 	}
+
+	/**
+	 * @return a lower case string suitable for presentation in the UI
+	 */
+	public String toLowerCaseString() {
+		return toString().toLowerCase();
+	}
 }

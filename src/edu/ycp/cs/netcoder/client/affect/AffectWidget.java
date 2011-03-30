@@ -138,7 +138,7 @@ public class AffectWidget extends TabLayoutPanel {
 	}
 
 	private void populateEmotionLevelPanel() {
-		String emotionName = data.getEmotion().toString().toLowerCase();
+		String emotionName = data.getEmotion().toLowerCaseString();
 		
 		emotionLevelPanel.add(new Label("How " + emotionName + " are you?"));
 		emotionLevelRadioButtonList = new RadioButton[] {
