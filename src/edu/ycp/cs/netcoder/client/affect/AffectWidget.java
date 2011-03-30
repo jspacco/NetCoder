@@ -28,7 +28,7 @@ public class AffectWidget extends TabLayoutPanel {
 		private Emotion emotion;
 		
 		public EmotionButton(Emotion emotion) {
-			super(emotion.toString().charAt(0) + emotion.toString().substring(1).toLowerCase());
+			super(emotion.toNiceString());
 			this.emotion = emotion;
 			addClickHandler(this);
 		}
