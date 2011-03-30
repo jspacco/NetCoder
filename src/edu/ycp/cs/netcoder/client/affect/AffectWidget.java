@@ -22,7 +22,9 @@ public class AffectWidget extends TabLayoutPanel {
 	private AffectData data; // the model object
 	
 	private TextBox otherEmotionTextBox;
-	private RadioButton[] boredomLevelRadioButtonList;
+	private RadioButton[] emotionLevelRadioButtonList;
+
+	private VerticalPanel emotionLevelPanel;
 	
 	private class EmotionButton extends Button implements ClickHandler {
 		private Emotion emotion;
@@ -53,8 +55,8 @@ public class AffectWidget extends TabLayoutPanel {
 		}
 	}
 	
-	private class SubmitBoredomLevelButton extends Button implements ClickHandler {
-		public SubmitBoredomLevelButton() {
+	private class SubmitEmotionLevelButton extends Button implements ClickHandler {
+		public SubmitEmotionLevelButton() {
 			super("Submit");
 			addClickHandler(this);
 		}
@@ -62,9 +64,9 @@ public class AffectWidget extends TabLayoutPanel {
 		@Override
 		public void onClick(ClickEvent event) {
 			int level = 1;
-			for (RadioButton b : boredomLevelRadioButtonList) {
+			for (RadioButton b : emotionLevelRadioButtonList) {
 				if (b.getValue()) {
-					data.setBoredomLevel(level);
+					data.setEmotionLevel(level);
 					break;
 				}
 				level++;
@@ -115,22 +117,10 @@ public class AffectWidget extends TabLayoutPanel {
 		otherEmotionPanel.add(new SubmitOtherEmotionButton());
 		add(otherEmotionPanel, "");
 		
-		// Third panel (if emotion != OTHER): rate boredom
-		VerticalPanel boredomLevelPanel = new VerticalPanel();
-		boredomLevelPanel.setWidth(TAB_WIDTH);
-		boredomLevelPanel.add(new Label("How bored are you?"));
-		boredomLevelRadioButtonList = new RadioButton[] {
-			new RadioButton("boredomLevel", "1 - A little bored"),
-			new RadioButton("boredomLevel", "2"),
-			new RadioButton("boredomLevel", "3 - Somewhat bored"),
-			new RadioButton("boredomLevel", "4"),
-			new RadioButton("boredomLevel", "5 - Extremely bored")
-		};
-		for (RadioButton b : boredomLevelRadioButtonList) {
-			boredomLevelPanel.add(b);
-		}
-		boredomLevelPanel.add(new SubmitBoredomLevelButton());
-		add(boredomLevelPanel, "");
+		// Third panel (if emotion != OTHER): rate level of emotion
+		this.emotionLevelPanel = new VerticalPanel();
+		emotionLevelPanel.setWidth(TAB_WIDTH);
+		add(emotionLevelPanel, "");
 		
 		// Fourth panel: done
 		HTML endPanel = new HTML("Thank you!");
@@ -142,8 +132,26 @@ public class AffectWidget extends TabLayoutPanel {
 		if (data.getEmotion() == Emotion.OTHER) {
 			selectTab(1);
 		} else {
+			populateEmotionLevelPanel();
 			selectTab(2);
 		}
+	}
+
+	private void populateEmotionLevelPanel() {
+		String emotionName = data.getEmotion().toString().toLowerCase();
+		
+		emotionLevelPanel.add(new Label("How " + emotionName + " are you?"));
+		emotionLevelRadioButtonList = new RadioButton[] {
+			new RadioButton("boredomLevel", "1 - A little " + emotionName),
+			new RadioButton("boredomLevel", "2"),
+			new RadioButton("boredomLevel", "3 - Somewhat " + emotionName),
+			new RadioButton("boredomLevel", "4"),
+			new RadioButton("boredomLevel", "5 - Extremely " + emotionName)
+		};
+		for (RadioButton b : emotionLevelRadioButtonList) {
+			emotionLevelPanel.add(b);
+		}
+		emotionLevelPanel.add(new SubmitEmotionLevelButton());
 	}
 
 	protected void onFinished() {
