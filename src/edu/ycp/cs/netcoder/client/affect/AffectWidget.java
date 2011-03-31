@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -16,7 +17,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ycp.cs.netcoder.shared.affect.AffectData;
 import edu.ycp.cs.netcoder.shared.affect.Emotion;
 
-public class AffectWidget extends TabLayoutPanel {
+/**
+ * Widget for affect data collection.
+ */
+public class AffectWidget extends Composite {
 	private static final String TAB_WIDTH = "96%";
 	
 	private AffectData data; // the model object
@@ -24,6 +28,7 @@ public class AffectWidget extends TabLayoutPanel {
 	private TextBox otherEmotionTextBox;
 	private RadioButton[] emotionLevelRadioButtonList;
 
+	private TabLayoutPanel tabPanel;
 	private VerticalPanel emotionLevelPanel;
 	
 	private class EmotionButton extends Button implements ClickHandler {
@@ -74,6 +79,53 @@ public class AffectWidget extends TabLayoutPanel {
 			onFinished();
 		}
 	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param affectData the AffectData object to be edited by this widget
+	 */
+	public AffectWidget(AffectData affectData) {
+		this.data = affectData;
+		initUI();
+	}
+
+	private void initUI() {
+		this.tabPanel = new TabLayoutPanel(0.0, Unit.PX); // don't show tab bar!
+		
+		// First panel: start data collection by describing emotion
+		FlowPanel emotionPanel = new FlowPanel();
+		emotionPanel.setWidth(TAB_WIDTH);
+		emotionPanel.add(new Label("Which of these best describes your emotion?"));
+		
+		Emotion[] currentEmotionOrder=randomizeEmotions();
+		for (Emotion e : currentEmotionOrder) {
+			emotionPanel.add(new EmotionButton(e));
+		}
+		tabPanel.add(emotionPanel, "");
+		
+		// Second panel (if emotion == OTHER): enter specific emotion
+		FlowPanel otherEmotionPanel = new FlowPanel();
+		otherEmotionPanel.setWidth(TAB_WIDTH);
+		otherEmotionPanel.add(new Label("What one word would best describe your emotion?"));
+		otherEmotionTextBox = new TextBox();
+		otherEmotionTextBox.setWidth("95%");
+		otherEmotionPanel.add(otherEmotionTextBox);
+		otherEmotionPanel.add(new SubmitOtherEmotionButton());
+		tabPanel.add(otherEmotionPanel, "");
+		
+		// Third panel (if emotion != OTHER): rate level of emotion
+		this.emotionLevelPanel = new VerticalPanel();
+		emotionLevelPanel.setWidth(TAB_WIDTH);
+		tabPanel.add(emotionLevelPanel, "");
+		
+		// Fourth panel: done
+		HTML endPanel = new HTML("Thank you!");
+		endPanel.setWidth(TAB_WIDTH);
+		tabPanel.add(endPanel, "");
+		
+		initWidget(tabPanel);
+	}
 	
 	private Emotion[] randomizeEmotions() {
 		// GWT (as of version 2.2) does not have Collections.shuffle, sigh
@@ -91,49 +143,12 @@ public class AffectWidget extends TabLayoutPanel {
 	    return result;
 	}
 
-	public AffectWidget(AffectData affectData) {
-		super(0.0, Unit.PX); // don't show tab bar!
-		
-		this.data = affectData;
-		
-		// First panel: start data collection by describing emotion
-		FlowPanel emotionPanel = new FlowPanel();
-		emotionPanel.setWidth(TAB_WIDTH);
-		emotionPanel.add(new Label("Which of these best describes your emotion?"));
-		
-		Emotion[] currentEmotionOrder=randomizeEmotions();
-		for (Emotion e : currentEmotionOrder) {
-			emotionPanel.add(new EmotionButton(e));
-		}
-		add(emotionPanel, "");
-		
-		// Second panel (if emotion == OTHER): enter specific emotion
-		FlowPanel otherEmotionPanel = new FlowPanel();
-		otherEmotionPanel.setWidth(TAB_WIDTH);
-		otherEmotionPanel.add(new Label("What one word would best describe your emotion?"));
-		otherEmotionTextBox = new TextBox();
-		otherEmotionTextBox.setWidth("95%");
-		otherEmotionPanel.add(otherEmotionTextBox);
-		otherEmotionPanel.add(new SubmitOtherEmotionButton());
-		add(otherEmotionPanel, "");
-		
-		// Third panel (if emotion != OTHER): rate level of emotion
-		this.emotionLevelPanel = new VerticalPanel();
-		emotionLevelPanel.setWidth(TAB_WIDTH);
-		add(emotionLevelPanel, "");
-		
-		// Fourth panel: done
-		HTML endPanel = new HTML("Thank you!");
-		endPanel.setWidth(TAB_WIDTH);
-		add(endPanel, "");
-	}
-
 	protected void onEmotionSet() {
 		if (data.getEmotion() == Emotion.OTHER) {
-			selectTab(1);
+			tabPanel.selectTab(1);
 		} else {
 			populateEmotionLevelPanel();
-			selectTab(2);
+			tabPanel.selectTab(2);
 		}
 	}
 
@@ -155,7 +170,6 @@ public class AffectWidget extends TabLayoutPanel {
 	}
 
 	protected void onFinished() {
-		selectTab(3);
+		tabPanel.selectTab(3);
 	}
-
 }
