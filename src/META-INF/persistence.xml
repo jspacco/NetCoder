@@ -5,18 +5,20 @@
 	<persistence-unit name="entman" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 
-	<!-- Need to set up a JNDI Datasource to use JTA as transaction-type
-	I haven't gotten this part to work yet.
-	<jta-data-source>java:/DefaultDS</jta-data-source>
-  	<jta-data-source>jdbc/Database</jta-data-source>
-  	<non-jta-data-source>jdbc/DatabaseNonJTA</non-jta-data-source>
-	-->
+		<!--
+			Need to set up a JNDI Datasource to use JTA as transaction-type I
+			haven't gotten this part to work yet.
+			<jta-data-source>java:/DefaultDS</jta-data-source>
+			<jta-data-source>jdbc/Database</jta-data-source>
+			<non-jta-data-source>jdbc/DatabaseNonJTA</non-jta-data-source>
+		-->
 		<class>edu.ycp.cs.netcoder.server.problems.Problem</class>
 		<class>edu.ycp.cs.netcoder.shared.logchange.Change</class>
+
+		<!--
+			Setup for MySQL 
+		-->
 		<properties>
-		<!-- 
-			<property name="javax.persistence.jdbc.connection.url" value="jdbc:mysql://127.0.0.1:8889/netcoder" />
-			 -->
 			<property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" />
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.connection.username" value="root" />
@@ -24,9 +26,23 @@
 			<property name="hibernate.connection.url" value="jdbc:mysql://127.0.0.1:8889/netcoder" />
 			<property name="hibernate.max_fetch_depth" value="3" />
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
-			<!-- 
-			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
-			 -->
 		</properties>
+		<!--<property name="javax.persistence.jdbc.connection.url" value="jdbc:mysql://127.0.0.1:8889/netcoder" /> -->
+		<!--<property name="hibernate.hbm2ddl.auto" value="create-drop" /> -->
+
+		<!--
+			Setup for HSQLDB 
+		-->
+		<!--
+		<properties>
+			<property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver" />
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.connection.username" value="root" />
+			<property name="hibernate.connection.password" value="root" />
+			<property name="hibernate.connection.url" value="jdbc:hsqldb:file:netcoder.db" />
+			<property name="hibernate.max_fetch_depth" value="3" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
+		</properties>
+		-->
 	</persistence-unit>
 </persistence>
