@@ -13,6 +13,7 @@
 			<non-jta-data-source>jdbc/DatabaseNonJTA</non-jta-data-source>
 		-->
 		<class>edu.ycp.cs.netcoder.server.problems.Problem</class>
+		<class>edu.ycp.cs.netcoder.server.problems.TestCase</class>
 		<class>edu.ycp.cs.netcoder.shared.logchange.Change</class>
 
 		<!--

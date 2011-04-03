@@ -2,6 +2,8 @@ package edu.ycp.cs.netcoder.server;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.SubmitService;
@@ -11,6 +13,9 @@ import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
 import edu.ycp.cs.netcoder.server.compilers.TestCreator;
 import edu.ycp.cs.netcoder.server.compilers.TestResult;
 import edu.ycp.cs.netcoder.server.compilers.TestRunner;
+import edu.ycp.cs.netcoder.server.problems.Problem;
+import edu.ycp.cs.netcoder.server.problems.TestCase;
+import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {
     public static final long serialVersionUID=1L;
@@ -24,6 +29,24 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         // TODO return type should be either a CompileResult or TestResults
         // TODO use problemID to look up the problem in filesystem/DB
         System.out.println("problemId: " +problemId);
+        
+        EntityManager entMan = HibernateUtil.getManager();
+        Problem problem = entMan.find(Problem.class, problemId);
+        if (problem == null) {
+        	return "Could not evaluate submission: problem was not found";
+        }
+        
+        // For now, just print out the test cases found
+        List<TestCase> testCases = problem.getTestCases();
+        if (testCases == null) {
+        	System.out.println("test case list is null?");
+        } else {
+        	System.out.println("Found test cases:");
+	        for (TestCase testCase : testCases) {
+	        	System.out.println(testCase);
+	        }
+        }
+        
         TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.server.junit.online",
                 "RunDude", 
                 "sq", 
