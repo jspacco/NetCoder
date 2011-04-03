@@ -2,15 +2,19 @@ package edu.ycp.cs.netcoder.server;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.SubmitService;
 import edu.ycp.cs.netcoder.server.compilers.CompilationException;
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
 import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
-import edu.ycp.cs.netcoder.server.compilers.TestCreator;
-import edu.ycp.cs.netcoder.server.compilers.TestResult;
-import edu.ycp.cs.netcoder.server.compilers.TestRunner;
+import edu.ycp.cs.netcoder.server.problems.Problem;
+import edu.ycp.cs.netcoder.server.problems.TestCreator;
+import edu.ycp.cs.netcoder.server.problems.TestResult;
+import edu.ycp.cs.netcoder.server.problems.TestRunner;
+import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {
     public static final long serialVersionUID=1L;
@@ -24,9 +28,16 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         // TODO return type should be either a CompileResult or TestResults
         // TODO use problemID to look up the problem in filesystem/DB
         System.out.println("problemId: " +problemId);
+        EntityManager eman=HibernateUtil.getManager();
+        Problem problem=eman.createQuery("select p from Problem p where p.id = :id", 
+                Problem.class).setParameter("id", problemId).
+                getSingleResult();
+        if (problem==null) {
+            return "Cannot find problem with id "+problemId;
+        }
         TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.server.junit.online",
                 "RunDude", 
-                "sq", 
+                problem.getTestName(),
                 programText.replace("\n", " "));
         
         // Make sure the code snippet compiles
@@ -34,14 +45,12 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         CompileResult result=compiler.compile(creator.getBinaryClassName(), creator.toClass());
         if (!result.success) {
             // May be necessary to convert into a better error message
+            // So that we can give feedback
             return result.toString();
         }
         
         System.out.println("programText: "+programText);
-        creator.addTest(5, 25);
-        creator.addTest(9, 81);
-        creator.addTest(10, 100);
-        creator.addTest(-1, 1);
+        // Load tests out of DB
         
         //System.out.println(creator.toString());
         

@@ -1,10 +1,12 @@
-package edu.ycp.cs.netcoder.server.compilers;
+package edu.ycp.cs.netcoder.server.problems;
 
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.tools.Diagnostic;
+
+import edu.ycp.cs.netcoder.server.compilers.CompileResult;
 
 public class TestResultCollection implements Serializable
 {

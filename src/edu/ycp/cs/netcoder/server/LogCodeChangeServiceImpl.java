@@ -29,12 +29,12 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 		EntityManager eman=HibernateUtil.getManager();
 		
 		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+		eman.getTransaction().begin();
 		for (Change change : changeList) {
 			applicator.apply(change, doc);
-			eman.getTransaction().begin();
 			eman.persist(change);
-			eman.getTransaction().commit();
 		}
+		eman.getTransaction().commit();
 		System.out.println("Document is now:\n" + doc.getText());
 		
 		return true;

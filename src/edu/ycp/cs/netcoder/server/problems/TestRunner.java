@@ -1,4 +1,4 @@
-package edu.ycp.cs.netcoder.server.compilers;
+package edu.ycp.cs.netcoder.server.problems;
 
 import java.net.URL;
 import java.security.CodeSource;
@@ -10,7 +10,9 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
 
-import edu.ycp.cs.netcoder.server.compilers.TestCreator.BeanShellTest;
+import edu.ycp.cs.netcoder.server.compilers.CompilationException;
+import edu.ycp.cs.netcoder.server.compilers.CompileResult;
+import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
 
 public class TestRunner
 {
@@ -23,11 +25,10 @@ public class TestRunner
 
         CompileResult compileResult=flyCompiler.compile(
                 creator.getBinaryClassName(),
-                creator.toString());
+                creator.toJUnitTestCase());
 
         // print source file
-        //System.out.println(creator.toString2());
-        System.out.println(creator.toString());
+        System.out.println(creator.toJUnitTestCase());
         if (!compileResult.success) {
             // must receive a class that compiled or we throw exception
             throw new CompilationException(compileResult);
@@ -40,11 +41,11 @@ public class TestRunner
         // create a list of tasks to be executed
         List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
         for (int i=0; i<creator.getNumTests(); i++) {
-            final BeanShellTest test=creator.getTestNum(i);
+            final TestCase test=creator.getTestNum(i);
             tasks.add(new IsolatedTask<TestResult>() {
                 public TestResult execute() {
                     JUnitCore core=new JUnitCore();
-                    Result result=core.run(Request.method(testClass, test.getTestName()));
+                    Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
                     if (result.getFailureCount()>0) {
                         // failed
                         // XXX improve error message?
@@ -53,7 +54,7 @@ public class TestRunner
                     } else {
                         // succeeded
                         return new TestResult(true, 
-                                "correct! "+test.inputAsString()+" output:<"+test.correctOutput+">");
+                                "correct! "+test.inputAsString()+" output:<"+test.getCorrectOutput()+">");
                     }
                 }
             });
