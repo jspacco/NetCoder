@@ -1,4 +1,4 @@
-CREATE TABLE changes (
+CREATE CACHED TABLE changes (
   id integer IDENTITY,
   user_id integer NOT NULL,
   problem_id integer NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE changes (
   text longvarchar NOT NULL
 );
 
-CREATE TABLE problems (
+CREATE CACHED TABLE problems (
   problem_id integer IDENTITY,
   testname varchar(255) NOT NULL,
   description longvarchar NOT NULL
