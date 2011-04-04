@@ -1,7 +1,9 @@
-package edu.ycp.cs.netcoder.server.compilers;
+package edu.ycp.cs.netcoder.server.problems;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.persistence.EntityManager;
 
 public class TestCreator
 {
@@ -9,8 +11,7 @@ public class TestCreator
     private String body;
     private String packageName;
     private String className;
-    private int numTests=0;
-    private List<BeanShellTest> tests=new ArrayList<BeanShellTest>();
+    private List<TestCase> tests=new ArrayList<TestCase>();
     
     public TestCreator(String packageName, String className, String functionName, String body) {
         this.className=className;
@@ -18,13 +19,37 @@ public class TestCreator
         this.body=body;
     }
     
-    public void addTest(Object input, Object output) {
-        tests.add(new BeanShellTest(input, output, numTests));
-        numTests++;
+    public void addTest(String testCaseName, String in, String out) {
+        tests.add(new TestCase(testCaseName, in, out));
     }
     
-    BeanShellTest getTestNum(int i) {
+    TestCase getTestNum(int i) {
         return tests.get(i);
+    }
+    
+    public String toJUnitTestCase() {
+        StringBuffer buf=new StringBuffer();
+        if (packageName!=null) {
+            buf.append("package "+packageName+";");
+        }
+        buf.append("import org.junit.Test;\n");
+        buf.append("import org.junit.runner.JUnitCore;\n");
+        buf.append("import static org.junit.Assert.assertEquals;\n");
+        
+        buf.append("public class "+className+" {\n");
+        //TODO: Create inner class for the 
+        String classToBeTested="StudentTest";
+        
+        buf.append("private static class "+classToBeTested+" {\n");
+        buf.append(body+"\n");
+        buf.append("}\n");
+        for (TestCase t : tests) {
+            buf.append("@Test\n");
+            buf.append(t.toJUnitTestCase(classToBeTested, functionName)+"\n");
+        }
+        buf.append("}\n");
+        
+        return buf.toString();
     }
     
     public String toString() {
@@ -40,9 +65,9 @@ public class TestCreator
         buf.append("import bsh.EvalError;\n");
         buf.append("public class "+className+" {\n");
         
-        for (BeanShellTest t : tests) {
+        for (TestCase t : tests) {
             buf.append("@Test\n");
-            buf.append(t.toTestCase()+"\n");
+            buf.append(t.toBeanShellTestCase(functionName, body)+"\n");
         }
 
         buf.append("}\n");
@@ -90,33 +115,11 @@ public class TestCreator
         return className;
     }
 
-    class BeanShellTest {
-        Object input;
-        Object correctOutput;
-        String testName;
-        
-        
-        BeanShellTest(Object input, Object correctOutput, int testNum) {
-            this.input=input;
-            this.correctOutput=correctOutput;
-            this.testName="test"+testNum;
-        }
-        
-        String getTestName() {
-            return testName;
-        }
-        
-        String inputAsString() {
-            // TODO: handle array types
-            return input.toString();
-        }
-        
-        String toTestCase() {
-            return "public void "+testName+"() throws Exception {\n"+
-            "Interpreter bsh=new Interpreter();\n"+
-                "assertEquals(\"input:<"+input+">\", "+
-                this.correctOutput+", bsh.eval(\""+body+"; "+
-                    functionName+"("+this.input+")\"));\n}";
-        }
+    public void loadTestCasesFromDB(Integer problemId, EntityManager eman) {
+        List<TestCase> testCases=eman.createQuery(
+                " select t from TestCase t where t.problemId = :problemId ", 
+                TestCase.class).
+                setParameter("problemId", problemId).getResultList();
+        this.tests.addAll(testCases);
     }
 }

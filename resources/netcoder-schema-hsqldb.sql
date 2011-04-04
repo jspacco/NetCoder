@@ -19,20 +19,29 @@ CREATE CACHED TABLE problems (
 
 INSERT INTO problems VALUES(NULL, 'sq', 'Square a number.');
 
-CREATE CACHED TABLE testcases (
-  testcase_id integer IDENTITY,
+--    @Id
+--    @GeneratedValue(strategy=GenerationType.AUTO)
+--    @Column(name="test_case_id")
+--    private int testCaseId;
+--    @Column(name="problem_id")
+--    private int problemId;
+--    @Column(name="test_case_name")
+--    private String testCaseName;
+--    @Column(name="input")
+--    private String input;
+--    @Column(name="output")
+--    private String correctOutput;
+
+CREATE CACHED TABLE test_cases (
+  test_case_id integer IDENTITY,
   problem_id integer NOT NULL,
+  test_case_name varchar(40),
   input longvarchar NOT NULL,
   output longvarchar NOT NULL,
   FOREIGN KEY (problem_id) REFERENCES problems(problem_id)
 );
 
--- creator.addTest(5, 25);
--- creator.addTest(9, 81);
--- creator.addTest(10, 100);
--- creator.addTest(-1, 1);
-
-INSERT INTO testcases VALUES(NULL, 1, '5', '25');
-INSERT INTO testcases VALUES(NULL, 1, '9', '81');
-INSERT INTO testcases VALUES(NULL, 1, '10', '100');
-INSERT INTO testcases VALUES(NULL, 1, '-1', '1');
+INSERT INTO test_cases VALUES(NULL, 1, 'Test1', '5', '25');
+INSERT INTO test_cases VALUES(NULL, 1, 'Test2', '9', '81');
+INSERT INTO test_cases VALUES(NULL, 1, 'Test3', '10', '100');
+INSERT INTO test_cases VALUES(NULL, 1, 'Test4', '-1', '1');
