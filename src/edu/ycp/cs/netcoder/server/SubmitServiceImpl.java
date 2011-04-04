@@ -45,12 +45,13 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         CompileResult result=compiler.compile(creator.getBinaryClassName(), creator.toClass());
         if (!result.success) {
             // May be necessary to convert into a better error message
-            // So that we can give feedback
+            // So that we can give feedback to the user
             return result.toString();
         }
         
         System.out.println("programText: "+programText);
         // Load tests out of DB
+        creator.loadTestCasesFromDB(problem.getProblemId(), eman);
         
         //System.out.println(creator.toString());
         
