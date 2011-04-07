@@ -29,8 +29,10 @@ import edu.ycp.cs.netcoder.client.hints.HintsWidget;
 import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
+import edu.ycp.cs.netcoder.client.status.ResultWidget;
 import edu.ycp.cs.netcoder.shared.affect.AffectData;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -57,7 +59,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private VerticalPanel widgetPanel;
 	private HorizontalPanel buttonPanel;
 	private EditorStatusWidget statusWidget;
-	private InlineLabel statusLabel;
+	//private InlineLabel statusLabel;
+	private ResultWidget resultWidget;
 	private InlineLabel descLabel;
 	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
@@ -104,14 +107,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		
 		// Button panel is for buttons
 		buttonPanel = new HorizontalPanel();
-//		Button compileButton = new Button("Compile");
-//		compileButton.addClickHandler(new ClickHandler() {
-//			@Override
-//			public void onClick(ClickEvent event) {
-//				compileCode();
-//			}
-//		});
-//		buttonPanel.add(compileButton);
 		Button submitButton=new Button("Submit");
 		submitButton.addClickHandler(new ClickHandler() {
             @Override
@@ -127,8 +122,9 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		statusWidget = new EditorStatusWidget();
 		changeList.addObserver(statusWidget);
 		statusPanel.add(statusWidget);
-		statusLabel = new InlineLabel();
-		statusPanel.add(statusLabel);
+		
+		resultWidget=new ResultWidget();
+		statusPanel.add(resultWidget);
 		statusPanel.setWidth("100%");
 		
 		VerticalPanel shimAndStatusPanel = new VerticalPanel();
@@ -257,16 +253,16 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	}
 	
 	protected void submitCode() {
-	    AsyncCallback<String> callback = new AsyncCallback<String>() {
+	    AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
             @Override
             public void onFailure(Throwable caught) {
-                statusLabel.setText("Error sending submission to server for compilation");
+                resultWidget.setMessage("Error sending submission to server for compilation");
                 GWT.log("compile failed", caught);
             }
 
             @Override
-            public void onSuccess(String result) {
-                statusLabel.setText(result);
+            public void onSuccess(TestResult[] results) {
+                resultWidget.setResults(results);
             }
         };
         int problemId=getProblemId();
