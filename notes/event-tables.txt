@@ -50,7 +50,3 @@ affect_events table
 
   emotion_level  integer in range 1 .. 5
 
-  boredom_level  integer in range 1 .. 5
-
-
-

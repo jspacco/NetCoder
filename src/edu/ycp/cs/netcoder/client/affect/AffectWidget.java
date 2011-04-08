@@ -1,3 +1,20 @@
+// NetCoder - a web-based pedagogical programming environment
+// Copyright (C) 2011, Jaime Spacco
+// Copyright (C) 2011, David H. Hovemeyer
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package edu.ycp.cs.netcoder.client.affect;
 
 import com.google.gwt.dom.client.Style.Unit;
@@ -5,6 +22,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -16,19 +34,25 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 import edu.ycp.cs.netcoder.shared.affect.AffectData;
 import edu.ycp.cs.netcoder.shared.affect.Emotion;
 
-public class AffectWidget extends TabLayoutPanel {
+/**
+ * Widget for affect data collection.
+ */
+public class AffectWidget extends Composite {
 	private static final String TAB_WIDTH = "96%";
 	
 	private AffectData data; // the model object
 	
 	private TextBox otherEmotionTextBox;
-	private RadioButton[] boredomLevelRadioButtonList;
+	private RadioButton[] emotionLevelRadioButtonList;
+
+	private TabLayoutPanel tabPanel;
+	private VerticalPanel emotionLevelPanel;
 	
 	private class EmotionButton extends Button implements ClickHandler {
 		private Emotion emotion;
 		
 		public EmotionButton(Emotion emotion) {
-			super(emotion.toString().charAt(0) + emotion.toString().substring(1).toLowerCase());
+			super(emotion.toNiceString());
 			this.emotion = emotion;
 			addClickHandler(this);
 		}
@@ -53,8 +77,8 @@ public class AffectWidget extends TabLayoutPanel {
 		}
 	}
 	
-	private class SubmitBoredomLevelButton extends Button implements ClickHandler {
-		public SubmitBoredomLevelButton() {
+	private class SubmitEmotionLevelButton extends Button implements ClickHandler {
+		public SubmitEmotionLevelButton() {
 			super("Submit");
 			addClickHandler(this);
 		}
@@ -62,15 +86,62 @@ public class AffectWidget extends TabLayoutPanel {
 		@Override
 		public void onClick(ClickEvent event) {
 			int level = 1;
-			for (RadioButton b : boredomLevelRadioButtonList) {
+			for (RadioButton b : emotionLevelRadioButtonList) {
 				if (b.getValue()) {
-					data.setBoredomLevel(level);
+					data.setEmotionLevel(level);
 					break;
 				}
 				level++;
 			}
 			onFinished();
 		}
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param affectData the AffectData object to be edited by this widget
+	 */
+	public AffectWidget(AffectData affectData) {
+		this.data = affectData;
+		initUI();
+	}
+
+	private void initUI() {
+		this.tabPanel = new TabLayoutPanel(0.0, Unit.PX); // don't show tab bar!
+		
+		// First panel: start data collection by describing emotion
+		FlowPanel emotionPanel = new FlowPanel();
+		emotionPanel.setWidth(TAB_WIDTH);
+		emotionPanel.add(new Label("Which of these best describes your emotion?"));
+		
+		Emotion[] currentEmotionOrder=randomizeEmotions();
+		for (Emotion e : currentEmotionOrder) {
+			emotionPanel.add(new EmotionButton(e));
+		}
+		tabPanel.add(emotionPanel, "");
+		
+		// Second panel (if emotion == OTHER): enter specific emotion
+		FlowPanel otherEmotionPanel = new FlowPanel();
+		otherEmotionPanel.setWidth(TAB_WIDTH);
+		otherEmotionPanel.add(new Label("What one word would best describe your emotion?"));
+		otherEmotionTextBox = new TextBox();
+		otherEmotionTextBox.setWidth("95%");
+		otherEmotionPanel.add(otherEmotionTextBox);
+		otherEmotionPanel.add(new SubmitOtherEmotionButton());
+		tabPanel.add(otherEmotionPanel, "");
+		
+		// Third panel (if emotion != OTHER): rate level of emotion
+		this.emotionLevelPanel = new VerticalPanel();
+		emotionLevelPanel.setWidth(TAB_WIDTH);
+		tabPanel.add(emotionLevelPanel, "");
+		
+		// Fourth panel: done
+		HTML endPanel = new HTML("Thank you!");
+		endPanel.setWidth(TAB_WIDTH);
+		tabPanel.add(endPanel, "");
+		
+		initWidget(tabPanel);
 	}
 	
 	private Emotion[] randomizeEmotions() {
@@ -89,65 +160,33 @@ public class AffectWidget extends TabLayoutPanel {
 	    return result;
 	}
 
-	public AffectWidget(AffectData affectData) {
-		super(0.0, Unit.PX); // don't show tab bar!
-		
-		this.data = affectData;
-		
-		// First panel: start data collection by describing emotion
-		FlowPanel emotionPanel = new FlowPanel();
-		emotionPanel.setWidth(TAB_WIDTH);
-		emotionPanel.add(new Label("Which of these best describes your emotion?"));
-		
-		Emotion[] currentEmotionOrder=randomizeEmotions();
-		for (Emotion e : currentEmotionOrder) {
-			emotionPanel.add(new EmotionButton(e));
-		}
-		add(emotionPanel, "");
-		
-		// Second panel (if emotion == OTHER): enter specific emotion
-		FlowPanel otherEmotionPanel = new FlowPanel();
-		otherEmotionPanel.setWidth(TAB_WIDTH);
-		otherEmotionPanel.add(new Label("What one word would best describe your emotion?"));
-		otherEmotionTextBox = new TextBox();
-		otherEmotionTextBox.setWidth("95%");
-		otherEmotionPanel.add(otherEmotionTextBox);
-		otherEmotionPanel.add(new SubmitOtherEmotionButton());
-		add(otherEmotionPanel, "");
-		
-		// Third panel (if emotion != OTHER): rate boredom
-		VerticalPanel boredomLevelPanel = new VerticalPanel();
-		boredomLevelPanel.setWidth(TAB_WIDTH);
-		boredomLevelPanel.add(new Label("How bored are you?"));
-		boredomLevelRadioButtonList = new RadioButton[] {
-			new RadioButton("boredomLevel", "1 - A little bored"),
-			new RadioButton("boredomLevel", "2"),
-			new RadioButton("boredomLevel", "3 - Somewhat bored"),
-			new RadioButton("boredomLevel", "4"),
-			new RadioButton("boredomLevel", "5 - Extremely bored")
-		};
-		for (RadioButton b : boredomLevelRadioButtonList) {
-			boredomLevelPanel.add(b);
-		}
-		boredomLevelPanel.add(new SubmitBoredomLevelButton());
-		add(boredomLevelPanel, "");
-		
-		// Fourth panel: done
-		HTML endPanel = new HTML("Thank you!");
-		endPanel.setWidth(TAB_WIDTH);
-		add(endPanel, "");
-	}
-
 	protected void onEmotionSet() {
 		if (data.getEmotion() == Emotion.OTHER) {
-			selectTab(1);
+			tabPanel.selectTab(1);
 		} else {
-			selectTab(2);
+			populateEmotionLevelPanel();
+			tabPanel.selectTab(2);
 		}
+	}
+
+	private void populateEmotionLevelPanel() {
+		String emotionName = data.getEmotion().toLowerCaseString();
+		
+		emotionLevelPanel.add(new Label("How " + emotionName + " are you?"));
+		emotionLevelRadioButtonList = new RadioButton[] {
+			new RadioButton("boredomLevel", "1 - A little " + emotionName),
+			new RadioButton("boredomLevel", "2"),
+			new RadioButton("boredomLevel", "3 - Somewhat " + emotionName),
+			new RadioButton("boredomLevel", "4"),
+			new RadioButton("boredomLevel", "5 - Extremely " + emotionName)
+		};
+		for (RadioButton b : emotionLevelRadioButtonList) {
+			emotionLevelPanel.add(b);
+		}
+		emotionLevelPanel.add(new SubmitEmotionLevelButton());
 	}
 
 	protected void onFinished() {
-		selectTab(3);
+		tabPanel.selectTab(3);
 	}
-
 }

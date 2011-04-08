@@ -15,32 +15,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.shared.affect;
+package edu.ycp.cs.netcoder.server.problems;
 
-/**
- * Emotion values for affect data collection.
- */
-public enum Emotion {
-	BORED,
-	CONFUSED,
-	DELIGHTED,
-	NEUTRAL,
-	FOCUSED,
-	OTHER,
-	FRUSTRATED;
-	
-	/**
-	 * @return a "nice" string suitable for presentation in the UI
-	 */
-	public String toNiceString() {
-		String s = toString();
-		return s.charAt(0) + s.substring(1).toLowerCase();
-	}
+import java.io.Serializable;
 
-	/**
-	 * @return a lower case string suitable for presentation in the UI
-	 */
-	public String toLowerCaseString() {
-		return toString().toLowerCase();
-	}
+public class TestResult implements Serializable
+{
+    public static final long serialVersionUID=1L;
+    //TODO: store outcomes (pass, fail, timeout)?
+    
+    public final boolean success;
+    public final String message;
+    
+    public TestResult(boolean success, String message) {
+        this.success=success;
+        this.message=message;
+    }
+    
+    public String toString() {
+        return message;
+    }
 }
