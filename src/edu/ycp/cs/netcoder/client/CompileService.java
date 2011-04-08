@@ -1,4 +1,4 @@
-// NetCoder - a web-based pedagogical idea
+// NetCoder - a web-based pedagogical programming environment
 // Copyright (C) 2011, Jaime Spacco
 // Copyright (C) 2011, David H. Hovemeyer
 //
