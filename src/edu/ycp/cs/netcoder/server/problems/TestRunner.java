@@ -30,6 +30,7 @@ import org.junit.runner.Result;
 import edu.ycp.cs.netcoder.server.compilers.CompilationException;
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
 import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class TestRunner
 {

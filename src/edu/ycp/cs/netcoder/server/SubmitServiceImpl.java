@@ -28,10 +28,10 @@ import edu.ycp.cs.netcoder.server.compilers.CompilationException;
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
 import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
 import edu.ycp.cs.netcoder.server.problems.TestCreator;
-import edu.ycp.cs.netcoder.server.problems.TestResult;
 import edu.ycp.cs.netcoder.server.problems.TestRunner;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {
     public static final long serialVersionUID=1L;
@@ -40,7 +40,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
      * @see edu.ycp.cs.netcoder.client.SubmitService#submit(java.lang.String, java.lang.String)
      */
     @Override
-    public String submit(int problemId, String programText)
+    public TestResult[] submit(int problemId, String programText)
     {
         // TODO return type should be either a CompileResult or TestResults
         // TODO use problemID to look up the problem in filesystem/DB
@@ -50,7 +50,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
                 Problem.class).setParameter("id", problemId).
                 getSingleResult();
         if (problem==null) {
-            return "Cannot find problem with id "+problemId;
+            return TestResult.error("Cannot find problem with id "+problemId);
         }
         TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.server.junit.online",
                 "RunDude", 
@@ -63,7 +63,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         if (!result.success) {
             // May be necessary to convert into a better error message
             // So that we can give feedback to the user
-            return result.toString();
+            return TestResult.error(result.toString());
         }
         
         System.out.println("programText: "+programText);
@@ -75,15 +75,18 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         TestRunner runner=new TestRunner();
         try {
             List<TestResult> results=runner.run(creator);
+            return results.toArray(new TestResult[results.size()]);
+            /*
             StringBuffer buf=new StringBuffer();
             for (TestResult r : results) {
                 buf.append(r+"<br>\n");
             }
             return buf.toString();
+            */
         } catch (CompilationException e) {
-            return e.getCompileResult().toString();
+            return TestResult.error(e.getCompileResult().toString());
         } catch (ClassNotFoundException e) {
-            return e.toString();
+            return TestResult.error(e.toString());
         } 
         // TODO pass/return results to test results panel to update display
     }

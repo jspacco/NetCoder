@@ -7,11 +7,10 @@ import javax.persistence.EntityManager;
 import org.junit.Test;
 
 import edu.ycp.cs.netcoder.server.problems.TestCreator;
-import edu.ycp.cs.netcoder.server.problems.TestResult;
 import edu.ycp.cs.netcoder.server.problems.TestRunner;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
-
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class BeanTestDriver
 {

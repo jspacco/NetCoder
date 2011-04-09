@@ -24,6 +24,7 @@ import java.util.List;
 import javax.tools.Diagnostic;
 
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class TestResultCollection implements Serializable
 {
