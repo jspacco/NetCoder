@@ -1,3 +1,35 @@
+--	@Id
+--	@GeneratedValue(strategy=GenerationType.AUTO)
+--	@Column(name="id")
+--	private int id;
+--
+--	@Column(name="data_id")
+--	private int dataId;
+--	
+--	@Column(name="user_id")
+--	private int userId;
+--	
+--	@Column(name="problem_id")
+--	private int problemId;
+--
+--	@Column(name="type")
+--	private int type;
+--
+--	@Column(name="timestamp")
+--	private long timestamp;
+
+
+CREATE CACHED TABLE events (
+  id integer IDENTITY,
+  data_id integer NOT NULL,
+  user_id integer NOT NULL,
+  problem_id integer NOT NULL,
+  type integer NOT NULL,
+  timestamp bigint NOT NULL,
+
+  FOREIGN KEY (problem_id) REFERENCES problems(problem_id)
+);
+
 CREATE CACHED TABLE changes (
   id integer IDENTITY,
   user_id integer NOT NULL,
