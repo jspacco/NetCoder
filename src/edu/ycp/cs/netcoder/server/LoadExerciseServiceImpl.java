@@ -24,8 +24,8 @@ import javax.persistence.EntityManager;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.LoadExerciseService;
-import edu.ycp.cs.netcoder.server.problems.Problem;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 
 public class LoadExerciseServiceImpl extends RemoteServiceServlet implements LoadExerciseService 
 {
