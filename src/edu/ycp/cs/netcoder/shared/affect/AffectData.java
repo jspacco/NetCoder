@@ -24,7 +24,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
  * TODO: persistence.
  */
 public class AffectData implements IsSerializable {
-	private String emotion;
+	private int emotion;
 	private String otherEmotion;
 	private int emotionLevel;
 
@@ -40,14 +40,14 @@ public class AffectData implements IsSerializable {
 	 * @param emotion the emotion value to set
 	 */
 	public void setEmotion(Emotion emotion) {
-		this.emotion = emotion.toString();
+		this.emotion = emotion.ordinal();
 	}
 	
 	/**
 	 * @return the emotion value (null if none set)
 	 */
 	public Emotion getEmotion() {
-		return Emotion.valueOf(emotion);
+		return Emotion.values()[emotion];
 	}
 	
 	/**

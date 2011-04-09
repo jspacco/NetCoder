@@ -23,7 +23,7 @@ CREATE TABLE `changes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(10) unsigned NOT NULL,
   `problem_id` int(11) NOT NULL,
-  `type` enum('insert_text','remove_text','insert_lines','remove_lines') CHARACTER SET utf8 DEFAULT NULL,
+  `type` smallint(5) unsigned NOT NULL,
   `start_row` smallint(5) unsigned NOT NULL,
   `end_row` smallint(5) unsigned NOT NULL,
   `start_col` smallint(5) unsigned NOT NULL,

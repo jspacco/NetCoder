@@ -32,9 +32,9 @@ public class LoadExerciseServiceImpl extends RemoteServiceServlet implements Loa
     private static final long serialVersionUID = 1L;
     
     public String load(int problemId) {
-        if (problemId<=0) {
-            return "Cannot find problem with id "+problemId;
-        }
+//        if (problemId<=0) {
+//            return "Cannot find problem with id "+problemId;
+//        }
         EntityManager eman=HibernateUtil.getManager();
         List<Problem> problems=eman.createQuery("select p from Problem p where p.id = :id", 
                 Problem.class).setParameter("id", problemId).

@@ -47,7 +47,7 @@ public class Change implements IsSerializable {
     private long problemId;
 
     @Column(name="type")
-    private String type;
+    private int type;
     @Column(name="start_row")
     private int startRow;
     @Column(name="start_col")
@@ -68,7 +68,7 @@ public class Change implements IsSerializable {
 	}
 	
 	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
-		this.type = type.toString();
+		this.type = type.ordinal();
 		this.startRow = sr;
 		this.startColumn = sc;
 		this.endRow = er;
@@ -94,7 +94,7 @@ public class Change implements IsSerializable {
 	}
 	
 	public ChangeType getType() {
-		return ChangeType.valueOf(type);
+		return ChangeType.values()[type];
 	}
 	
 	/**
@@ -126,6 +126,7 @@ public class Change implements IsSerializable {
 	 * @return number of lines
 	 */
 	public int getNumLines() {
+		ChangeType type = getType();
 	    if (type.equals(ChangeType.INSERT_TEXT.toString()) ||
 	            type.equals(ChangeType.REMOVE_TEXT.toString()))
 	    {
@@ -216,48 +217,63 @@ public class Change implements IsSerializable {
     {
         this.problemId = problemId;
     }
+    
     /**
-     * @param type the type to set
+     * @param type the type to set (as an integer)
      */
-    public void setType(String type){
+    public void setType(int type){
         this.type = type;
     }
+    
+    /**
+     * @param type the type to set (as a ChangeType value)
+     */
+    public void setType(ChangeType type) {
+    	this.type = type.ordinal();
+    }
+    
     /**
      * @param startRow the startRow to set
      */
     public void setStartRow(int startRow)    {
         this.startRow = startRow;
     }
+    
     /**
      * @param startColumn the startColumn to set
      */
     public void setStartColumn(int startColumn){
         this.startColumn = startColumn;
     }
+    
     /**
      * @param endRow the endRow to set
      */
     public void setEndRow(int endRow){
         this.endRow = endRow;
     }
+    
     /**
      * @param endColumn the endColumn to set
      */
     public void setEndColumn(int endColumn){
         this.endColumn = endColumn;
     }
+    
     /**
      * @param timestamp the timestamp to set
      */
     public void setTimestamp(long timestamp){
         this.timestamp = timestamp;
     }
+    
     /**
      * @param text the text to set
      */
     public void setText(String text){
         this.text = text;
     }
+    
     @Override
 	public String toString() {
 		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn + "," + timestamp + "," + Arrays.asList(text);
