@@ -48,6 +48,7 @@ import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
 import edu.ycp.cs.netcoder.shared.affect.AffectData;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -65,6 +66,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	
 	private ChangeList changeList;
 	private AffectData affectData;
+	private Problem problem;
 
 	private HorizontalPanel appPanel;
 	private HorizontalPanel descPanel;
@@ -189,6 +191,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 
 		// fire up the ACE editor
 		editor.startEditor();
+		editor.setReadOnly(false); // until a Problem is loaded
 		editor.setTheme(AceEditorTheme.ECLIPSE);
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
@@ -258,7 +261,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 //	}
 	
 	protected void loadExerciseDescription(int problemId) {
-	    AsyncCallback<String> callback = new AsyncCallback<String>() {
+	    AsyncCallback<Problem> callback = new AsyncCallback<Problem>() {
             @Override
             public void onFailure(Throwable caught) {
                 descLabel.setText("Error loading exercise");
@@ -266,8 +269,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
             }
 
             @Override
-            public void onSuccess(String result) {
-                descLabel.setText(result);
+            public void onSuccess(Problem result) {
+                setProblem(result);
             }
         };
         loadService.load(problemId, callback);
@@ -311,5 +314,11 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 			availHeight = 0;
 		}
 		editor.setHeight(availHeight + "px");
+	}
+
+	protected void setProblem(Problem result) {
+		this.problem = result;
+		this.descLabel.setText(result.getDescription());
+		this.editor.setReadOnly(false);
 	}
 }

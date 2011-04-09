@@ -31,7 +31,7 @@ public class LoadExerciseServiceImpl extends RemoteServiceServlet implements Loa
 {
     private static final long serialVersionUID = 1L;
     
-    public String load(int problemId) {
+    public Problem load(int problemId) {
 //        if (problemId<=0) {
 //            return "Cannot find problem with id "+problemId;
 //        }
@@ -40,8 +40,8 @@ public class LoadExerciseServiceImpl extends RemoteServiceServlet implements Loa
                 Problem.class).setParameter("id", problemId).
                 getResultList();
         if (problems.size()==0) {
-            return "Cannot find problem with id "+problemId;
+            return null;//"Cannot find problem with id "+problemId;
         }
-        return problems.get(0).getDescription();
+        return problems.get(0); //.getDescription();
     }
 }

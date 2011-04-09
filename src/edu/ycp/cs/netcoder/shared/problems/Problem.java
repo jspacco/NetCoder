@@ -24,10 +24,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 @Entity
 @Table(name="problems")
-public class Problem
+public class Problem implements IsSerializable
 {
 	@Id 
 	@GeneratedValue(strategy=GenerationType.AUTO)
