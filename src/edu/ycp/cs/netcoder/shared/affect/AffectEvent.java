@@ -17,21 +17,112 @@
 
 package edu.ycp.cs.netcoder.shared.affect;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
+
+import edu.ycp.cs.netcoder.shared.event.Event;
+import edu.ycp.cs.netcoder.shared.event.EventType;
 
 /**
  * Data for an affect data collection event.
- * TODO: persistence.
  */
-public class AffectData implements IsSerializable {
+@Entity
+@Table(name="affect_events")
+public class AffectEvent implements IsSerializable {
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="event_id")
+	private int eventId;
+	
+	@Column(name="emotion")
 	private int emotion;
+	
+	@Column(name="other_emotion")
 	private String otherEmotion;
+	
+	@Column(name="emotion_level")
 	private int emotionLevel;
+	
+	@Transient
+	private Event event;
 
 	/**
 	 * Constructor for empty (unintialized) object.
 	 */
-	public AffectData() {
+	public AffectEvent() {
+	}
+	
+	/**
+	 * Create the Event object for this AffectData object.
+	 * 
+	 * @param userId     the user id
+	 * @param problemId  the problem id
+	 * @param timestamp  the timestamp
+	 */
+	public void createEvent(int userId, int problemId, long timestamp) {
+		event = new Event(userId, problemId, EventType.AFFECT_DATA, timestamp);
+	}
+	
+	/**
+	 * @return the Event object (null if none created yet)
+	 */
+	public Event getEvent() {
+		return event;
+	}
+	
+	/**
+	 * Set the event object.
+	 * 
+	 * @param event the event object to set
+	 */
+	public void setEvent(Event event) {
+		this.event = event;
+	}
+	
+	/**
+	 * Set unique id.
+	 * 
+	 * @param id the unique id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	/**
+	 * Get the unique id.
+	 * 
+	 * @return the unique id
+	 */
+	public int getId() {
+		return id;
+	}
+	
+	/**
+	 * Set unique id of the corresponding Event object.
+	 * 
+	 * @param eventId unique id of the corresponding Event object
+	 */
+	public void setEventId(int eventId) {
+		this.eventId = eventId;
+	}
+	
+	/**
+	 * Get unique id of corresponding Event object.
+	 * 
+	 * @return unique id of corresponding Event object
+	 */
+	public int getEventId() {
+		return eventId;
 	}
 	
 	/**

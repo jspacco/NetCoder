@@ -47,7 +47,7 @@ import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
 import edu.ycp.cs.netcoder.client.status.ResultWidget;
-import edu.ycp.cs.netcoder.shared.affect.AffectData;
+import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
@@ -68,7 +68,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private static final int FAKE_USER_ID = 1;
 	
 	private ChangeList changeList;
-	private AffectData affectData;
+	private AffectEvent affectData;
 	private Problem problem;
 
 	private HorizontalPanel appPanel;
@@ -96,7 +96,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	public void onModuleLoad() {
 		// Model (data) objects
 		changeList = new ChangeList();
-		affectData = new AffectData();
+		affectData = new AffectEvent();
 		
 		// Id of the problem we're solving
 		// currently this is a request parameter
