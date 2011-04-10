@@ -22,9 +22,6 @@ public class Event implements IsSerializable {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="id")
 	private int id;
-
-	@Column(name="data_id")
-	private int dataId;
 	
 	@Column(name="user_id")
 	private int userId;
@@ -42,9 +39,9 @@ public class Event implements IsSerializable {
 
 	}
 	
-	public Event(int id, int dataId, EventType type, long timestamp) {
-		this.id = id;
-		this.dataId = dataId;
+	public Event(int userId, int problemId, EventType type, long timestamp) {
+		this.userId = userId;
+		this.problemId = problemId;
 		this.type = type.ordinal();
 		this.timestamp = timestamp;
 	}
@@ -55,10 +52,6 @@ public class Event implements IsSerializable {
 
 	public int getId() {
 		return id;
-	}
-	
-	public int getDataId() {
-		return dataId;
 	}
 	
 	public void setUserId(int userId) {
@@ -75,10 +68,6 @@ public class Event implements IsSerializable {
 	
 	public int getProblemId() {
 		return problemId;
-	}
-	
-	public void setDataId(int dataId) {
-		this.dataId = dataId;
 	}
 
 	public void setType(int type) {

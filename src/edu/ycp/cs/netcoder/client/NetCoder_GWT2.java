@@ -65,6 +65,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	
 	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
 		APP_PANEL_HEIGHT_PX + DESC_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
+	private static final int FAKE_USER_ID = 1;
 	
 	private ChangeList changeList;
 	private AffectData affectData;
@@ -233,7 +234,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	 */
 	@Override
 	public void invokeAceCallback(JavaScriptObject obj) {
-		changeList.addChange(ChangeFromAceOnChangeEvent.convert(obj));
+		changeList.addChange(ChangeFromAceOnChangeEvent.convert(obj, FAKE_USER_ID, problem.getProblemId()));
 	}
 	
 	/**

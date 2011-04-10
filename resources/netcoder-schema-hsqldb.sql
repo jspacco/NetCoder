@@ -1,27 +1,5 @@
---	@Id
---	@GeneratedValue(strategy=GenerationType.AUTO)
---	@Column(name="id")
---	private int id;
---
---	@Column(name="data_id")
---	private int dataId;
---	
---	@Column(name="user_id")
---	private int userId;
---	
---	@Column(name="problem_id")
---	private int problemId;
---
---	@Column(name="type")
---	private int type;
---
---	@Column(name="timestamp")
---	private long timestamp;
-
-
 CREATE CACHED TABLE events (
-  id integer IDENTITY,
-  data_id integer NOT NULL,
+  id bigint IDENTITY,
   user_id integer NOT NULL,
   problem_id integer NOT NULL,
   type integer NOT NULL,
@@ -32,15 +10,15 @@ CREATE CACHED TABLE events (
 
 CREATE CACHED TABLE changes (
   id integer IDENTITY,
-  user_id integer NOT NULL,
-  problem_id integer NOT NULL,
+  event_id integer NOT NULL,
   type integer NOT NULL,   -- no enum datatypes in hsqldb
   start_row integer NOT NULL,
   end_row integer NOT NULL,
   start_col integer NOT NULL,
   end_col integer NOT NULL,
-  timestamp bigint NOT NULL,
-  text longvarchar NOT NULL
+  text longvarchar NOT NULL,
+  
+  FOREIGN KEY (event_id) REFERENCES events(id)
 );
 
 CREATE CACHED TABLE problems (

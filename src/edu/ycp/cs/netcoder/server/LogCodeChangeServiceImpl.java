@@ -27,6 +27,7 @@ import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
+import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 
 public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
@@ -49,6 +50,13 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 		eman.getTransaction().begin();
 		for (Change change : changeList) {
 			applicator.apply(change, doc);
+			
+			// Insert the generic Event object
+			Event event = change.getEvent();
+			eman.persist(event);
+			
+			// Link the Change object to the Event, and insert it
+			change.setEventId(event.getId());
 			eman.persist(change);
 		}
 		eman.getTransaction().commit();

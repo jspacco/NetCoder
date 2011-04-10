@@ -51,40 +51,44 @@ public class ChangeFromAceOnChangeEvent {
 	 * @param obj an ACE editor onChange object
 	 * @return Change object
 	 */
-	public native static Change convert(JavaScriptObject obj) /*-{
+	public native static Change convert(JavaScriptObject obj, int userId, int problemId) /*-{
 		var action = obj.data.action;
 		if (action == "insertText" || action == "removeText") {
-			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;)(
+			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,
 				obj.data.range.end.row,
 				obj.data.range.end.column,
-				obj.data.text
+				obj.data.text,
+				userId,
+				problemId
 			);
 		} else {
-			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;)(
+			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,
 				obj.data.range.end.row,
 				obj.data.range.end.column,
-				obj.data.lines
+				obj.data.lines,
+				userId,
+				problemId
 			);
 		}
 	}-*/;
 	
-	protected static Change convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text) {
+	protected static Change convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text, int userId, int problemId) {
 		ChangeType type = fromAceChangeType(aceChangeType);
-		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), text);
+		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), userId, problemId, text);
 	}
 
-	protected static Change convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines) {
+	protected static Change convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines, int userId, int problemId) {
 		ChangeType type = fromAceChangeType(aceChangeType);
 		String[] lineArr = new String[lines.length()];
 		for (int i = 0; i < lineArr.length; i++) {
 			lineArr[i] = lines.get(i);
 		}
-		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), lineArr);
+		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), userId, problemId, lineArr);
 	}
 }
