@@ -20,8 +20,8 @@ package edu.ycp.cs.netcoder.client.logchange;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.ycp.cs.netcoder.client.util.Observable;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.util.Observable;
 
 /**
  * ChangeList stores a list of Change objects representing textual

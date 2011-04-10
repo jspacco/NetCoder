@@ -27,15 +27,17 @@ import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import edu.ycp.cs.netcoder.client.NetCoder_GWT2;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.event.EventType;
+import edu.ycp.cs.netcoder.shared.util.Observable;
 
 /**
  * Data for an affect data collection event.
  */
 @Entity
 @Table(name="affect_events")
-public class AffectEvent implements IsSerializable {
+public class AffectEvent extends Observable implements IsSerializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="id")
@@ -55,11 +57,19 @@ public class AffectEvent implements IsSerializable {
 	
 	@Transient
 	private Event event;
+	
+	@Transient
+	private boolean complete;
 
 	/**
 	 * Constructor for empty (unintialized) object.
 	 */
 	public AffectEvent() {
+	}
+
+	private void changed() {
+		setChanged();
+		notifyObservers();
 	}
 	
 	/**
@@ -71,6 +81,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void createEvent(int userId, int problemId, long timestamp) {
 		event = new Event(userId, problemId, EventType.AFFECT_DATA, timestamp);
+		changed();
 	}
 	
 	/**
@@ -87,6 +98,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setEvent(Event event) {
 		this.event = event;
+		changed();
 	}
 	
 	/**
@@ -96,6 +108,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setId(int id) {
 		this.id = id;
+		changed();
 	}
 	
 	/**
@@ -114,6 +127,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setEventId(int eventId) {
 		this.eventId = eventId;
+		changed();
 	}
 	
 	/**
@@ -132,6 +146,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setEmotion(Emotion emotion) {
 		this.emotion = emotion.ordinal();
+		changed();
 	}
 	
 	/**
@@ -150,6 +165,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setOtherEmotion(String otherEmotion) {
 		this.otherEmotion = otherEmotion;
+		changed();
 	}
 	
 	/**
@@ -169,6 +185,7 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public void setEmotionLevel(int emotionLevel) {
 		this.emotionLevel = emotionLevel;
+		changed();
 	}
 	
 	/**
@@ -176,5 +193,36 @@ public class AffectEvent implements IsSerializable {
 	 */
 	public int getEmotionLevel() {
 		return emotionLevel;
+	}
+	
+	/**
+	 * Mark this AffectEvent object as being complete.
+	 * 
+	 * @param complete true if complete, false if not complete yet
+	 */
+	public void setComplete(boolean complete) {
+		this.complete = complete;
+		changed();
+	}
+
+	/**
+	 * Return whether or not the AffectData is complete.
+	 * 
+	 * @return true if complete, false otherwise
+	 */
+	public boolean isComplete() {
+		return complete;
+	}
+
+	/**
+	 * Clear to default state.
+	 */
+	public void clear() {
+		id = 0;
+		eventId = 0;
+		emotion = 0;
+		otherEmotion = null;
+		event = null;
+		complete = false;
 	}
 }

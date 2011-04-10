@@ -51,11 +51,13 @@ import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
+import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Observer;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandler {
+public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandler, Observer {
     private static final int APP_PANEL_HEIGHT_PX = 30;
     private static final int DESC_PANEL_HEIGHT_PX = 70;
 	private static final int STATUS_PANEL_HEIGHT_PX = 30;
@@ -65,12 +67,15 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	
 	private static final int NORTH_SOUTH_PANELS_HEIGHT_PX =
 		APP_PANEL_HEIGHT_PX + DESC_PANEL_HEIGHT_PX + STATUS_PANEL_HEIGHT_PX + BUTTON_PANEL_HEIGHT_PX;
-	private static final int FAKE_USER_ID = 1;
 	
+	private static final int FAKE_USER_ID = 1; // FIXME
+	
+	// Data (model) objects.
 	private ChangeList changeList;
-	private AffectEvent affectData;
+	private AffectEvent affectEvent;
 	private Problem problem;
 
+	// UI widgets.
 	private HorizontalPanel appPanel;
 	private HorizontalPanel descPanel;
 	private HorizontalPanel editorAndWidgetPanel;
@@ -85,10 +90,12 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private AceEditor editor;
 	private Timer flushPendingChangeEventsTimer;
 	
+	// RPC services.
 	private LogCodeChangeServiceAsync logCodeChangeService;
 	//private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
 	private LoadExerciseServiceAsync loadService;
+	private AffectEventServiceAsync affectEventService;
 	
 	/**
 	 * This is the entry point method.
@@ -96,7 +103,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	public void onModuleLoad() {
 		// Model (data) objects
 		changeList = new ChangeList();
-		affectData = new AffectEvent();
+		affectEvent = new AffectEvent();
+		affectEvent.addObserver(this); // when complete, send to server
 		
 		// Id of the problem we're solving
 		// currently this is a request parameter
@@ -164,7 +172,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		hintsWidget.setWidth("100%");
 		widgetPanel.add(hintsWidget);
 		//widgetPanel.add(new HTML("<div style='height: 6px; width: 0px;'></div>")); // hack
-		affectWidget = new AffectWidget(affectData);
+		affectWidget = new AffectWidget(affectEvent);
 		affectWidget.setWidth("100%");
 		affectWidget.setHeight("300px");
 		widgetPanel.add(affectWidget);
@@ -188,7 +196,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 
 		// fire up the ACE editor
 		editor.startEditor();
-		editor.setReadOnly(false); // until a Problem is loaded
+		editor.setReadOnly(true); // until a Problem is loaded
 		editor.setTheme(AceEditorTheme.ECLIPSE);
 		editor.setFontSize("14px");
 		editor.setMode(AceEditorMode.JAVA);
@@ -227,6 +235,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
         //compileService = (CompileServiceAsync) GWT.create(CompileService.class);
         submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
         loadService =(LoadExerciseServiceAsync) GWT.create(LoadExerciseService.class);
+        affectEventService = (AffectEventServiceAsync) GWT.create(AffectEventService.class);
 	}
 
 	/**
@@ -317,5 +326,40 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		this.problem = result;
 		this.descLabel.setText(result.getDescription());
 		this.editor.setReadOnly(false);
+	}
+	
+	// FIXME: is there a better way to do this?
+	// (maybe send completed AffectEvent using time, same as Change events)
+	private boolean sendingAffectData = false;
+	
+	@Override
+	public void update(Observable obj, Object hint) {
+		if (obj == affectEvent && !sendingAffectData && affectEvent.isComplete()) {
+			GWT.log("Sending affect data");
+			
+			sendingAffectData = true;
+			
+			AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					GWT.log("Could not store affect event: " + caught.getMessage());
+					sendingAffectData = false;
+				}
+
+				@Override
+				public void onSuccess(Void result) {
+					GWT.log("Affect data recorded successfully");
+					// Yay!
+					affectEvent.clear();
+					sendingAffectData = false;
+				}
+			};
+
+			// Fill in event details.
+			affectEvent.createEvent(FAKE_USER_ID, problem.getProblemId(), System.currentTimeMillis());
+
+			// Send to server.
+			affectEventService.recordAffectEvent(affectEvent, callback);
+		}
 	}
 }

@@ -187,6 +187,7 @@ public class AffectWidget extends Composite {
 	}
 
 	protected void onFinished() {
+		data.setComplete(true);
 		tabPanel.selectTab(3);
 	}
 }

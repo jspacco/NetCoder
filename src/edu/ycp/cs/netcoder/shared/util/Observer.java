@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.client.util;
+package edu.ycp.cs.netcoder.shared.util;
 
 // GWT 2.2 doesn't have this in java.util!
 public interface Observer {
