@@ -27,10 +27,10 @@ import edu.ycp.cs.netcoder.client.SubmitService;
 import edu.ycp.cs.netcoder.server.compilers.CompilationException;
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
 import edu.ycp.cs.netcoder.server.compilers.OnTheFlyCompiler;
-import edu.ycp.cs.netcoder.server.problems.Problem;
 import edu.ycp.cs.netcoder.server.problems.TestCreator;
 import edu.ycp.cs.netcoder.server.problems.TestRunner;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitService {

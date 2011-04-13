@@ -15,25 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.server.problems;
+package edu.ycp.cs.netcoder.shared.problems;
 
-import java.util.List;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 @Entity
 @Table(name="problems")
-public class Problem
+public class Problem implements IsSerializable
 {
 	@Id 
 	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -45,9 +40,6 @@ public class Problem
 
 	@Column(name="description")
 	private String description;
-
-	@Transient
-	private List<TestCase> testCases;
 
 	public String toString() {
 		return getProblemId()+" testName: "+getTestName()+" "+getDescription();
@@ -88,24 +80,5 @@ public class Problem
 	 */
 	public void setDescription(String description){
 		this.description = description;
-	}
-
-	/**
-	 * Get list of test cases for this problem.
-	 * 
-	 * @return list of test cases
-	 */
-	@OneToMany(mappedBy="problem", targetEntity=TestCase.class, fetch=FetchType.EAGER, cascade=CascadeType.ALL)
-	public List<TestCase> getTestCases() {
-		return testCases;
-	}  
-
-	/**
-	 * Set the list of test cases for this problem.
-	 * 
-	 * @param testCases list of test cases
-	 */
-	public void setTestCases(List<TestCase> testCases) {
-		this.testCases = testCases;
 	}
 }

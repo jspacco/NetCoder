@@ -25,8 +25,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+
+import edu.ycp.cs.netcoder.shared.event.Event;
+import edu.ycp.cs.netcoder.shared.event.EventType;
 
 /**
  * Object representing a textual change.
@@ -41,13 +45,12 @@ public class Change implements IsSerializable {
     @GeneratedValue(strategy=GenerationType.AUTO)
     @Column(name="id")
     private long id;
-    @Column(name="user_id")
-    private long userId;
-    @Column(name="problem_id")
-    private long problemId;
+    
+    @Column(name="event_id")
+    private int eventId;
 
     @Column(name="type")
-    private String type;
+    private int type;
     @Column(name="start_row")
     private int startRow;
     @Column(name="start_col")
@@ -56,10 +59,13 @@ public class Change implements IsSerializable {
 	private int endRow;
     @Column(name="end_col")
 	private int endColumn;
-    @Column(name="timestamp")
-	private long timestamp;
+//    @Column(name="timestamp")
+//	private long timestamp;
     @Column(name="text")
 	private String text;
+    
+    @Transient
+    private Event event;
 	
 
 	// Zero-arg constructor - required for serialization
@@ -67,23 +73,25 @@ public class Change implements IsSerializable {
 	public Change() {
 	}
 	
-	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts) {
-		this.type = type.toString();
+	private Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId) {
+		this.type = type.ordinal();
 		this.startRow = sr;
 		this.startColumn = sc;
 		this.endRow = er;
 		this.endColumn = ec;
-		this.timestamp = ts;
+		//this.timestamp = ts;
+		
+		this.event = new Event(userId, problemId, EventType.CHANGE, ts);
 	}
 	
-	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String text) {
-		this(type, sr, sc, er, ec, ts);
+	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId, String text) {
+		this(type, sr, sc, er, ec, ts, userId, problemId);
 		//this.text = Collections.singletonList(text);
 		this.text=text;
 	}
 	
-	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, String[] textToAdopt) {
-		this(type, sr, sc, er, ec, ts);
+	public Change(ChangeType type, int sr, int sc, int er, int ec, long ts, int userId, int problemId, String[] textToAdopt) {
+		this(type, sr, sc, er, ec, ts, userId, problemId);
 		StringBuffer buf=new StringBuffer();
 		for (int i=0; i<textToAdopt.length-1; i++) {
 		    buf.append(textToAdopt[i]);
@@ -94,7 +102,7 @@ public class Change implements IsSerializable {
 	}
 	
 	public ChangeType getType() {
-		return ChangeType.valueOf(type);
+		return ChangeType.values()[type];
 	}
 	
 	/**
@@ -126,6 +134,7 @@ public class Change implements IsSerializable {
 	 * @return number of lines
 	 */
 	public int getNumLines() {
+		ChangeType type = getType();
 	    if (type.equals(ChangeType.INSERT_TEXT.toString()) ||
 	            type.equals(ChangeType.REMOVE_TEXT.toString()))
 	    {
@@ -162,12 +171,12 @@ public class Change implements IsSerializable {
 		return endColumn;
 	}
 	
-	/**
-	 * @return timestamp of change (milliseconds since epoch), as reported by client
-	 */
-	public long getTimestamp() {
-		return timestamp;
-	}
+//	/**
+//	 * @return timestamp of change (milliseconds since epoch), as reported by client
+//	 */
+//	public long getTimestamp() {
+//		return timestamp;
+//	}
 	
 	/**
      * @return the id
@@ -184,82 +193,113 @@ public class Change implements IsSerializable {
     {
         this.id = id;
     }
+    
+    public void setEventId(int eventId) {
+		this.eventId = eventId;
+	}
+    
+    public int getEventId() {
+		return eventId;
+	}
 
+//    /**
+//     * @return the userId
+//     */
+//    public long getUserId()
+//    {
+//        return userId;
+//    }
+//
+//    /**
+//     * @param userId the userId to set
+//     */
+//    public void setUserId(long userId)
+//    {
+//        this.userId = userId;
+//    }
+//
+//    /**
+//     * @return the problemId
+//     */
+//    public long getProblemId()
+//    {
+//        return problemId;
+//    }
+//
+//    /**
+//     * @param problemId the problemId to set
+//     */
+//    public void setProblemId(long problemId)
+//    {
+//        this.problemId = problemId;
+//    }
+    
     /**
-     * @return the userId
+     * @param type the type to set (as an integer)
      */
-    public long getUserId()
-    {
-        return userId;
-    }
-
-    /**
-     * @param userId the userId to set
-     */
-    public void setUserId(long userId)
-    {
-        this.userId = userId;
-    }
-
-    /**
-     * @return the problemId
-     */
-    public long getProblemId()
-    {
-        return problemId;
-    }
-
-    /**
-     * @param problemId the problemId to set
-     */
-    public void setProblemId(long problemId)
-    {
-        this.problemId = problemId;
-    }
-    /**
-     * @param type the type to set
-     */
-    public void setType(String type){
+    public void setType(int type){
         this.type = type;
     }
+    
+    /**
+     * @param type the type to set (as a ChangeType value)
+     */
+    public void setType(ChangeType type) {
+    	this.type = type.ordinal();
+    }
+    
     /**
      * @param startRow the startRow to set
      */
     public void setStartRow(int startRow)    {
         this.startRow = startRow;
     }
+    
     /**
      * @param startColumn the startColumn to set
      */
     public void setStartColumn(int startColumn){
         this.startColumn = startColumn;
     }
+    
     /**
      * @param endRow the endRow to set
      */
     public void setEndRow(int endRow){
         this.endRow = endRow;
     }
+    
     /**
      * @param endColumn the endColumn to set
      */
     public void setEndColumn(int endColumn){
         this.endColumn = endColumn;
     }
-    /**
-     * @param timestamp the timestamp to set
-     */
-    public void setTimestamp(long timestamp){
-        this.timestamp = timestamp;
-    }
+    
+//    /**
+//     * @param timestamp the timestamp to set
+//     */
+//    public void setTimestamp(long timestamp){
+//        this.timestamp = timestamp;
+//    }
+    
+    public void setEvent(Event event) {
+		this.event = event;
+	}
+    
+    public Event getEvent() {
+		return event;
+	}
+    
     /**
      * @param text the text to set
      */
     public void setText(String text){
         this.text = text;
     }
+    
     @Override
 	public String toString() {
-		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn + "," + timestamp + "," + Arrays.asList(text);
+		return type + "," + startRow + "," + startColumn + "," + endRow + "," + endColumn/* + "," + timestamp*/ + "," + Arrays.asList(text);
 	}
 }

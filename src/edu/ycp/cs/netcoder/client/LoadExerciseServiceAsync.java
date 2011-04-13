@@ -19,8 +19,10 @@ package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import edu.ycp.cs.netcoder.shared.problems.Problem;
+
 public interface LoadExerciseServiceAsync
 {
-    void load(int problemId, AsyncCallback<String> callback);
+    void load(int problemId, AsyncCallback<Problem> callback);
 
 }

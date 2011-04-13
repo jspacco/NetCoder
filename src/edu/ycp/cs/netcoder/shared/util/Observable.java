@@ -15,9 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.client.util;
+package edu.ycp.cs.netcoder.shared.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 // GWT 2.2 doesn't have this in java.util!
@@ -36,6 +37,16 @@ public class Observable {
 	
 	public void addObserver(Observer obs) {
 		observerList.add(obs);
+	}
+	
+	public void removeObserver(Observer obs) {
+		for (Iterator<Observer> i = observerList.iterator(); i.hasNext(); ) {
+			Observer o = i.next();
+			if (o == obs) {
+				i.remove();
+				break;
+			}
+		}
 	}
 	
 	public void notifyObservers() {

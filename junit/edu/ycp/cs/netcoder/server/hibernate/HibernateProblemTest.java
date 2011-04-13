@@ -6,8 +6,8 @@ import javax.persistence.EntityManager;
 
 import org.junit.Test;
 
-import edu.ycp.cs.netcoder.server.problems.Problem;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 
 public class HibernateProblemTest
 {

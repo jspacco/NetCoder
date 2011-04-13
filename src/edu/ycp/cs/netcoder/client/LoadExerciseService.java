@@ -20,9 +20,11 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
+import edu.ycp.cs.netcoder.shared.problems.Problem;
+
 @RemoteServiceRelativePath("loadExercise")
 public interface LoadExerciseService extends RemoteService {
     // FIXME: should return a TestResult and/or CompileResult
     // probably both
-    public String load(int problemId);
+    public Problem load(int problemId);
 }

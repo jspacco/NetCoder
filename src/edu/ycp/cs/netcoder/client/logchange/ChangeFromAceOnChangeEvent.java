@@ -17,6 +17,9 @@
 
 package edu.ycp.cs.netcoder.client.logchange;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
@@ -27,6 +30,20 @@ import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
  * Convert ACE onChange events to {@link Change} objects.
  */
 public class ChangeFromAceOnChangeEvent {
+	
+	private static final Map<String, ChangeType> aceChangeTypeToChangeTypeMap =
+		new HashMap<String, ChangeType>();
+	static {
+		aceChangeTypeToChangeTypeMap.put("insertText", ChangeType.INSERT_TEXT);
+		aceChangeTypeToChangeTypeMap.put("removeText", ChangeType.REMOVE_TEXT);
+		aceChangeTypeToChangeTypeMap.put("insertLines", ChangeType.INSERT_LINES);
+		aceChangeTypeToChangeTypeMap.put("removeLines", ChangeType.REMOVE_LINES);
+	}
+	
+	public static ChangeType fromAceChangeType(String aceChangeType) {
+		return aceChangeTypeToChangeTypeMap.get(aceChangeType);
+	}
+
 	/**
 	 * Convert an ACE editor onChange event object into a {@link Change}
 	 * object (which can be sent to the server in serialized form.)
@@ -34,40 +51,44 @@ public class ChangeFromAceOnChangeEvent {
 	 * @param obj an ACE editor onChange object
 	 * @return Change object
 	 */
-	public native static Change convert(JavaScriptObject obj) /*-{
+	public native static Change convert(JavaScriptObject obj, int userId, int problemId) /*-{
 		var action = obj.data.action;
 		if (action == "insertText" || action == "removeText") {
-			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;)(
+			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromString(Ljava/lang/String;IIIILjava/lang/String;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,
 				obj.data.range.end.row,
 				obj.data.range.end.column,
-				obj.data.text
+				obj.data.text,
+				userId,
+				problemId
 			);
 		} else {
-			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;)(
+			return @edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent::convertFromLines(Ljava/lang/String;IIIILcom/google/gwt/core/client/JsArrayString;II)(
 				action,
 				obj.data.range.start.row,
 				obj.data.range.start.column,
 				obj.data.range.end.row,
 				obj.data.range.end.column,
-				obj.data.lines
+				obj.data.lines,
+				userId,
+				problemId
 			);
 		}
 	}-*/;
 	
-	protected static Change convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text) {
-		ChangeType type = ChangeType.fromAceChangeType(aceChangeType);
-		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), text);
+	protected static Change convertFromString(String aceChangeType, int sr, int sc, int er, int ec, String text, int userId, int problemId) {
+		ChangeType type = fromAceChangeType(aceChangeType);
+		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), userId, problemId, text);
 	}
 
-	protected static Change convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines) {
-		ChangeType type = ChangeType.fromAceChangeType(aceChangeType);
+	protected static Change convertFromLines(String aceChangeType, int sr, int sc, int er, int ec, JsArrayString lines, int userId, int problemId) {
+		ChangeType type = fromAceChangeType(aceChangeType);
 		String[] lineArr = new String[lines.length()];
 		for (int i = 0; i < lineArr.length; i++) {
 			lineArr[i] = lines.get(i);
 		}
-		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), lineArr);
+		return new Change(type, sr, sc, er, ec, System.currentTimeMillis(), userId, problemId, lineArr);
 	}
 }

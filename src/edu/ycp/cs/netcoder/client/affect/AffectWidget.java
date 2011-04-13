@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import edu.ycp.cs.netcoder.shared.affect.AffectData;
+import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.affect.Emotion;
 
 /**
@@ -40,7 +40,7 @@ import edu.ycp.cs.netcoder.shared.affect.Emotion;
 public class AffectWidget extends Composite {
 	private static final String TAB_WIDTH = "96%";
 	
-	private AffectData data; // the model object
+	private AffectEvent data; // the model object
 	
 	private TextBox otherEmotionTextBox;
 	private RadioButton[] emotionLevelRadioButtonList;
@@ -102,7 +102,7 @@ public class AffectWidget extends Composite {
 	 * 
 	 * @param affectData the AffectData object to be edited by this widget
 	 */
-	public AffectWidget(AffectData affectData) {
+	public AffectWidget(AffectEvent affectData) {
 		this.data = affectData;
 		initUI();
 	}
@@ -187,6 +187,7 @@ public class AffectWidget extends Composite {
 	}
 
 	protected void onFinished() {
+		data.setComplete(true);
 		tabPanel.selectTab(3);
 	}
 }

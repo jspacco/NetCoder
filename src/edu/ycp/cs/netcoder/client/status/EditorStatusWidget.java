@@ -20,8 +20,8 @@ package edu.ycp.cs.netcoder.client.status;
 import com.google.gwt.user.client.ui.InlineLabel;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.client.util.Observable;
-import edu.ycp.cs.netcoder.client.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Observer;
 
 public class EditorStatusWidget extends InlineLabel implements Observer {
 	private static final String NORMAL = "NetCoderEditorStatusNormal";
