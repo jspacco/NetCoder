@@ -30,11 +30,13 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
@@ -83,7 +85,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private Timer flushPendingChangeEventsTimer;
 	
 	private LogCodeChangeServiceAsync logCodeChangeService;
-	//private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
 	private LoadExerciseServiceAsync loadService;
 	
@@ -94,6 +95,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		// Model (data) objects
 		changeList = new ChangeList();
 		affectData = new AffectData();
+		resultWidget = new ResultWidget();
 		
 		// Id of the problem we're solving
 		// currently this is a request parameter
@@ -139,9 +141,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		statusWidget = new EditorStatusWidget();
 		changeList.addObserver(statusWidget);
 		statusPanel.add(statusWidget);
-		
-		resultWidget=new ResultWidget();
-		statusPanel.add(resultWidget);
 		statusPanel.setWidth("100%");
 		
 		VerticalPanel shimAndStatusPanel = new VerticalPanel();
@@ -165,6 +164,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		affectWidget.setWidth("100%");
 		affectWidget.setHeight("300px");
 		widgetPanel.add(affectWidget);
+		// another try to get results into here...
+		widgetPanel.add(resultWidget);
 
 		// Add the editor and widget panel so that it is a 80/20 split
 		editorAndWidgetPanel.add(editor);
@@ -220,7 +221,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private void createServices() {
 	    // Create async service objects for communication with server
         logCodeChangeService = (LogCodeChangeServiceAsync) GWT.create(LogCodeChangeService.class);
-        //compileService = (CompileServiceAsync) GWT.create(CompileService.class);
         submitService =(SubmitServiceAsync) GWT.create(SubmitService.class);
         loadService =(LoadExerciseServiceAsync) GWT.create(LoadExerciseService.class);
 	}
@@ -232,26 +232,6 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	public void invokeAceCallback(JavaScriptObject obj) {
 		changeList.addChange(ChangeFromAceOnChangeEvent.convert(obj));
 	}
-	
-	/**
-	 * Send the current text in the editor to the server to be compiled.
-	 */
-//	protected void compileCode() {
-//		AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
-//			@Override
-//			public void onFailure(Throwable caught) {
-//				statusLabel.setText("Error sending submission to server for compilation");
-//				GWT.log("compile failed", caught);
-//			}
-//
-//			@Override
-//			public void onSuccess(Boolean result) {
-//				statusLabel.setText(result ? "Compile succeeded" : "Compile failed");
-//			}
-//		};
-//		
-//		compileService.compile(editor.getText(), callback);
-//	}
 	
 	protected void loadExerciseDescription(int problemId) {
 	    AsyncCallback<String> callback = new AsyncCallback<String>() {
