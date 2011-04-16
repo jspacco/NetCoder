@@ -71,9 +71,12 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	private static final int FAKE_USER_ID = 1; // FIXME
 	
 	// Data (model) objects.
+	/*
 	private ChangeList changeList;
 	private AffectEvent affectEvent;
 	private Problem problem;
+	*/
+	private Session session;
 
 	// UI widgets.
 	private HorizontalPanel appPanel;
@@ -101,10 +104,17 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-		// Model (data) objects
-		changeList = new ChangeList();
-		affectEvent = new AffectEvent();
+		// Create session
+		session = new Session();
+		session.add(new ChangeList());
+		AffectEvent affectEvent = new AffectEvent();
+		session.add(affectEvent);
 		affectEvent.addObserver(this); // when complete, send to server
+		
+//		// Model (data) objects
+//		changeList = new ChangeList();
+//		affectEvent = new AffectEvent();
+//		affectEvent.addObserver(this); // when complete, send to server
 		
 		// Id of the problem we're solving
 		// currently this is a request parameter
@@ -148,7 +158,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		// Status panel - need to think more about what feedback to provide and how
 		HorizontalPanel statusPanel = new HorizontalPanel();
 		statusWidget = new EditorStatusWidget();
-		changeList.addObserver(statusWidget);
+		session.get(ChangeList.class).addObserver(statusWidget);
 		statusPanel.add(statusWidget);
 		
 		resultWidget=new ResultWidget();
@@ -206,6 +216,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 		flushPendingChangeEventsTimer = new Timer() {
 			@Override
 			public void run() {
+				final ChangeList changeList = session.get(ChangeList.class);
 				if (changeList.getState() == ChangeList.State.UNSENT) {
 					Change[] changeBatch = changeList.beginTransmit();
 					
@@ -243,6 +254,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	 */
 	@Override
 	public void invokeAceCallback(JavaScriptObject obj) {
+		ChangeList changeList = session.get(ChangeList.class);
+		Problem problem = session.get(Problem.class);
 		changeList.addChange(ChangeFromAceOnChangeEvent.convert(obj, FAKE_USER_ID, problem.getProblemId()));
 	}
 	
@@ -323,7 +336,8 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	}
 
 	protected void setProblem(Problem result) {
-		this.problem = result;
+		//this.problem = result;
+		this.session.add(result);
 		this.descLabel.setText(result.getDescription());
 		this.editor.setReadOnly(false);
 	}
@@ -334,6 +348,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 	
 	@Override
 	public void update(Observable obj, Object hint) {
+		final AffectEvent affectEvent = session.get(AffectEvent.class);
 		if (obj == affectEvent && !sendingAffectData && affectEvent.isComplete()) {
 			GWT.log("Sending affect data");
 			
@@ -356,6 +371,7 @@ public class NetCoder_GWT2 implements EntryPoint, AceEditorCallback, ResizeHandl
 			};
 
 			// Fill in event details.
+			Problem problem = session.get(Problem.class);
 			affectEvent.createEvent(FAKE_USER_ID, problem.getProblemId(), System.currentTimeMillis());
 
 			// Send to server.
