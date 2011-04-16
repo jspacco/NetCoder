@@ -70,7 +70,6 @@ public class DevelopmentView extends Composite implements AceEditorCallback, Res
 
 	// RPC services.
 	private LogCodeChangeServiceAsync logCodeChangeService;
-	//private CompileServiceAsync compileService;
 	private SubmitServiceAsync submitService;
 	private LoadExerciseServiceAsync loadService;
 	private AffectEventServiceAsync affectEventService;
@@ -153,6 +152,9 @@ public class DevelopmentView extends Composite implements AceEditorCallback, Res
 		affectWidget.setWidth("100%");
 		affectWidget.setHeight("300px");
 		widgetPanel.add(affectWidget);
+		// another try to get results into here...
+		resultWidget = new ResultWidget();
+		widgetPanel.add(resultWidget);
 
 		// Add the editor and widget panel so that it is a 80/20 split
 		editorAndWidgetPanel.add(editor);
@@ -165,8 +167,8 @@ public class DevelopmentView extends Composite implements AceEditorCallback, Res
 		//RootLayoutPanel.get().add(mainPanel);
 		initWidget(mainPanel);
 
-//		// Size the editor and widget panel to fill available space
-//		resize(Window.getClientWidth(), Window.getClientHeight());
+		//		// Size the editor and widget panel to fill available space
+		//		resize(Window.getClientWidth(), Window.getClientHeight());
 
 		// Add window resize handler so that we can make editor and widget
 		// panel expand vertically as necessary
