@@ -20,6 +20,7 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
@@ -27,8 +28,15 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
+import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
+import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
+import edu.ycp.cs.netcoder.client.status.ResultWidget;
+import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
+import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
+import edu.ycp.cs.netcoder.shared.problems.User;
 
 public class DevelopmentView extends NetCoderView {
 	private static final int PROBLEM_ID = 0; // FIXME
@@ -42,6 +50,7 @@ public class DevelopmentView extends NetCoderView {
 	private SubmitServiceAsync submitService = GWT.create(SubmitService.class);
 	private LoadExerciseServiceAsync loadService = GWT.create(LoadExerciseService.class);
 	private AffectEventServiceAsync affectEventService = GWT.create(AffectEventService.class);
+	private ResultWidget resultWidget;
 	
 	public DevelopmentView(Session session) {
 		super(session);
@@ -59,14 +68,36 @@ public class DevelopmentView extends NetCoderView {
 		layoutPanel.setWidgetTopHeight(editor,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				400, Unit.PX);
+
+		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(session);
+		layoutPanel.add(statusAndButtonBarWidget);
+		layoutPanel.setWidgetBottomHeight(
+				statusAndButtonBarWidget,
+				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX,
+				LayoutConstants.STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
+		statusAndButtonBarWidget.setOnSubmit(new Runnable() {
+			@Override
+			public void run() {
+				submitCode();
+			}
+		});
+		
+		resultWidget = new ResultWidget();
+		layoutPanel.add(resultWidget);
+		layoutPanel.setWidgetBottomHeight(
+				resultWidget,
+				0, Unit.PX,
+				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 		
 		initWidget(layoutPanel);
 		
+		// Load the problem
 		loadService.load(PROBLEM_ID, new AsyncCallback<Problem>() {
 			@Override
 			public void onSuccess(Problem result) {
 				if (result != null) {
 					getSession().add(result);
+					editor.setReadOnly(false);
 				} else {
 					loadProblemFailed();
 				}
@@ -83,6 +114,32 @@ public class DevelopmentView extends NetCoderView {
 			}
 		});
 		
+		// create timer to flush unsent change events periodically
+		Timer flushPendingChangeEventsTimer = new Timer() {
+			@Override
+			public void run() {
+				final ChangeList changeList = getSession().get(ChangeList.class);
+				if (changeList.getState() == ChangeList.State.UNSENT) {
+					Change[] changeBatch = changeList.beginTransmit();
+
+					AsyncCallback<Boolean> callback = new AsyncCallback<Boolean>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							changeList.endTransmit(false);
+							GWT.log("Failed to send change batch to server");
+						}
+
+						@Override
+						public void onSuccess(Boolean result) {
+							changeList.endTransmit(true);
+						}
+					};
+
+					logCodeChangeService.logChange(changeBatch, callback);
+				}
+			}
+		};
+		flushPendingChangeEventsTimer.scheduleRepeating(1000);
 		
 	}
 	
@@ -95,9 +152,31 @@ public class DevelopmentView extends NetCoderView {
 		editor.addOnChangeHandler(new AceEditorCallback() {
 			@Override
 			public void invokeAceCallback(JavaScriptObject obj) {
-				// TODO
+				// Convert ACE onChange event object to a Change object,
+				// and add it to the session's ChangeList
+				User user = getSession().get(User.class);
+				Problem problem = getSession().get(Problem.class);
+				Change change = ChangeFromAceOnChangeEvent.convert(obj, user.getId(), problem.getProblemId());
+				getSession().get(ChangeList.class).addChange(change);
 			}
 		});
+	}
+
+	protected void submitCode() {
+		AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				resultWidget.setMessage("Error sending submission to server for compilation");
+				GWT.log("compile failed", caught);
+			}
+
+			@Override
+			public void onSuccess(TestResult[] results) {
+				resultWidget.setResults(results);
+			}
+		};
+		int problemId= getSession().get(Problem.class).getProblemId();
+		submitService.submit(problemId, editor.getText(), callback);
 	}
 	
 //	private static final int APP_PANEL_HEIGHT_PX = 30;
