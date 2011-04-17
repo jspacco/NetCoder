@@ -26,7 +26,6 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
@@ -35,9 +34,7 @@ import com.google.gwt.user.client.ui.TextBox;
 
 import edu.ycp.cs.netcoder.shared.problems.User;
 
-public class LoginView extends Composite {
-	private Session session;
-	
+public class LoginView extends NetCoderView {
 	private TextBox userNameTextBox;
 	private PasswordTextBox passwordTextBox;
 	private Label loginStatusLabel;
@@ -45,9 +42,9 @@ public class LoginView extends Composite {
 	private LoginServiceAsync loginService = GWT.create(LoginService.class);
 
 	public LoginView(Session session) {
-		this.session = session;
+		super(session);
 
-		LayoutPanel loginViewPanel = new LayoutPanel();
+		LayoutPanel loginViewPanel = getLayoutPanel();
 		
 		TopBar topBar = new TopBar();
 		loginViewPanel.add(topBar);
@@ -123,7 +120,7 @@ public class LoginView extends Composite {
 					// Set the user object in the session!
 					// This will cause the entry point code to switch
 					// views.
-					session.add(result);
+					getSession().add(result);
 				}
 			}
 		};

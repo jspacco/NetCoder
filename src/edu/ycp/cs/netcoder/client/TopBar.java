@@ -18,31 +18,69 @@
 package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Image;
+import com.google.gwt.user.client.ui.InlineLabel;
 
+import edu.ycp.cs.netcoder.shared.problems.User;
+
+/**
+ * Top bar widget.
+ * Shows product name and logo, and if the Session has a User
+ * object, shows the username and a logout button.
+ */
 public class TopBar extends Composite {
+	private Session session;
+	
+	private FlowPanel hPanel;
+	private FlowPanel hPanel2;
+	private InlineLabel loggedInAsLabel;
+	
 	public TopBar() {
 		String urlBase = GWT.getModuleBaseURL();
 		
-		/*
-		HTML html = new HTML(
-				"<div class='NetCoderTopBar'>" +
-				"NetCoder " +
-				"<img alt='logo' src='" + urlBase + "/images/NetCoderLogoSmall.png' />" +
-				"</div>");
-		*/
 		FlowPanel panel = new FlowPanel();
-		panel.setWidth("100%");
 		panel.setStyleName("NetCoderTopBar");
-		HorizontalPanel hPanel = new HorizontalPanel();
-		hPanel.add(new HTML("<span class='NetCoderProductName'>NetCoder</span>"));
-		hPanel.add(new HTML("<img alt='logo' src='" + urlBase + "/images/NetCoderLogoSmall.png' />"));
+		this.hPanel = new FlowPanel();
+		InlineLabel productName = new InlineLabel("NetCoder");
+		productName.setStyleName("NetCoderProductName");
+		hPanel.add(productName);
+		Image logoImg = new Image(urlBase + "/images/NetCoderLogoSmall.png");
+		logoImg.setAltText("[logo]");
+		logoImg.setStyleName("NetCoderLogo");
+		hPanel.add(logoImg);
 
+		hPanel2 = new FlowPanel();
+		hPanel2.setStyleName("NetCoderUsernameAndLogout");
+		loggedInAsLabel = new InlineLabel();
+		loggedInAsLabel.setStyleName("NetCoderLoggedInAs");
+		hPanel2.add(loggedInAsLabel);
+		
 		panel.add(hPanel);
+		panel.add(hPanel2);
 		
 		initWidget(panel);
+	}
+
+	public void setSession(Session session) {
+		this.session = session;
+		User user = session.get(User.class);
+		if (user != null) {
+			loggedInAsLabel.setText("Logged in as " + user.getUserName());
+			Button logoutButton = new Button("Log out");
+			logoutButton.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					Window.alert("TODO: log out");
+				}
+			});
+			hPanel2.add(new InlineLabel("    "));
+			hPanel2.add(logoutButton);
+		}
 	}
 }
