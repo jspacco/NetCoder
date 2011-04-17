@@ -33,6 +33,10 @@ public class LoginView extends Composite {
 
 		LayoutPanel loginViewPanel = new LayoutPanel();
 		
+		TopBar topBar = new TopBar();
+		loginViewPanel.add(topBar);
+		loginViewPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
+		
 		FlowPanel panel = new FlowPanel();
 		panel.add(new Label("Username:"));
 		userNameTextBox = new TextBox();
@@ -82,7 +86,7 @@ public class LoginView extends Composite {
 		
 		loginViewPanel.add(loginBox);
 		loginViewPanel.setWidgetRightWidth(loginBox, 2, Unit.EM, 23, Unit.EM);
-		loginViewPanel.setWidgetTopHeight(loginBox, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX, 13, Unit.EM);
+		loginViewPanel.setWidgetTopHeight(loginBox, LayoutConstants.TOP_BAR_HEIGHT_PX + 10, Unit.PX, 13, Unit.EM);
 		
 		initWidget(loginViewPanel);
 	}
@@ -101,9 +105,9 @@ public class LoginView extends Composite {
 					loginStatusLabel.setText("Could not log in. Check your username and password.");
 				} else {
 					// Set the user object in the session!
+					// This will cause the entry point code to switch
+					// views.
 					session.add(result);
-					
-					Window.alert("Successful login!");
 				}
 			}
 		};
