@@ -38,6 +38,9 @@ import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.User;
 
+/**
+ * View for working on a problem: code editor, submit button, feedback, etc.
+ */
 public class DevelopmentView extends NetCoderView {
 	private static final int PROBLEM_ID = 0; // FIXME
 	
