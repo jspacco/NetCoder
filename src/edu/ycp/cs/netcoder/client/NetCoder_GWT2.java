@@ -19,16 +19,22 @@ package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
+import edu.ycp.cs.netcoder.shared.problems.User;
+import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Observer;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint {
+public class NetCoder_GWT2 implements EntryPoint, Observer {
 	// Client session data.
 	private Session session;
+	
+	private Widget currentView;
 	
 	/**
 	 * This is the entry point method.
@@ -38,13 +44,28 @@ public class NetCoder_GWT2 implements EntryPoint {
 		session = new Session();
 		session.add(new ChangeList());
 		session.add(new AffectEvent());
-
-//		LoginView loginView = new LoginView(session);
-//		RootLayoutPanel.get().add(loginView);
 		
-		DevelopmentView developmentView = new DevelopmentView(session);
-		RootLayoutPanel.get().add(developmentView);
+		// Observe Session changes so we're notified of successful login
+		session.addObserver(this);
 		
-		developmentView.startEditor(); // this needs to wait until dev view is part of DOM tree
+		changeView(new LoginView(session));
+	}
+	
+	public void changeView(Widget view) {
+		if (currentView != null) {
+			RootLayoutPanel.get().remove(currentView);
+		}
+		RootLayoutPanel.get().add(view);
+		currentView = view;
+	}
+	
+	@Override
+	public void update(Observable obj, Object hint) {
+		if (currentView.getClass() == LoginView.class && session.get(User.class) != null) {
+			// User just successfully logged in - switch to development view
+			DevelopmentView developmentView = new DevelopmentView(session);
+			changeView(developmentView);
+			developmentView.startEditor();
+		}
 	}
 }
