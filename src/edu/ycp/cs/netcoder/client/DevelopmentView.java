@@ -18,10 +18,15 @@
 package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
+import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 
@@ -30,6 +35,7 @@ public class DevelopmentView extends NetCoderView {
 	
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
+	private AceEditor editor;
 	
 	// RPC services.
 	private LogCodeChangeServiceAsync logCodeChangeService = GWT.create(LogCodeChangeService.class);
@@ -47,6 +53,12 @@ public class DevelopmentView extends NetCoderView {
 				problemDescription,
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
 				LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX);
+		
+		editor = new AceEditor();
+		layoutPanel.add(editor);
+		layoutPanel.setWidgetTopHeight(editor,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
+				400, Unit.PX);
 		
 		initWidget(layoutPanel);
 		
@@ -70,10 +82,22 @@ public class DevelopmentView extends NetCoderView {
 				problemDescription.setErrorText("Could not load problem description");
 			}
 		});
+		
+		
 	}
 	
 	public void startEditor() {
-		
+		editor.startEditor();
+		editor.setReadOnly(true); // until a Problem is loaded
+		editor.setTheme(AceEditorTheme.ECLIPSE);
+		editor.setFontSize("14px");
+		editor.setMode(AceEditorMode.JAVA);
+		editor.addOnChangeHandler(new AceEditorCallback() {
+			@Override
+			public void invokeAceCallback(JavaScriptObject obj) {
+				// TODO
+			}
+		});
 	}
 	
 //	private static final int APP_PANEL_HEIGHT_PX = 30;
