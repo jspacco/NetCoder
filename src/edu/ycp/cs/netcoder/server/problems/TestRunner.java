@@ -17,11 +17,15 @@
 
 package edu.ycp.cs.netcoder.server.problems;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
@@ -34,19 +38,142 @@ import edu.ycp.cs.netcoder.shared.testing.TestResult;
 
 public class TestRunner
 {
-    public TestRunner() {}
+    public static final long TIMEOUT_LIMIT=2000;
+    private SecurityManager securityManager;
+    
+    public TestRunner() {
+        // default to the current security manager
+        this.securityManager=System.getSecurityManager();
+    }
+    public TestRunner(SecurityManager sm) {
+        this.securityManager=sm;
+    }
+    
+    /**
+     * Run all test cases in the given TestCreator in a single thread.
+     * WARNING:  This may hang forever if a test case has an infinite loop!
+     * 
+     * @param creator
+     * @return List of TestResults from the test cases, or nothing for
+     *  eternity if one of the test cases contained an infinite loop.
+     * @throws ClassNotFoundException
+     * @throws CompilationException
+     */
+    public List<TestResult> runInSingleThread(TestCreator creator)
+    throws ClassNotFoundException, CompilationException
+    {
+        final Class<?> testClass = compileToClass(creator);
+
+        
+        // create a list of results
+        List<TestResult> results=new LinkedList<TestResult>();
+        
+        // remember original stdOut/stdErr
+        final PrintStream originalStdout=System.out;
+        final PrintStream originalStderr=System.err;
+        
+        for (int i=0; i<creator.getNumTests(); i++) {
+            final TestCase test=creator.getTestNum(i);
+            JUnitCore core=new JUnitCore();
+            
+            // re-direct stdout/stderr
+            ByteArrayOutputStream baosOut=new ByteArrayOutputStream();
+            PrintStream out=new PrintStream(baosOut);
+            
+            ByteArrayOutputStream baosErr=new ByteArrayOutputStream();
+            PrintStream err=new PrintStream(baosErr);
+            
+            System.setOut(out);
+            System.setErr(err);
+            
+            // run tests
+            Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
+            
+            // put stdout/stderr back
+            System.setOut(originalStdout);
+            System.setErr(originalStderr);
+            
+            TestResult testResult=new TestResult(result, test);
+            // put buffered stdout/stderr into test results
+            testResult.setStdout(baosOut.toString());
+            testResult.setStderr(baosErr.toString());
+            results.add(testResult);
+        }
+        return results;
+    }
 
     public List<TestResult> run(TestCreator creator)
     throws ClassNotFoundException, CompilationException
     {
+        final Class testClass = compileToClass(creator);
+
+        // create a list of tasks to be executed
+        List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
+        
+        for (int i=0; i<creator.getNumTests(); i++) {
+            final TestCase test=creator.getTestNum(i);
+            tasks.add(new IsolatedTask<TestResult>() {
+                public TestResult execute() {
+                    //TODO Security Manager:  Probably need to restrict
+                    //access to unwanted operations by everything
+                    //located in the package where I'll compile
+                    //all of the student code.
+                    
+                    JUnitCore core=new JUnitCore();
+                    Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
+                    
+                    //TODO: Get exceptions and stack traces into TestResult
+                    return new TestResult(result, test);
+                }
+            });
+        }
+        
+        KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
+                tasks, 
+                TIMEOUT_LIMIT,
+                this.securityManager,
+                new KillableTaskManager.TimeoutHandler<TestResult>() {
+                    @Override
+                    public TestResult handleTimeout() {
+                        return new TestResult(TestResult.FAILED_FROM_TIMEOUT, 
+                                "Took too long!  Check for infinite loops, or recursion without a proper base case");
+                    }
+                });
+        
+        // run each task in a separate thread
+        pool.run();
+        
+        //merge outcomes with their buffered inputs for stdout/stderr
+        List<TestResult> outcomes=pool.getOutcomes();
+        Map<Integer,String> stdout=pool.getBufferedStdout();
+        Map<Integer,String> stderr=pool.getBufferedStderr();
+        for (int i=0; i<outcomes.size(); i++) {
+            TestResult t=outcomes.get(i);
+            t.setStdout(stdout.get(i));
+            t.setStderr(stderr.get(i));
+        }
+        
+        return outcomes;
+    }
+
+
+
+    /**
+     * @param creator
+     * @return
+     * @throws CompilationException
+     * @throws ClassNotFoundException
+     */
+    public Class compileToClass(TestCreator creator)
+            throws CompilationException, ClassNotFoundException {
         OnTheFlyCompiler flyCompiler=new OnTheFlyCompiler();
 
         CompileResult compileResult=flyCompiler.compile(
                 creator.getBinaryClassName(),
                 creator.toJUnitTestCase());
 
-        // print source file
-        System.out.println(creator.toJUnitTestCase());
+        //DEBUG: print source file
+        //System.out.println(creator.toJUnitTestCase());
         if (!compileResult.success) {
             // must receive a class that compiled or we throw exception
             throw new CompilationException(compileResult);
@@ -55,62 +182,31 @@ public class TestRunner
         
         // load class
         final Class testClass=flyCompiler.loadClass(creator.getBinaryClassName());
-        
-        // create a list of tasks to be executed
-        List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
-        for (int i=0; i<creator.getNumTests(); i++) {
-            final TestCase test=creator.getTestNum(i);
-            tasks.add(new IsolatedTask<TestResult>() {
-                public TestResult execute() {
-                    JUnitCore core=new JUnitCore();
-                    Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
-                    if (result.getFailureCount()>0) {
-                        // failed
-                        // XXX improve error message?
-                        return new TestResult(false, 
-                                "input:<"+test.inputAsString()+"> "+result.getFailures().get(0).getMessage().toString());
-                    } else {
-                        // succeeded
-                        return new TestResult(true, 
-                                "correct! "+test.inputAsString()+" output:<"+test.getCorrectOutput()+">");
-                    }
-                }
-            });
-        }
-        
-        KillableTaskManager<TestResult> pool=
-            new KillableTaskManager<TestResult>(
-                    tasks, 
-                    2000,
-                    new TestResult(false, "Timed out:  Check for an infinite loop or infinite recursion"));
-        pool.run();
-        
-        return pool.getOutcomes();
-
-//        for (int i=0; i<creator.getNumTests(); i++) {
-//            //TODO Spawn each testcase in a separate thread using a threadpool
-//            //TODO capture stdout/stderr to improve on codingbat
-//            //TODO return a list of "junit outcomes"
-//            BeanShellTest test=creator.getTestNum(i);
-//            Result result=core.run(Request.method(testClass, test.getTestName()));
-//            //Result result=JUnitCore.runClasses(testClass);
-//
-//            if (result.getFailureCount()>0) {
-//                // failed
-//                results.addTestResult(new TestResult(
-//                        false, 
-//                        test.inputAsString()+" "+result.getFailures().get(0).getMessage().toString()));
-//                System.out.println(result.getFailures().get(0).getTrace());
-//            } else {
-//                // succeeded
-//                results.addTestResult(new TestResult(true, 
-//                        test.inputAsString()+" "+test.correctOutputAsString()));
-//            }
-//        }
-//        return results;
+        return testClass;
     }
     
+    private interface TestResultCreator {
+        TestResult createTimeout(PrintStreamToStringConverter out, PrintStreamToStringConverter err);
+    }
     
+    private static class PrintStreamToStringConverter {
+        private PrintStream stream;
+        private ByteArrayOutputStream baos;
+        
+        PrintStreamToStringConverter() {
+            baos=new ByteArrayOutputStream();
+            stream=new PrintStream(baos);
+        }
+        
+        PrintStream getPrintStream() {
+            return this.stream;
+        }
+        String getString() {
+            stream.flush();
+            stream.close();
+            return baos.toString();
+        }
+    }
 
     private URL getWhereClassWasLoaded(Class cls){
         ProtectionDomain pDomain = cls.getProtectionDomain();
