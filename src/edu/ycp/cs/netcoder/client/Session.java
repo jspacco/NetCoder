@@ -20,12 +20,14 @@ package edu.ycp.cs.netcoder.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.ycp.cs.netcoder.shared.util.Observable;
+
 /**
  * Client-side session object.
  * Can hold any number of objects, but only one object of any given
  * class is allowed.
  */
-public class Session {
+public class Session extends Observable {
 	private Map<Class<?>, Object> data;
 	
 	/**
@@ -43,6 +45,8 @@ public class Session {
 	 */
 	public void add(Object obj) {
 		data.put(obj.getClass(), obj);
+		setChanged();
+		notifyObservers(obj);
 	}
 	
 	/**

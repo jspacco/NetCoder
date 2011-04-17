@@ -27,7 +27,7 @@ import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class NetCoder_GWT2 implements EntryPoint {
-	// Data (model) objects.
+	// Client session data.
 	private Session session;
 	
 	/**
@@ -38,6 +38,9 @@ public class NetCoder_GWT2 implements EntryPoint {
 		session = new Session();
 		session.add(new ChangeList());
 		session.add(new AffectEvent());
+
+//		LoginView loginView = new LoginView(session);
+//		RootLayoutPanel.get().add(loginView);
 		
 		DevelopmentView developmentView = new DevelopmentView(session);
 		RootLayoutPanel.get().add(developmentView);
