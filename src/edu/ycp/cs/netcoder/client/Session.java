@@ -20,6 +20,7 @@ package edu.ycp.cs.netcoder.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.util.Observable;
 
 /**
@@ -47,6 +48,17 @@ public class Session extends Observable {
 		data.put(obj.getClass(), obj);
 		setChanged();
 		notifyObservers(obj);
+	}
+
+	/**
+	 * Remove the object belonging to the given class from the session.
+	 * 
+	 * @param cls the class of the object to be removed
+	 */
+	public void remove(Class<User> cls) {
+		data.remove(cls);
+		setChanged();
+		notifyObservers();
 	}
 	
 	/**

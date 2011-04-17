@@ -76,7 +76,12 @@ public class TopBar extends Composite {
 			logoutButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					Window.alert("TODO: log out");
+					// Logging out is accomplished by removing
+					// the User object from the session
+					
+					// FIXME: need to make sure that there is no unsaved data
+					
+					TopBar.this.session.remove(User.class);
 				}
 			});
 			hPanel2.add(new InlineLabel("    "));
