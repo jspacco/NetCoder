@@ -27,4 +27,6 @@ public interface LoadExerciseService extends RemoteService {
     // FIXME: should return a TestResult and/or CompileResult
     // probably both
     public Problem load(int problemId);
+    
+    public String loadCurrentText(int problemId);
 }

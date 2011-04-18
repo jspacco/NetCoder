@@ -102,4 +102,12 @@ public class TextDocument {
 		
 		return buf.toString();
 	}
+
+	public void setText(String text) {
+		lineList.clear();
+		String[] lines = text.split("\n");
+		for (String line : lines) {
+			lineList.add(line);
+		}
+	}
 }

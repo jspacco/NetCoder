@@ -20,12 +20,16 @@ package edu.ycp.cs.netcoder.server;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpSession;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.LoadExerciseService;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
+import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
+import edu.ycp.cs.netcoder.shared.problems.User;
 
 public class LoadExerciseServiceImpl extends RemoteServiceServlet implements LoadExerciseService 
 {
@@ -43,5 +47,43 @@ public class LoadExerciseServiceImpl extends RemoteServiceServlet implements Loa
             return null;//"Cannot find problem with id "+problemId;
         }
         return problems.get(0); //.getDescription();
+    }
+    
+    @Override
+    public String loadCurrentText(int problemId) {
+    	
+    	HttpSession session = getThreadLocalRequest().getSession();
+    	
+    	User user = (User) session.getAttribute("user");
+    	if (user == null) {
+    		throw new IllegalArgumentException("Not logged in!");
+    	}
+    	
+    	// Find the most recent full-text Change event.
+    	// Assuming the user logged out successfully,
+    	// it should be present and up to date.
+        EntityManager eman = HibernateUtil.getManager();
+        List<Change> result = eman.createQuery(
+        		"select c from Change c, Event e " +
+        		"where c.eventId = e.id " +
+        		"  and e.id = (select max(ee.id) from Change cc, Event ee " +
+        		"              where cc.eventId = ee.id " +
+        		"                and ee.userId = :userId " +
+        		"                and cc.type = " + ChangeType.FULL_TEXT.ordinal() + ")"
+        		, Change.class)
+        		.setParameter("userId", user.getId())
+        		.getResultList();
+        
+        // FIXME: Need to make sure that the full-text is the latest Change!
+        // If it isn't, then we need to recover the text based on the last full-text
+        // change and any deltas that follow it.
+        
+        if (result.size() != 1) {
+        	System.out.println("Could not find most recent full-text for user " + user.getId() + ", problem " + problemId);
+        	return "";
+        } else {
+        	Change fullText = result.get(0);
+        	return fullText.getText();
+        }
     }
 }

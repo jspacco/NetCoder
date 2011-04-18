@@ -34,15 +34,43 @@ import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
 import edu.ycp.cs.netcoder.client.status.ResultWidget;
 import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
+import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Observer;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.User;
 
 /**
  * View for working on a problem: code editor, submit button, feedback, etc.
  */
-public class DevelopmentView extends NetCoderView {
+public class DevelopmentView extends NetCoderView implements Observer {
 	private static final int PROBLEM_ID = 0; // FIXME
+	
+	private enum Mode {
+		/** Loading problem and current text - editing not allowed. */
+		LOADING,
+		
+		/** Normal state - user is allowed to edit the program text. */
+		EDITING,
+		
+		/**
+		 * A submission has been initiated, and we're waiting for the ChangeList
+		 * to become clean before attempting the submit.
+		 * Editing is disallowed until submit completes.
+		 */
+		SUBMIT_INITIATED,
+		
+		/**
+		 * Submit in progress.
+		 * Editing disallowed until server response is received.
+		 */
+		SUBMIT_IN_PROGRESS,
+	}
+	
+	// UI mode
+	private Mode mode;
+	private boolean textLoaded;
 	
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
@@ -57,6 +85,12 @@ public class DevelopmentView extends NetCoderView {
 	
 	public DevelopmentView(Session session) {
 		super(session);
+
+		// Observe ChangeList state.
+		session.get(ChangeList.class).addObserver(this);
+		
+		mode = Mode.LOADING;
+		textLoaded = false;
 		
 		LayoutPanel layoutPanel = getLayoutPanel();
 		problemDescription = new ProblemDescriptionWidget(session);
@@ -100,7 +134,7 @@ public class DevelopmentView extends NetCoderView {
 			public void onSuccess(Problem result) {
 				if (result != null) {
 					getSession().add(result);
-					editor.setReadOnly(false);
+					onProblemLoaded();
 				} else {
 					loadProblemFailed();
 				}
@@ -111,9 +145,16 @@ public class DevelopmentView extends NetCoderView {
 				GWT.log("Could not load problem", caught);
 				loadProblemFailed();
 			}
-
-			private void loadProblemFailed() {
-				problemDescription.setErrorText("Could not load problem description");
+		});
+		loadService.loadCurrentText(PROBLEM_ID, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Could not load current text", caught);
+				loadCurrentTextFailed();
+			}
+			
+			public void onSuccess(String result) {
+				onCurrentTextLoaded(result);
 			}
 		});
 		
@@ -122,6 +163,7 @@ public class DevelopmentView extends NetCoderView {
 			@Override
 			public void run() {
 				final ChangeList changeList = getSession().get(ChangeList.class);
+				
 				if (changeList.getState() == ChangeList.State.UNSENT) {
 					Change[] changeBatch = changeList.beginTransmit();
 
@@ -145,7 +187,32 @@ public class DevelopmentView extends NetCoderView {
 		flushPendingChangeEventsTimer.scheduleRepeating(1000);
 		
 	}
+
+	protected void onProblemLoaded() {
+		if (mode == Mode.LOADING && textLoaded == true) {
+			editor.setReadOnly(false);
+			mode = Mode.EDITING;
+		}
+	}
+
+	protected void onCurrentTextLoaded(String text) {
+		editor.setText(text);
+		textLoaded = true;
+		if (mode == Mode.LOADING) {
+			editor.setReadOnly(false);
+		}
+	}
+
+	protected void loadProblemFailed() {
+		// TODO - improve
+		problemDescription.setErrorText("Could not load problem description");
+	}
 	
+	protected void loadCurrentTextFailed() {
+		// TODO - improve
+		problemDescription.setErrorText("Could not load text for problem");
+	}
+
 	@Override
 	public void activate() {
 		editor.startEditor();
@@ -171,21 +238,68 @@ public class DevelopmentView extends NetCoderView {
 	}
 
 	protected void submitCode() {
-		AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				resultWidget.setMessage("Error sending submission to server for compilation");
-				GWT.log("compile failed", caught);
-			}
-
-			@Override
-			public void onSuccess(TestResult[] results) {
-				resultWidget.setResults(results);
-			}
-		};
-		int problemId= getSession().get(Problem.class).getProblemId();
-		submitService.submit(problemId, editor.getText(), callback);
+		if (getSession().get(Problem.class) == null) {
+			return;
+		}
+		
+		// Set the editor to read-only!
+		// We don't want any edits until the results have
+		// come back from the server.
+		editor.setReadOnly(true);
+		
+		// Create a Change representing the full text of the document,
+		// and schedule it for transmission to the server.
+		Change fullText = new Change(
+				ChangeType.FULL_TEXT,
+				0, 0, 0, 0, // ignored
+				System.currentTimeMillis(),
+				getSession().get(User.class).getId(),
+				getSession().get(Problem.class).getProblemId(),
+				editor.getText());
+		getSession().get(ChangeList.class).addChange(fullText);
+		
+		// Set the mode to SUBMIT_INITIATED, indicating that we are
+		// waiting for the full text to be uploaded to the server.
+		mode = Mode.SUBMIT_INITIATED;
 	}
+	
+	@Override
+	public void update(Observable obj, Object hint) {
+		ChangeList changeList = getSession().get(ChangeList.class);
+		if (obj == changeList) {
+			if (mode == Mode.SUBMIT_INITIATED && changeList.getState() == ChangeList.State.CLEAN) {
+				// Full text of submission has arrived at server,
+				// and because the editor is readonly, we know that the
+				// local text is in-sync.  So, submit the code!
+				mode = Mode.SUBMIT_IN_PROGRESS;
+				
+				AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						resultWidget.setMessage("Error sending submission to server for compilation");
+						GWT.log("compile failed", caught);
+						// TODO: should set editor back to read/write?
+					}
+
+					@Override
+					public void onSuccess(TestResult[] results) {
+						resultWidget.setResults(results);
+						
+						// can now set mode back to EDITING
+						editor.setReadOnly(false);
+						mode = Mode.EDITING;
+					}
+				};
+				
+				
+				int problemId= getSession().get(Problem.class).getProblemId();
+				submitService.submit(problemId, editor.getText(), callback);
+			}
+		}
+	}
+
+//	protected void flushAllChanges() {
+//	}
 	
 //	private static final int APP_PANEL_HEIGHT_PX = 30;
 //	private static final int DESC_PANEL_HEIGHT_PX = 70;

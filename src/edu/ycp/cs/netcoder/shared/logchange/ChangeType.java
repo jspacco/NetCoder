@@ -17,9 +17,6 @@
 
 package edu.ycp.cs.netcoder.shared.logchange;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Type of textual change.
  */
@@ -34,6 +31,12 @@ public enum ChangeType {
 	INSERT_LINES,
 	
 	/** Removal of one or more lines. */
-	REMOVE_LINES;
+	REMOVE_LINES,
+	
+	/**
+	 * The full text of the document.
+	 * Not really a change, but provides a convenient synchronization
+	 * point for incremental changes.
+	 */
+	FULL_TEXT;
 }
-

@@ -25,4 +25,6 @@ public interface LoadExerciseServiceAsync
 {
     void load(int problemId, AsyncCallback<Problem> callback);
 
+	void loadCurrentText(int problemId, AsyncCallback<String> callback);
+
 }

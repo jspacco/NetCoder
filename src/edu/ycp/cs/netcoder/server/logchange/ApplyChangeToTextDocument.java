@@ -68,6 +68,9 @@ public class ApplyChangeToTextDocument {
 				doc.removeLine(change.getStartRow());
 			}
 			break;
+		case FULL_TEXT:
+			doc.setText(change.getText());
+			break;
 		default:
 			throw new IllegalStateException("Not handled? " + change.getType());
 		}
