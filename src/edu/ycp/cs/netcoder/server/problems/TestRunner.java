@@ -39,15 +39,8 @@ import edu.ycp.cs.netcoder.shared.testing.TestResult;
 public class TestRunner
 {
     public static final long TIMEOUT_LIMIT=2000;
-    private SecurityManager securityManager;
     
-    public TestRunner() {
-        // default to the current security manager
-        this.securityManager=System.getSecurityManager();
-    }
-    public TestRunner(SecurityManager sm) {
-        this.securityManager=sm;
-    }
+    public TestRunner() {}
     
     /**
      * Run all test cases in the given TestCreator in a single thread.
@@ -64,7 +57,6 @@ public class TestRunner
     {
         final Class<?> testClass = compileToClass(creator);
 
-        
         // create a list of results
         List<TestResult> results=new LinkedList<TestResult>();
         
@@ -74,7 +66,6 @@ public class TestRunner
         
         for (int i=0; i<creator.getNumTests(); i++) {
             final TestCase test=creator.getTestNum(i);
-            JUnitCore core=new JUnitCore();
             
             // re-direct stdout/stderr
             ByteArrayOutputStream baosOut=new ByteArrayOutputStream();
@@ -87,13 +78,12 @@ public class TestRunner
             System.setErr(err);
             
             // run tests
-            Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
-            
+            TestResult testResult=runOneTestCase(testClass, test);
+
             // put stdout/stderr back
             System.setOut(originalStdout);
             System.setErr(originalStderr);
             
-            TestResult testResult=new TestResult(result, test);
             // put buffered stdout/stderr into test results
             testResult.setStdout(baosOut.toString());
             testResult.setStderr(baosErr.toString());
@@ -101,11 +91,23 @@ public class TestRunner
         }
         return results;
     }
+    
+    private TestResult runOneTestCase(Class<?> testClass, TestCase test) {
+        JUnitCore core=new JUnitCore();
+        // This is probably where the security manager should be set
+        //SecurityManager originalSecurityManager=System.getSecurityManager();
+        //StudentCodeSecurityManager sman=new StudentCodeSecurityManager();
+        //sman.enableSandbox();
+        Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
+        //sman.disableSandbox();
+        //System.setSecurityManager(originalSecurityManager);
+        return new TestResult(result, test);
+    }
 
     public List<TestResult> run(TestCreator creator)
     throws ClassNotFoundException, CompilationException
     {
-        final Class testClass = compileToClass(creator);
+        final Class<?> testClass = compileToClass(creator);
 
         // create a list of tasks to be executed
         List<IsolatedTask<TestResult>> tasks=new ArrayList<IsolatedTask<TestResult>>();
@@ -114,16 +116,7 @@ public class TestRunner
             final TestCase test=creator.getTestNum(i);
             tasks.add(new IsolatedTask<TestResult>() {
                 public TestResult execute() {
-                    //TODO Security Manager:  Probably need to restrict
-                    //access to unwanted operations by everything
-                    //located in the package where I'll compile
-                    //all of the student code.
-                    
-                    JUnitCore core=new JUnitCore();
-                    Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
-                    
-                    //TODO: Get exceptions and stack traces into TestResult
-                    return new TestResult(result, test);
+                    return runOneTestCase(testClass, test);
                 }
             });
         }
@@ -131,7 +124,6 @@ public class TestRunner
         KillableTaskManager<TestResult> pool=new KillableTaskManager<TestResult>(
                 tasks, 
                 TIMEOUT_LIMIT,
-                this.securityManager,
                 new KillableTaskManager.TimeoutHandler<TestResult>() {
                     @Override
                     public TestResult handleTimeout() {
@@ -164,8 +156,9 @@ public class TestRunner
      * @throws CompilationException
      * @throws ClassNotFoundException
      */
-    public Class compileToClass(TestCreator creator)
-            throws CompilationException, ClassNotFoundException {
+    public Class<?> compileToClass(TestCreator creator)
+    throws CompilationException, ClassNotFoundException
+    {
         OnTheFlyCompiler flyCompiler=new OnTheFlyCompiler();
 
         CompileResult compileResult=flyCompiler.compile(
@@ -173,7 +166,7 @@ public class TestRunner
                 creator.toJUnitTestCase());
 
         //DEBUG: print source file
-        //System.out.println(creator.toJUnitTestCase());
+        System.out.println(creator.toJUnitTestCase());
         if (!compileResult.success) {
             // must receive a class that compiled or we throw exception
             throw new CompilationException(compileResult);
@@ -181,31 +174,8 @@ public class TestRunner
         //System.out.println(creator.toString());
         
         // load class
-        final Class testClass=flyCompiler.loadClass(creator.getBinaryClassName());
+        final Class<?> testClass=flyCompiler.loadClass(creator.getBinaryClassName());
         return testClass;
-    }
-    
-    private interface TestResultCreator {
-        TestResult createTimeout(PrintStreamToStringConverter out, PrintStreamToStringConverter err);
-    }
-    
-    private static class PrintStreamToStringConverter {
-        private PrintStream stream;
-        private ByteArrayOutputStream baos;
-        
-        PrintStreamToStringConverter() {
-            baos=new ByteArrayOutputStream();
-            stream=new PrintStream(baos);
-        }
-        
-        PrintStream getPrintStream() {
-            return this.stream;
-        }
-        String getString() {
-            stream.flush();
-            stream.close();
-            return baos.toString();
-        }
     }
 
     private URL getWhereClassWasLoaded(Class cls){

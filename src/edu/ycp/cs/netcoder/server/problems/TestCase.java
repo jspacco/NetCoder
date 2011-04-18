@@ -63,9 +63,21 @@ public class TestCase
     
     String toJUnitTestCase(String className, String functionName) {
         return "public void "+getJUnitTestCaseName()+"() throws Exception {\n"+
+        "SecurityManager originalSecurityManager=System.getSecurityManager();\n"+
+        "StudentCodeSecurityManager.SandboxBooleanContainer container=new StudentCodeSecurityManager.SandboxBooleanContainer();\n"+
+        "StudentCodeSecurityManager sman=new StudentCodeSecurityManager(container);\n"+
+        "container.enableSandbox();"+
+        "System.setSecurityManager(sman);\n"+
+        "try {\n"+
         className+" theInstance=new "+className+"();\n"+
             "assertEquals(\"input:<"+input+">\", "+
-            this.correctOutput+", theInstance."+functionName+"("+this.input+"));\n}";
+            this.correctOutput+", theInstance."+functionName+"("+this.input+"));\n"+
+            "} finally {\n"+
+            "container.disableSandbox();\n"+
+            "System.setSecurityManager(originalSecurityManager);\n"+
+            "}\n"+
+            "}";
+        
     }
     
     String toBeanShellTestCase(String functionName, String body) {

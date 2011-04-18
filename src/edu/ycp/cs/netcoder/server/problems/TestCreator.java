@@ -52,6 +52,7 @@ public class TestCreator
         buf.append("import org.junit.Test;\n");
         buf.append("import org.junit.runner.JUnitCore;\n");
         buf.append("import static org.junit.Assert.assertEquals;\n");
+        buf.append("import edu.ycp.cs.netcoder.server.problems.StudentCodeSecurityManager;\n");
         
         buf.append("public class "+className+" {\n");
         //TODO: Create inner class for the 

@@ -1,5 +1,13 @@
-TestRunner:
-* clear() method, or better callbacks for timeouts
+* TestRunner:
+  - currently student code cannot disable its security manager
+  - timeouts from calling stop() screw up JUnit
+  - not sure where the ThreadDeath exception is actually going 
+  - should the actual JUnit test case spawn the thread?
+  - would require making KillableTaskManager considerably less general
+  - KTM could have the JUnit class and the Request
+  - launch the thread in the generated JUnit code maybe?
+  - Put student code into totally separate class from JUnit tests
+  	> unsure if this will help with the current problem?  
 * SecurityManager: disallow access to files/sockets/etc
 	for everything in whatever package I put student code into
 * Nice way to configure:
@@ -11,13 +19,6 @@ TestRunner:
     > truncate to a certain number of lines
     > maybe have a scrollable "more" option
   - link to the exception for a failure 
-* TestResult
-  - pass
-  - failed assertion
-  - failure with exception
-    > store type of exception/stack trace
-  - timeout
-  - security exception
 * Scrollable main panel
 * User accounts
 * problem creation workflow

@@ -57,8 +57,6 @@ public class KillableTaskManager<T>
     private final PrintStream originalStdErr=System.err;
     /** Handles timeouts by producing a T representing a timeout event */
     private TimeoutHandler<T> timeoutHandler;
-    /** SecurityManager for sandboxing student code*/
-    private SecurityManager securityManager;
     
     /**
      * Callback handler to create a new task outcome of type T
@@ -77,25 +75,16 @@ public class KillableTaskManager<T>
             long maxRunTime, 
             TimeoutHandler<T> timeoutHandler)
     {
-        // will default to using current security manager
-        this(tasks, maxRunTime, System.getSecurityManager(), timeoutHandler);
-    }
-    
-    public KillableTaskManager(List<IsolatedTask<T>> tasks, 
-            long maxRunTime,
-            SecurityManager securityManager,
-            TimeoutHandler<T> timeoutHandler)
-    {
         this.tasks=tasks;
         this.maxRunTime=maxRunTime;
         this.timeoutHandler=timeoutHandler;
-        this.securityManager=securityManager;
         
         this.results=new ArrayList<Outcome<T>>(tasks.size());
         for (int i=0; i<tasks.size(); i++) {
             results.add(new Outcome<T>());
         }
     }
+    
     public boolean isFinished(int x) {
         return results.get(x).finished;
     }
@@ -118,12 +107,12 @@ public class KillableTaskManager<T>
         ThreadedPrintStreamMonitor stdErrMonitor=
             new ThreadedPrintStreamMonitor(System.err);
         System.setOut(stdOutMonitor);
-        System.setErr(stdErrMonitor);
+        //System.setErr(stdErrMonitor);
 
         Thread[] pool=new Thread[tasks.size()];
         for (int i=0; i<tasks.size(); i++) {
             IsolatedTask<T> task=tasks.get(i);
-            pool[i]=new WorkerThread<T>(task, results.get(i), securityManager);
+            pool[i]=new WorkerThread<T>(task, results.get(i));
             pool[i].setDaemon(true);
             pool[i].start();
         }
@@ -208,7 +197,6 @@ public class KillableTaskManager<T>
     {
         private IsolatedTask<T> task;
         private Outcome<T> out;
-        private SecurityManager securityManager;
         
         /**
          * Create a thread that executes the given task and puts
@@ -218,12 +206,11 @@ public class KillableTaskManager<T>
          * @param out The container in which to put the result of the task
          * @param sm SecurityManager to use for the task
          */
-        public WorkerThread(IsolatedTask<T> task, Outcome<T> out, SecurityManager sm)
+        public WorkerThread(IsolatedTask<T> task, Outcome<T> out)
         {
             super();
             this.task=task;
             this.out=out;
-            this.securityManager=sm;
         }
 
         /**
@@ -238,9 +225,7 @@ public class KillableTaskManager<T>
          * @see java.lang.Thread#run()
          */
         public void run() {
-            SecurityManager originalSecurityManager=System.getSecurityManager();
-            // set the security manager for the isolated-task to use
-            System.setSecurityManager(securityManager);
+            SecurityManager secman=System.getSecurityManager();
             try {
                 T o=task.execute();
                 out.result=o;
@@ -250,9 +235,13 @@ public class KillableTaskManager<T>
                 // "Attaching an exception-catching silencer to my thread-killing gun"
                 // XXX Log this
                 System.err.println("Thread killed in go!");
+                System.out.println("Thread killed in go!");
             } finally {
                 // revert back to the original security manager
-                System.setSecurityManager(originalSecurityManager);
+                //System.setSecurityManager(originalSecurityManager);
+                System.setSecurityManager(secman);
+                System.err.println(System.getSecurityManager());
+                System.out.println(System.getSecurityManager());
             }
         }
     }

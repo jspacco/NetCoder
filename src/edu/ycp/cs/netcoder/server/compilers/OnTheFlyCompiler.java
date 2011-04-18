@@ -80,7 +80,8 @@ public class OnTheFlyCompiler extends ClassLoader
         
         // set compiler's classpath to be same as the runtime's
         optionsList.addAll(Arrays.asList("-classpath",getClasspath()));
-        System.out.println("Classpath: "+getClasspath());
+        //XXX Debug
+        //System.out.println("Classpath: "+getClasspath());
 
         Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(source);
 

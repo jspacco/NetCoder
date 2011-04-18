@@ -11,7 +11,7 @@ import org.junit.runner.Result;
 
 import static org.junit.Assert.*;
 
-import edu.ycp.cs.netcoder.server.problems.StudentSandboxSecurityManager;
+import edu.ycp.cs.netcoder.server.problems.StudentCodeSecurityManager;
 import edu.ycp.cs.netcoder.server.problems.TestCreator;
 import edu.ycp.cs.netcoder.server.problems.TestRunner;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
@@ -24,11 +24,15 @@ public class BeanTestDriver
         return "System.out.println(\""+msg+"\");";
     }
     String code="public int sq(int x) { "+
-    "if (x==1) {"+printMsg("return 17")+" return 17; }"+    
+    "if (x==1) {"+printMsg("return 17")+" return 17; }"+
     "if (x==2) {"+printMsg("throw exception")+" throw new RuntimeException(); }"+    
     "if (x==3) {"+printMsg("Infinite loop!")+" while (true);}"+
     "if (x==4) {"+printMsg("Try to spawn thread")+" new Thread() {public void run() {while(true);}}.start();}"+
     "if (x==5) {"+printMsg("Try to call System.exit(1)")+" System.exit(1);}"+
+    "if (x==6) { return (int)Math.pow(x, 2); }"+
+    "if (x==7) {System.setSecurityManager(null);}"+
+    //"if (x==8) {StudentCodeSecurityManager sman=(StudentCodeSecurityManager)System.getSecurityManager(); sman.disableSandbox();}"+
+    printMsg("Message in output")+
     "return x*x; " +
     "}";
     
@@ -42,9 +46,12 @@ public class BeanTestDriver
                 );
         creator.addTest("test1", input, output);
         
-        TestRunner runner=new TestRunner(new StudentSandboxSecurityManager());
+        TestRunner runner=new TestRunner();
         List<TestResult> results=runner.run(creator);
-        return results.get(0);
+        TestResult result=results.get(0);
+        System.out.println(result.getStdout());
+        System.err.println(result.getStderr());
+        return result;
     }
     
     
@@ -60,21 +67,38 @@ public class BeanTestDriver
         
         TestRunner runner=new TestRunner();
         List<TestResult> results=runner.runInSingleThread(creator);
-        return results.get(0);
+        TestResult result=results.get(0);
+        System.out.println(result.getStdout());
+        System.err.println(result.getStderr());
+        return result;
     }
-//    
     
     @Test
-    public void testFailedAssertion()
+    public void testFailedAssertionMultiThread()
     throws Exception
     {
-        //TestResult t=executeMultiThreaded("1", "1");
+        TestResult t=executeMultiThreaded("1", "1");
+        assertEquals(TestResult.FAILED_ASSERTION, t.getOutcome());
+    }
+    
+    @Test
+    public void testFailedAssertionSingelThread()
+    throws Exception
+    {
         TestResult t=executeSingleThreaded("1", "1");
         assertEquals(TestResult.FAILED_ASSERTION, t.getOutcome());
     }
     
     @Test
-    public void testRuntimeException()
+    public void testRuntimeExceptionSingleThread()
+    throws Exception
+    {
+        TestResult t=executeSingleThreaded("2", "4");
+        assertEquals(TestResult.FAILED_WITH_EXCEPTION, t.getOutcome());
+    }
+    
+    @Test
+    public void testRuntimeExceptionMultiThreaded()
     throws Exception
     {
         TestResult t=executeMultiThreaded("2", "4");
@@ -82,15 +106,40 @@ public class BeanTestDriver
     }
     
     @Test
-    public void testPassed()
+    public void testStudentCodeCannotSetSecurityManager()
+    throws Exception
+    {
+        TestResult t=executeMultiThreaded("7", "49");
+        assertEquals(TestResult.FAILED_BY_SECURITY_MANAGER, t.getOutcome());
+    }
+    
+    @Test
+    public void testStudentCodeCannotDisableSecurityManager()
+    throws Exception
+    {
+        TestResult t=executeMultiThreaded("8", "64");
+        assertEquals(TestResult.FAILED_BY_SECURITY_MANAGER, t.getOutcome());
+    }
+    
+    @Test
+    public void testPassedSingleThread()
+    throws Exception
+    {
+        TestResult t=executeSingleThreaded("12", "144");
+        assertEquals(TestResult.PASSED, t.getOutcome());
+    }
+    
+    @Test
+    public void testPassedMultiThread()
     throws Exception
     {
         TestResult t=executeMultiThreaded("12", "144");
         assertEquals(TestResult.PASSED, t.getOutcome());
     }
+       
     
     @Test
-    public void testTimeoutInfiniteLoop()
+    public void testTimeoutInfiniteLoopMultiThreaded()
     throws Exception
     {
         TestResult t=executeMultiThreaded("3", "9");
@@ -98,12 +147,30 @@ public class BeanTestDriver
     }
     
     @Test
-    public void testSystemExit()
+    public void testThreadSpawnAttempLoopMultiThreaded()
     throws Exception
     {
         TestResult t=executeMultiThreaded("4", "16");
         assertEquals(TestResult.FAILED_BY_SECURITY_MANAGER, t.getOutcome());
     }
+    
+    @Test
+    public void testSystemExitSingleThread()
+    throws Exception
+    {
+        TestResult t=executeSingleThreaded("5", "25");
+        assertEquals(TestResult.FAILED_BY_SECURITY_MANAGER, t.getOutcome());
+    }
+    
+    @Test
+    public void testSystemExit()
+    throws Exception
+    {
+        TestResult t=executeMultiThreaded("5", "25");
+        
+        assertEquals(TestResult.FAILED_BY_SECURITY_MANAGER, t.getOutcome());
+    }
+    
     
     //@Test
     public void testJUnitCore()
@@ -156,85 +223,40 @@ public class BeanTestDriver
         }
     }
     
-//  @Test
-//  public void testCreatorNoDatabase()
-//  throws Exception
-//  {
-//      TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.junit.online", 
-//              "Run", 
-//              "sq",
-//              code
-//              );
-//
-//      creator.addTest("test1", "1", "1");
-//      creator.addTest("test2", "2", "2");
-//      creator.addTest("test3", "3", "9");
-//      creator.addTest("test4", "4", "16");
-//      creator.addTest("test5", "5", "25");
-//
-//      //System.out.println(creator.toString());
-//      
-//      TestRunner runner=new TestRunner();
-//      List<TestResult> results=runner.run(creator);
-//      for (TestResult t : results) {
-//          //TODO assertions for each test case
-//          System.out.println(t.getStdout());
-//      }
-//  }
-    
-//    @Test
-//    public void testStdoutWithThreads() {
-//        ByteArrayOutputStream baos=new ByteArrayOutputStream();
-//        PrintStream origOut=System.out;
-//        
-//        PrintStream fakeOut=new PrintStream(baos);
-//        System.setOut(fakeOut);
-//        
-//        for (int i=0; i<5; i++) {
-//            Thread t=new Thread(i+"") {
-//                public void run() {
-//                    for (int i=0; i<10; i++) {
-//                        System.out.println(getName()+" "+i);
-//                    }
-//                }
-//            };
-//            t.start();
-//        }
-//        
-//        Thread t3=new Thread("foo") {
-//            public void run() {
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    // Ignore
-//                }
-//                for (int i=0; i<10; i++) {
-//                    System.out.println(getName()+" "+i);
-//                }
-//            }
-//        };
-//        t3.start();
-//        
-//        for (int i=0; i<5; i++) {
-//            Thread t2=new Thread(i+"") {
-//                public void run() {
-//                    for (int i=0; i<10; i++) {
-//                        System.out.println(getName()+" "+i);
-//                    }
-//                }
-//            };
-//            t2.start();
-//        }
-//        System.setOut(origOut);
-//        fakeOut.flush();
-//        fakeOut.close();
-//        System.out.println(new String(baos.toByteArray()));
-//        
-//        try {
-//            Thread.sleep(3000);
-//        } catch (InterruptedException e) {
-//            // ignore
-//        }
-//        System.out.println(new String(baos.toByteArray()));
-//    }
+    @Test
+    public void testSecurityManagerThreadInteractions() throws Exception
+    {
+        SecurityManager orig=System.getSecurityManager();
+        Thread t=new Thread() {
+            public void run() {
+                SecurityManager mine=System.getSecurityManager();
+                StudentCodeSecurityManager.SandboxBooleanContainer container=new StudentCodeSecurityManager.SandboxBooleanContainer();
+                StudentCodeSecurityManager sman=new StudentCodeSecurityManager(container);
+                container.enableSandbox();
+                try {
+                    //while (true) if (2<1) break;
+                    Thread.sleep(50000);
+                } catch (InterruptedException e) {
+                    System.out.println("Interrupted: "+e);
+                } catch (ThreadDeath e) {
+                    System.out.println(e);
+                }
+                //sman.disableSandbox();
+                //System.setSecurityManager(mine);
+            }
+        };
+        t.start();
+        
+        try {
+            Thread.sleep(1000);
+        } catch (Exception e) {
+            // shouldn't happen
+        }
+        
+        t.stop();
+        SecurityManager current=System.getSecurityManager();
+        System.out.println("My security manager is now: " +current);
+        assertEquals(orig, current);
+        
+    }
 }

@@ -47,12 +47,18 @@ public class TestResult implements Serializable, IsSerializable
     public TestResult(Result result, TestCase test) {
         if (result.getFailureCount()>0) {
             Failure failure=result.getFailures().get(0);
+            
+            //XXX: Debug
+            failure.getException().printStackTrace();
+            
             Throwable t=failure.getException();
             if (t instanceof AssertionError) {
                 // JUnit failure due to failed assertion
                 this.outcome=FAILED_ASSERTION;
                 this.message="input:<"+test.inputAsString()+"> "+failure.getMessage();
-            } else if (t instanceof AccessControlException) {
+            } else if (t instanceof AccessControlException ||
+                    t instanceof SecurityException)
+            {
                 this.outcome=FAILED_BY_SECURITY_MANAGER;
                 this.message="input:<"+test.inputAsString()+"> "+failure.getTrace();
             } else {
