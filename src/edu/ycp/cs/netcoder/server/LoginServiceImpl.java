@@ -17,6 +17,7 @@
 
 package edu.ycp.cs.netcoder.server;
 
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -67,6 +68,18 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 		} else {
 			// Failed authentication
 			return null;
+		}
+	}
+	
+	@Override
+	public void logout() {
+		HttpSession session = getThreadLocalRequest().getSession();
+		
+		@SuppressWarnings("unchecked")
+		Enumeration<String> attributeNames = (Enumeration<String>) session.getAttributeNames();
+		while (attributeNames.hasMoreElements()) {
+			String attr = attributeNames.nextElement();
+			session.removeAttribute(attr);
 		}
 	}
 }

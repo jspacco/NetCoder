@@ -21,6 +21,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -40,6 +41,8 @@ public class TopBar extends Composite {
 	private FlowPanel hPanel;
 	private FlowPanel hPanel2;
 	private InlineLabel loggedInAsLabel;
+	
+	private Runnable logoutHandler;
 	
 	public TopBar() {
 		String urlBase = GWT.getModuleBaseURL();
@@ -76,16 +79,17 @@ public class TopBar extends Composite {
 			logoutButton.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					// Logging out is accomplished by removing
-					// the User object from the session
-					
-					// FIXME: need to make sure that there is no unsaved data
-					
-					TopBar.this.session.remove(User.class);
+					if (logoutHandler != null) {
+						logoutHandler.run();
+					}
 				}
 			});
 			hPanel2.add(new InlineLabel("    "));
 			hPanel2.add(logoutButton);
 		}
+	}
+	
+	public void setLogoutHandler(Runnable logoutHandler) {
+		this.logoutHandler = logoutHandler;
 	}
 }

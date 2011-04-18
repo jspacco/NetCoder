@@ -25,4 +25,5 @@ import edu.ycp.cs.netcoder.shared.problems.User;
 @RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
 	public User login(String userName, String password);
+	public void logout();
 }

@@ -107,7 +107,7 @@ public class TextDocument {
 		lineList.clear();
 		String[] lines = text.split("\n");
 		for (String line : lines) {
-			lineList.add(line);
+			lineList.add(line + "\n");
 		}
 	}
 }

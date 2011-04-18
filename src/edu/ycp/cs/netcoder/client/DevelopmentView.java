@@ -55,17 +55,15 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		EDITING,
 		
 		/**
-		 * A submission has been initiated, and we're waiting for the ChangeList
-		 * to become clean before attempting the submit.
-		 * Editing is disallowed until submit completes.
-		 */
-		SUBMIT_INITIATED,
-		
-		/**
 		 * Submit in progress.
 		 * Editing disallowed until server response is received.
 		 */
 		SUBMIT_IN_PROGRESS,
+		
+		/**
+		 * Logging out.
+		 */
+		LOGOUT,
 	}
 	
 	// UI mode
@@ -75,16 +73,41 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
 	private AceEditor editor;
+	private ResultWidget resultWidget;
 	
 	// RPC services.
+	private LoginServiceAsync loginService = GWT.create(LoginService.class);
 	private LogCodeChangeServiceAsync logCodeChangeService = GWT.create(LogCodeChangeService.class);
 	private SubmitServiceAsync submitService = GWT.create(SubmitService.class);
 	private LoadExerciseServiceAsync loadService = GWT.create(LoadExerciseService.class);
 	private AffectEventServiceAsync affectEventService = GWT.create(AffectEventService.class);
-	private ResultWidget resultWidget;
 	
 	public DevelopmentView(Session session) {
 		super(session);
+		
+		// Add logout handler
+		getTopBar().setLogoutHandler(new Runnable() {
+			@Override
+			public void run() {
+				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						GWT.log("Could not log out?", caught);
+						
+						// well, at least we tried
+						getSession().remove(User.class);
+					}
+					
+					@Override
+					public void onSuccess(Void result) {
+						// server has purged the session
+						getSession().remove(User.class);
+					}
+				};
+				
+				loginService.logout(callback);
+			}
+		});
 
 		// Observe ChangeList state.
 		session.get(ChangeList.class).addObserver(this);
@@ -223,6 +246,13 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		editor.addOnChangeHandler(new AceEditorCallback() {
 			@Override
 			public void invokeAceCallback(JavaScriptObject obj) {
+				// Important: don't send the change to the server unless the problem
+				// has actually been loading, meaning that the change is an actual edit
+				// (and not just the initial contents of the editor being set!)
+				if (!textLoaded) {
+					return;
+				}
+				
 				// Convert ACE onChange event object to a Change object,
 				// and add it to the session's ChangeList
 				User user = getSession().get(User.class);
@@ -260,29 +290,30 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		
 		// Set the mode to SUBMIT_INITIATED, indicating that we are
 		// waiting for the full text to be uploaded to the server.
-		mode = Mode.SUBMIT_INITIATED;
+		mode = Mode.SUBMIT_IN_PROGRESS;
 	}
 	
 	@Override
 	public void update(Observable obj, Object hint) {
 		ChangeList changeList = getSession().get(ChangeList.class);
 		if (obj == changeList) {
-			if (mode == Mode.SUBMIT_INITIATED && changeList.getState() == ChangeList.State.CLEAN) {
+			if (mode == Mode.SUBMIT_IN_PROGRESS && changeList.getState() == ChangeList.State.CLEAN) {
 				// Full text of submission has arrived at server,
 				// and because the editor is readonly, we know that the
 				// local text is in-sync.  So, submit the code!
-				mode = Mode.SUBMIT_IN_PROGRESS;
 				
 				AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						resultWidget.setMessage("Error sending submission to server for compilation");
-						GWT.log("compile failed", caught);
+						final String msg = "Error sending submission to server for compilation"; 
+						resultWidget.setMessage(msg);
+						GWT.log(msg, caught);
 						// TODO: should set editor back to read/write?
 					}
 
 					@Override
 					public void onSuccess(TestResult[] results) {
+						// Great, got results back from server!
 						resultWidget.setResults(results);
 						
 						// can now set mode back to EDITING
