@@ -5,6 +5,9 @@ CREATE CACHED TABLE users (
   salt varchar(16)             -- 8 bytes of salt
 );
 
+-- don't allow multiple users with the same user name
+CREATE UNIQUE INDEX users_username_index on users (username);
+
 -- test account: username "user", password "abc"
 insert into users values (NULL, 'user', 'b252713e97d2b96b51ab0b5422258daa', '5011ffcedffe0a14');
 

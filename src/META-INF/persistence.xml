@@ -17,6 +17,7 @@
 		<class>edu.ycp.cs.netcoder.shared.logchange.Change</class>
 		<class>edu.ycp.cs.netcoder.shared.event.Event</class>
 		<class>edu.ycp.cs.netcoder.shared.affect.AffectEvent</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.User</class>
 
 		<!--
 			Setup for MySQL 

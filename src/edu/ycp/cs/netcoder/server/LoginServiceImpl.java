@@ -17,9 +17,16 @@
 
 package edu.ycp.cs.netcoder.server;
 
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.servlet.http.HttpSession;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.ycp.cs.netcoder.client.LoginService;
+import edu.ycp.cs.netcoder.server.problems.HashPassword;
+import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.problems.User;
 
 public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
@@ -27,15 +34,33 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 
 	@Override
 	public User login(String userName, String password) {
-		// TODO: implement by searching for matching user record in database
+		EntityManager eman = HibernateUtil.getManager();
+
+		List<User> result = eman.createQuery("select u from User u where u.userName = :userName", User.class)
+				.setParameter("userName", userName)
+				.getResultList();
 		
-		if (userName.equals("user") && password.equals("abc")) {
-			User user = new User();
-			user.setId(0);
-			user.setUserName(userName);
-			// Don't return the password in the User object
+		if (result.size() != 1) {
+			// no such user
+			return null;
+		}
+		
+		User user = result.get(0);
+		
+		String salt = user.getSalt();
+		String hashedPassword = HashPassword.computeHash(password, salt);
+		
+		if (hashedPassword.equals(user.getPasswordMD5())) {
+			// Successful authentication
+			
+			// Set User object in server HttpSession so that other
+			// servlets will know that the client is logged in
+			HttpSession session = getThreadLocalRequest().getSession();
+			session.setAttribute("user", user);
+			
 			return user;
 		} else {
+			// Failed authentication
 			return null;
 		}
 	}
