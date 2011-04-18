@@ -55,7 +55,7 @@ public class Session extends Observable {
 	 * 
 	 * @param cls the class of the object to be removed
 	 */
-	public void remove(Class<User> cls) {
+	public void remove(Class<?> cls) {
 		data.remove(cls);
 		setChanged();
 		notifyObservers();

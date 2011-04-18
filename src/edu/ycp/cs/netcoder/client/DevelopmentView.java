@@ -17,6 +17,8 @@
 
 package edu.ycp.cs.netcoder.client;
 
+import java.util.ArrayList;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
@@ -36,6 +38,7 @@ import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
 import edu.ycp.cs.netcoder.shared.util.Observable;
 import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
@@ -70,10 +73,14 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	private Mode mode;
 	private boolean textLoaded;
 	
+	// Model objects added to the session.
+	private Object[] sessionObjects;
+	
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
 	private AceEditor editor;
 	private ResultWidget resultWidget;
+	private Timer flushPendingChangeEventsTimer;
 	
 	// RPC services.
 	private LoginServiceAsync loginService = GWT.create(LoginService.class);
@@ -84,6 +91,12 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	
 	public DevelopmentView(Session session) {
 		super(session);
+		
+		// Add ChangeList and AffectEvent to session
+		sessionObjects = new Object[]{ new ChangeList(), new AffectEvent() };
+		for (Object obj : sessionObjects) {
+			getSession().add(obj);
+		}
 		
 		// Add logout handler.
 		// The goal is to completely purge session data on both server
@@ -97,12 +110,23 @@ public class DevelopmentView extends NetCoderView implements Observer {
 						GWT.log("Could not log out?", caught);
 						
 						// well, at least we tried
-						getSession().remove(User.class);
+						clearSessionData();
 					}
 					
 					@Override
 					public void onSuccess(Void result) {
 						// server has purged the session
+						clearSessionData();
+					}
+
+					protected void clearSessionData() {
+						// Clear all local session data
+						for (Object obj : sessionObjects) {
+							getSession().remove(obj.getClass());
+						}
+						
+						// Clearing the User object from the session
+						// will notify the entry point that this view is done.
 						getSession().remove(User.class);
 					}
 				};
@@ -168,10 +192,15 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		loadProblemAndCurrentText();
 		
 		// Create timer to flush unsent change events periodically.
-		Timer flushPendingChangeEventsTimer = new Timer() {
+		this.flushPendingChangeEventsTimer = new Timer() {
 			@Override
 			public void run() {
 				final ChangeList changeList = getSession().get(ChangeList.class);
+				
+				if (changeList == null) {
+					// paranoia
+					return;
+				}
 				
 				if (changeList.getState() == ChangeList.State.UNSENT) {
 					Change[] changeBatch = changeList.beginTransmit();
@@ -307,6 +336,8 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	
 	@Override
 	public void deactivate() {
+		// Turn off the flush pending events timer
+		flushPendingChangeEventsTimer.cancel();
 	}
 
 	protected void submitCode() {

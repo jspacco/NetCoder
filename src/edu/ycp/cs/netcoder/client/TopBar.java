@@ -20,8 +20,6 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -36,7 +34,7 @@ import edu.ycp.cs.netcoder.shared.problems.User;
  * object, shows the username and a logout button.
  */
 public class TopBar extends Composite {
-	private Session session;
+//	private Session session;
 	
 	private FlowPanel hPanel;
 	private FlowPanel hPanel2;
@@ -71,7 +69,7 @@ public class TopBar extends Composite {
 	}
 
 	public void setSession(Session session) {
-		this.session = session;
+//		this.session = session;
 		User user = session.get(User.class);
 		if (user != null) {
 			loggedInAsLabel.setText("Logged in as " + user.getUserName());

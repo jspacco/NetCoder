@@ -33,6 +33,7 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	// Client session data.
 	private Session session;
 	
+	private boolean block;
 	private NetCoderView currentView;
 	
 	/**
@@ -41,8 +42,6 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	public void onModuleLoad() {
 		// Create session
 		session = new Session();
-		session.add(new ChangeList());
-		session.add(new AffectEvent());
 		
 		// Observe Session changes so we're notified of successful login
 		session.addObserver(this);
@@ -72,7 +71,11 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	public void update(Observable obj, Object hint) {
 		if (currentView.getClass() == LoginView.class && session.get(User.class) != null) {
 			// User just successfully logged in - switch to development view
-			changeToDevelopmentView();
+			if (!block) {
+				block = true;
+				changeToDevelopmentView();
+				block = false; // FIXME: need a better event firing/handling mechanism
+			}
 		} else if (currentView.getClass() == DevelopmentView.class && session.get(User.class) == null) {
 			// The user logged out
 			changeToLoginView();
