@@ -20,6 +20,6 @@ package edu.ycp.cs.netcoder.client;
 public interface LayoutConstants {
 	public static final int TOP_BAR_HEIGHT_PX = 34;
 	public static final int PROBLEM_DESC_HEIGHT_PX = 60;
-	public static final int STATUS_AND_BUTTON_BAR_HEIGHT_PX = 34;
-	public static final int RESULTS_PANEL_HEIGHT_PX = 100;
+	public static final int STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
+	public static final int RESULTS_PANEL_HEIGHT_PX = 200;
 }

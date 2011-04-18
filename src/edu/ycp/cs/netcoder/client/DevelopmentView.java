@@ -20,7 +20,10 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
@@ -45,7 +48,7 @@ import edu.ycp.cs.netcoder.shared.util.Observer;
 /**
  * View for working on a problem: code editor, submit button, feedback, etc.
  */
-public class DevelopmentView extends NetCoderView implements Observer {
+public class DevelopmentView extends NetCoderView implements Observer, ResizeHandler {
 	private static final int PROBLEM_ID = 0; // FIXME
 	
 	private enum Mode {
@@ -159,7 +162,7 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		layoutPanel.add(editor);
 		layoutPanel.setWidgetTopHeight(editor,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
-				400, Unit.PX);
+				200, Unit.PX);
 
 		// Add the status and button bar widget
 		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(session);
@@ -330,6 +333,9 @@ public class DevelopmentView extends NetCoderView implements Observer {
 				getSession().get(ChangeList.class).addChange(change);
 			}
 		});
+		
+		// make the editor the correct height
+		doResize();
 	}
 	
 	@Override
@@ -399,6 +405,30 @@ public class DevelopmentView extends NetCoderView implements Observer {
 				submitService.submit(problemId, editor.getText(), callback);
 			}
 		}
+	}
+	
+	@Override
+	public void onResize(ResizeEvent event) {
+		doResize();
+	}
+
+	protected void doResize() {
+		int height = Window.getClientHeight();
+		
+		int availableForEditor = height -
+				(LayoutConstants.TOP_BAR_HEIGHT_PX +
+				 LayoutConstants.PROBLEM_DESC_HEIGHT_PX +
+				 LayoutConstants.STATUS_AND_BUTTON_BAR_HEIGHT_PX +
+				 LayoutConstants.RESULTS_PANEL_HEIGHT_PX);
+		
+		if (availableForEditor < 0) {
+			availableForEditor = 0;
+		}
+		
+		getLayoutPanel().setWidgetTopHeight(
+				editor,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
+				availableForEditor, Unit.PX);
 	}
 
 //	protected void flushAllChanges() {
