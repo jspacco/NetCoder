@@ -1,3 +1,16 @@
+CREATE CACHED TABLE users (
+  id integer IDENTITY,
+  username varchar(20),
+  password_md5 varchar(32),    -- 16 byte md5 hash value of plaintext password
+  salt varchar(16)             -- 8 bytes of salt
+);
+
+-- don't allow multiple users with the same user name
+CREATE UNIQUE INDEX users_username_index on users (username);
+
+-- test account: username "user", password "abc"
+insert into users values (NULL, 'user', 'b252713e97d2b96b51ab0b5422258daa', '5011ffcedffe0a14');
+
 CREATE CACHED TABLE problems (
   problem_id integer IDENTITY,
   testname varchar(255) NOT NULL,
@@ -27,7 +40,8 @@ CREATE CACHED TABLE events (
   type integer NOT NULL,
   timestamp bigint NOT NULL,
 
-  FOREIGN KEY (problem_id) REFERENCES problems(problem_id)
+  FOREIGN KEY (problem_id) REFERENCES problems(problem_id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- FIXME: this table should be called "change_events"

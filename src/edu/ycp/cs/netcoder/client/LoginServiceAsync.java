@@ -15,28 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.shared.logchange;
+package edu.ycp.cs.netcoder.client;
 
-/**
- * Type of textual change.
- */
-public enum ChangeType {
-	/** Insertion of text within a particular line */
-	INSERT_TEXT,
-	
-	/** Removal of text within a particular line. */
-	REMOVE_TEXT,
-	
-	/** Insertion of one or more lines. */
-	INSERT_LINES,
-	
-	/** Removal of one or more lines. */
-	REMOVE_LINES,
-	
-	/**
-	 * The full text of the document.
-	 * Not really a change, but provides a convenient synchronization
-	 * point for incremental changes.
-	 */
-	FULL_TEXT;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import edu.ycp.cs.netcoder.shared.problems.User;
+
+public interface LoginServiceAsync {
+
+	void login(String userName, String password, AsyncCallback<User> callback);
+
+	void logout(AsyncCallback<Void> callback);
+
 }

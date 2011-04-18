@@ -17,43 +17,38 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Label;
 
-import edu.ycp.cs.netcoder.client.logchange.ChangeList;
+import edu.ycp.cs.netcoder.client.Session;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.util.Observable;
 import edu.ycp.cs.netcoder.shared.util.Observer;
 
-public class EditorStatusWidget extends InlineLabel implements Observer {
-	private static final String NORMAL = "NetCoderEditorStatusNormal";
-	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
-
-	public EditorStatusWidget() {
-		setText("---");
-		setStylePrimaryName(NORMAL);
+public class ProblemDescriptionWidget extends Composite implements Observer {
+	private Session session;
+	private Label problemDescriptionText;
+	
+	public ProblemDescriptionWidget(Session session) {
+		this.session = session;
+		session.addObserver(this);
+		
+		problemDescriptionText = new Label("Loading problem description...");
+		
+		initWidget(problemDescriptionText);
+		
+		this.setStyleName("NetCoderProblemDescription");
 	}
 	
 	@Override
 	public void update(Observable obj, Object hint) {
-		ChangeList model = (ChangeList) obj;
-		
-		switch (model.getState()) {
-		case CLEAN:
-			setText("---");
-			break;
-			
-		case TRANSMISSION:
-			setText("<->");
-			break;
-			
-		case UNSENT:
-			setText("-*-");
-			break;
+		Problem problem = session.get(Problem.class);
+		if (problem != null) {
+			problemDescriptionText.setText(problem.getDescription());
 		}
-		
-		if (model.isTransmitSuccess()) {
-			setStylePrimaryName(NORMAL);
-		} else {
-			setStylePrimaryName(XMIT_FAILURE);
-		}
+	}
+
+	public void setErrorText(String text) {
+		problemDescriptionText.setText("Error: " + text);
 	}
 }

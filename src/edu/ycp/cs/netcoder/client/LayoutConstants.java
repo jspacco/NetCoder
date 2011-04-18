@@ -15,28 +15,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package edu.ycp.cs.netcoder.shared.logchange;
+package edu.ycp.cs.netcoder.client;
 
 /**
- * Type of textual change.
+ * Constants used in the layouts of various views.
  */
-public enum ChangeType {
-	/** Insertion of text within a particular line */
-	INSERT_TEXT,
+public interface LayoutConstants {
+	/** Height of the top bar (which is part of all views.) */
+	public static final int TOP_BAR_HEIGHT_PX = 34;
 	
-	/** Removal of text within a particular line. */
-	REMOVE_TEXT,
+	/** Height of the problem description widget in the DevelopmentView. */
+	public static final int PROBLEM_DESC_HEIGHT_PX = 60;
 	
-	/** Insertion of one or more lines. */
-	INSERT_LINES,
+	/** Height of the status and button bar widget in the DevelopmentView. */
+	public static final int STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
 	
-	/** Removal of one or more lines. */
-	REMOVE_LINES,
-	
-	/**
-	 * The full text of the document.
-	 * Not really a change, but provides a convenient synchronization
-	 * point for incremental changes.
-	 */
-	FULL_TEXT;
+	/** Height of the results panel in the DevelopmentView. */
+	public static final int RESULTS_PANEL_HEIGHT_PX = 200;
 }

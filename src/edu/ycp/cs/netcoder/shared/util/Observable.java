@@ -1,6 +1,6 @@
 // NetCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco
-// Copyright (C) 2011, David H. Hovemeyer
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -54,8 +54,11 @@ public class Observable {
 	}
 
 	public void notifyObservers(Object hint) {
+		// make a copy of the observers list, since an update to an observer
+		// might result in an attempt to register new observers
+		ArrayList<Observer> observerListCopy = new ArrayList<Observer>(observerList);
 		if (changed) {
-			for (Observer obs : observerList) {
+			for (Observer obs : observerListCopy) {
 				obs.update(this, hint);
 			}
 			changed = false;

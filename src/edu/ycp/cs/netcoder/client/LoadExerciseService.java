@@ -1,6 +1,6 @@
 // NetCoder - a web-based pedagogical programming environment
-// Copyright (C) 2011, Jaime Spacco
-// Copyright (C) 2011, David H. Hovemeyer
+// Copyright (C) 2011, Jaime Spacco <jspacco@knox.edu>
+// Copyright (C) 2011, David H. Hovemeyer <dhovemey@ycp.edu>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -27,4 +27,6 @@ public interface LoadExerciseService extends RemoteService {
     // FIXME: should return a TestResult and/or CompileResult
     // probably both
     public Problem load(int problemId);
+    
+    public String loadCurrentText(int problemId);
 }
