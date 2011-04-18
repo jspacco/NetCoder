@@ -17,8 +17,6 @@
 
 package edu.ycp.cs.netcoder.client;
 
-import java.util.ArrayList;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
@@ -35,14 +33,14 @@ import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
 import edu.ycp.cs.netcoder.client.status.ResultWidget;
 import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
-import edu.ycp.cs.netcoder.shared.testing.TestResult;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
 import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.User;
+import edu.ycp.cs.netcoder.shared.testing.TestResult;
+import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Observer;
 
 /**
  * View for working on a problem: code editor, submit button, feedback, etc.
