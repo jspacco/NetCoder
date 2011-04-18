@@ -85,7 +85,9 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	public DevelopmentView(Session session) {
 		super(session);
 		
-		// Add logout handler
+		// Add logout handler.
+		// The goal is to completely purge session data on both server
+		// and client when the user logs out.
 		getTopBar().setLogoutHandler(new Runnable() {
 			@Override
 			public void run() {
@@ -110,12 +112,19 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		});
 
 		// Observe ChangeList state.
+		// We do this so that we know when the local editor contents are
+		// up to date with the text on the server.
 		session.get(ChangeList.class).addObserver(this);
 		
+		// User won't be allowed to edit until the problem (and previous editor contents, if any)
+		// are loaded.
 		mode = Mode.LOADING;
 		textLoaded = false;
 		
+		// The overall UI is build in a LayoutPanel (which the parent class creates)
 		LayoutPanel layoutPanel = getLayoutPanel();
+		
+		// Add problem description widget
 		problemDescription = new ProblemDescriptionWidget(session);
 		layoutPanel.add(problemDescription);
 		layoutPanel.setWidgetTopHeight(
@@ -123,12 +132,14 @@ public class DevelopmentView extends NetCoderView implements Observer {
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
 				LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX);
 		
+		// Add AceEditor widget
 		editor = new AceEditor();
 		layoutPanel.add(editor);
 		layoutPanel.setWidgetTopHeight(editor,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				400, Unit.PX);
 
+		// Add the status and button bar widget
 		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(session);
 		layoutPanel.add(statusAndButtonBarWidget);
 		layoutPanel.setWidgetBottomHeight(
@@ -142,6 +153,7 @@ public class DevelopmentView extends NetCoderView implements Observer {
 			}
 		});
 		
+		// Add the ResultWidget
 		resultWidget = new ResultWidget();
 		layoutPanel.add(resultWidget);
 		layoutPanel.setWidgetBottomHeight(
@@ -149,39 +161,13 @@ public class DevelopmentView extends NetCoderView implements Observer {
 				0, Unit.PX,
 				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 		
+		// UI is now complete
 		initWidget(layoutPanel);
 		
-		// Load the problem
-		loadService.load(PROBLEM_ID, new AsyncCallback<Problem>() {
-			@Override
-			public void onSuccess(Problem result) {
-				if (result != null) {
-					getSession().add(result);
-					onProblemLoaded();
-				} else {
-					loadProblemFailed();
-				}
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				GWT.log("Could not load problem", caught);
-				loadProblemFailed();
-			}
-		});
-		loadService.loadCurrentText(PROBLEM_ID, new AsyncCallback<String>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				GWT.log("Could not load current text", caught);
-				loadCurrentTextFailed();
-			}
-			
-			public void onSuccess(String result) {
-				onCurrentTextLoaded(result);
-			}
-		});
+		// Initiate loading of the problem and current editor text.
+		loadProblemAndCurrentText();
 		
-		// create timer to flush unsent change events periodically
+		// Create timer to flush unsent change events periodically.
 		Timer flushPendingChangeEventsTimer = new Timer() {
 			@Override
 			public void run() {
@@ -208,22 +194,76 @@ public class DevelopmentView extends NetCoderView implements Observer {
 			}
 		};
 		flushPendingChangeEventsTimer.scheduleRepeating(1000);
-		
 	}
 
+	/**
+	 * Load the problem and current editor text.
+	 * The current editor text is (hopefully) whatever the user
+	 * had in his/her editor the last time they were logged in.
+	 */
+	protected void loadProblemAndCurrentText() {
+		// Load the problem.
+		loadService.load(PROBLEM_ID, new AsyncCallback<Problem>() {
+			@Override
+			public void onSuccess(Problem result) {
+				if (result != null) {
+					getSession().add(result);
+					onProblemLoaded();
+				} else {
+					loadProblemFailed();
+				}
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Could not load problem", caught);
+				loadProblemFailed();
+			}
+		});
+		
+		// Load current text.
+		loadService.loadCurrentText(PROBLEM_ID, new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				GWT.log("Could not load current text", caught);
+				loadCurrentTextFailed();
+			}
+			
+			public void onSuccess(String result) {
+				onCurrentTextLoaded(result);
+			}
+		});
+	}
+
+	/**
+	 * Called when the problem has been loaded.
+	 */
 	protected void onProblemLoaded() {
-		if (mode == Mode.LOADING && textLoaded == true) {
-			editor.setReadOnly(false);
-			mode = Mode.EDITING;
+		// If the current editor text has been loaded,
+		// then it is ok to start editing.
+		if (textLoaded == true) {
+			startEditing();
 		}
 	}
-
+	
+	/**
+	 * Called when the current text has been retrieved from the server.
+	 * 
+	 * @param text the current text to load into the editor
+	 */
 	protected void onCurrentTextLoaded(String text) {
 		editor.setText(text);
 		textLoaded = true;
-		if (mode == Mode.LOADING) {
-			editor.setReadOnly(false);
+		
+		// If the problem has been loaded, then it is ok to start editing.
+		if (getSession().get(Problem.class) != null) {
+			startEditing();
 		}
+	}
+
+	protected void startEditing() {
+		editor.setReadOnly(false);
+		mode = Mode.EDITING;
 	}
 
 	protected void loadProblemFailed() {
@@ -246,9 +286,11 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		editor.addOnChangeHandler(new AceEditorCallback() {
 			@Override
 			public void invokeAceCallback(JavaScriptObject obj) {
-				// Important: don't send the change to the server unless the problem
-				// has actually been loading, meaning that the change is an actual edit
-				// (and not just the initial contents of the editor being set!)
+				// Important: don't send the change to the server unless the
+				// initial editor contents has been loaded.  Otherwise,
+				// the setting of the initial editor contents will get sent
+				// to the server as a change, which is obviously not what
+				// we want.
 				if (!textLoaded) {
 					return;
 				}
@@ -268,6 +310,8 @@ public class DevelopmentView extends NetCoderView implements Observer {
 	}
 
 	protected void submitCode() {
+		// If the problem has not been loaded yet,
+		// then there is nothing to do.
 		if (getSession().get(Problem.class) == null) {
 			return;
 		}
@@ -288,7 +332,7 @@ public class DevelopmentView extends NetCoderView implements Observer {
 				editor.getText());
 		getSession().get(ChangeList.class).addChange(fullText);
 		
-		// Set the mode to SUBMIT_INITIATED, indicating that we are
+		// Set the mode to SUBMIT_IN_PROGRESS, indicating that we are
 		// waiting for the full text to be uploaded to the server.
 		mode = Mode.SUBMIT_IN_PROGRESS;
 	}
@@ -299,7 +343,7 @@ public class DevelopmentView extends NetCoderView implements Observer {
 		if (obj == changeList) {
 			if (mode == Mode.SUBMIT_IN_PROGRESS && changeList.getState() == ChangeList.State.CLEAN) {
 				// Full text of submission has arrived at server,
-				// and because the editor is readonly, we know that the
+				// and because the editor is read-only, we know that the
 				// local text is in-sync.  So, submit the code!
 				
 				AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
@@ -316,14 +360,13 @@ public class DevelopmentView extends NetCoderView implements Observer {
 						// Great, got results back from server!
 						resultWidget.setResults(results);
 						
-						// can now set mode back to EDITING
-						editor.setReadOnly(false);
-						mode = Mode.EDITING;
+						// Can resume editing now
+						startEditing();
 					}
 				};
 				
-				
-				int problemId= getSession().get(Problem.class).getProblemId();
+				// Send editor text to server. 
+				int problemId = getSession().get(Problem.class).getProblemId();
 				submitService.submit(problemId, editor.getText(), callback);
 			}
 		}
