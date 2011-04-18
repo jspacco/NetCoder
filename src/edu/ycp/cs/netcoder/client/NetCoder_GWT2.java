@@ -67,6 +67,7 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 			changeView(developmentView);
 			developmentView.startEditor();
 		} else if (currentView.getClass() == DevelopmentView.class && session.get(User.class) == null) {
+			// The user logged out
 			changeView(new LoginView(session));
 		}
 	}

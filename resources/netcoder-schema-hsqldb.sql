@@ -1,9 +1,9 @@
-CREATE CACHED TABLE users {
+CREATE CACHED TABLE users (
   id integer IDENTITY,
   username varchar(20),
   password_md5 varchar(32),    -- 16 byte md5 hash value of plaintext password
   salt varchar(16)             -- 8 bytes of salt
-};
+);
 
 CREATE CACHED TABLE problems (
   problem_id integer IDENTITY,
