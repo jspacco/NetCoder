@@ -159,6 +159,7 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 		
 		// Add AceEditor widget
 		editor = new AceEditor();
+		editor.setStyleName("NetCoderEditor");
 		layoutPanel.add(editor);
 		layoutPanel.setWidgetTopHeight(editor,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,

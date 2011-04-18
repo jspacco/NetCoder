@@ -35,8 +35,7 @@ h1 {
 	
 /* center the ACE editor */
 .NetCoderEditor {
-	border-style: inset;
-	border-width: medium;
+	border: medium solid white;
 }
 
 /* editor status widget */
