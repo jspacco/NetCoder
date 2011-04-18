@@ -17,9 +17,19 @@
 
 package edu.ycp.cs.netcoder.client;
 
+/**
+ * Constants used in the layouts of various views.
+ */
 public interface LayoutConstants {
+	/** Height of the top bar (which is part of all views.) */
 	public static final int TOP_BAR_HEIGHT_PX = 34;
+	
+	/** Height of the problem description widget in the DevelopmentView. */
 	public static final int PROBLEM_DESC_HEIGHT_PX = 60;
+	
+	/** Height of the status and button bar widget in the DevelopmentView. */
 	public static final int STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
+	
+	/** Height of the results panel in the DevelopmentView. */
 	public static final int RESULTS_PANEL_HEIGHT_PX = 200;
 }
