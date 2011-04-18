@@ -5,6 +5,9 @@ CREATE CACHED TABLE users (
   salt varchar(16)             -- 8 bytes of salt
 );
 
+-- test account: username "user", password "abc"
+insert into users values (NULL, 'user', 'b252713e97d2b96b51ab0b5422258daa', '5011ffcedffe0a14');
+
 CREATE CACHED TABLE problems (
   problem_id integer IDENTITY,
   testname varchar(255) NOT NULL,
@@ -34,7 +37,8 @@ CREATE CACHED TABLE events (
   type integer NOT NULL,
   timestamp bigint NOT NULL,
 
-  FOREIGN KEY (problem_id) REFERENCES problems(problem_id)
+  FOREIGN KEY (problem_id) REFERENCES problems(problem_id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- FIXME: this table should be called "change_events"
