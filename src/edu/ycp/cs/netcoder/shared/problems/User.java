@@ -1,11 +1,30 @@
 package edu.ycp.cs.netcoder.shared.problems;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+@Entity
+@Table(name="users")
 public class User implements IsSerializable {
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id")
 	private int id;
+	
+	@Column(name="username")
 	private String userName;
-	private String password;
+	
+	@Column(name="password_md5")
+	private String passwordMD5;
+	
+	@Column(name="salt")
+	private String salt;
 
 	public User() {
 	}
@@ -26,11 +45,19 @@ public class User implements IsSerializable {
 		return userName;
 	}
 	
-	public void setPassword(String password) {
-		this.password = password;
+	public void setPasswordMD5(String passwordMD5) {
+		this.passwordMD5 = passwordMD5;
 	}
 	
-	public String getPassword() {
-		return password;
+	public String getPasswordMD5() {
+		return passwordMD5;
+	}
+	
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+	
+	public String getSalt() {
+		return salt;
 	}
 }
