@@ -34,7 +34,7 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	// Client session data.
 	private Session session;
 	
-	private Widget currentView;
+	private NetCoderView currentView;
 	
 	/**
 	 * This is the entry point method.
@@ -51,11 +51,21 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 		changeView(new LoginView(session));
 	}
 	
-	public void changeView(Widget view) {
+	private void changeToLoginView() {
+		changeView(new LoginView(session));
+	}
+	
+	private void changeToDevelopmentView() {
+		changeView(new DevelopmentView(session));
+	}
+	
+	public void changeView(NetCoderView view) {
 		if (currentView != null) {
+			currentView.deactivate();
 			RootLayoutPanel.get().remove(currentView);
 		}
 		RootLayoutPanel.get().add(view);
+		view.activate();
 		currentView = view;
 	}
 	
@@ -63,12 +73,10 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	public void update(Observable obj, Object hint) {
 		if (currentView.getClass() == LoginView.class && session.get(User.class) != null) {
 			// User just successfully logged in - switch to development view
-			DevelopmentView developmentView = new DevelopmentView(session);
-			changeView(developmentView);
-			developmentView.startEditor();
+			changeToDevelopmentView();
 		} else if (currentView.getClass() == DevelopmentView.class && session.get(User.class) == null) {
 			// The user logged out
-			changeView(new LoginView(session));
+			changeToLoginView();
 		}
 	}
 }

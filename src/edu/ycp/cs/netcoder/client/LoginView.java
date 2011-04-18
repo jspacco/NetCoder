@@ -103,6 +103,16 @@ public class LoginView extends NetCoderView {
 		
 		initWidget(loginViewPanel);
 	}
+	
+	@Override
+	public void activate() {
+		// Set focus on the username text box
+		userNameTextBox.setFocus(true);
+	}
+	
+	@Override
+	public void deactivate() {
+	}
 
 	protected void attemptLogin() {
 		AsyncCallback<User> callback = new AsyncCallback<User>() {

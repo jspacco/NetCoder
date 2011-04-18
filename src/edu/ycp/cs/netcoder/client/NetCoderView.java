@@ -48,6 +48,20 @@ public abstract class NetCoderView extends Composite {
 	}
 	
 	/**
+	 * This method is called after a NetCoderView has been instantiated
+	 * in the client web page.  Subclasses may override this to do any
+	 * initialization that requires that the view is part of the DOM tree.
+	 */
+	public abstract void activate();
+	
+	/**
+	 * This method is called just before a NetCoderView is removed
+	 * from the client web page.  Subclasses may override this
+	 * to do cleanup.
+	 */
+	public abstract void deactivate();
+	
+	/**
 	 * @return the Session object
 	 */
 	public Session getSession() {

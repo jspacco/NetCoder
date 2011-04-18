@@ -146,7 +146,8 @@ public class DevelopmentView extends NetCoderView {
 		
 	}
 	
-	public void startEditor() {
+	@Override
+	public void activate() {
 		editor.startEditor();
 		editor.setReadOnly(true); // until a Problem is loaded
 		editor.setTheme(AceEditorTheme.ECLIPSE);
@@ -163,6 +164,10 @@ public class DevelopmentView extends NetCoderView {
 				getSession().get(ChangeList.class).addChange(change);
 			}
 		});
+	}
+	
+	@Override
+	public void deactivate() {
 	}
 
 	protected void submitCode() {
