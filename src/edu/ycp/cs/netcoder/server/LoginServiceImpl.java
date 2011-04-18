@@ -58,6 +58,11 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			HttpSession session = getThreadLocalRequest().getSession();
 			session.setAttribute("user", user);
 			
+			// Clear salt and password md5 hash: that way, they can't be
+			// compromised by malicious javascript on the client side
+			user.setSalt("");
+			user.setPasswordMD5("");
+			
 			return user;
 		} else {
 			// Failed authentication
