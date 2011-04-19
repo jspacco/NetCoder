@@ -42,8 +42,6 @@ import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
 import edu.ycp.cs.netcoder.shared.util.Publisher;
 import edu.ycp.cs.netcoder.shared.util.Subscriber;
 

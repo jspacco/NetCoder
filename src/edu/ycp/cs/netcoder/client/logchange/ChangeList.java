@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ycp.cs.netcoder.shared.logchange.Change;
-import edu.ycp.cs.netcoder.shared.util.Observable;
 import edu.ycp.cs.netcoder.shared.util.Publisher;
 
 /**
