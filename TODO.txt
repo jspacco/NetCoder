@@ -1,0 +1,25 @@
+TestRunner:
+* clear() method, or better callbacks for timeouts
+* SecurityManager: disallow access to files/sockets/etc
+	for everything in whatever package I put student code into
+* Nice way to configure:
+  - time to wait for timeouts
+  - name of package to put student code
+  - ?
+* ResultsWidget:
+  - link to a panel for stdout/stderr results
+    > truncate to a certain number of lines
+    > maybe have a scrollable "more" option
+  - link to the exception for a failure 
+* TestResult
+  - pass
+  - failed assertion
+  - failure with exception
+    > store type of exception/stack trace
+  - timeout
+  - security exception
+* Scrollable main panel
+* User accounts
+* problem creation workflow
+* Jython support
+  - compile Jython in-memory?

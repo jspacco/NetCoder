@@ -50,8 +50,8 @@ public class ResultWidget extends VerticalPanel
             TestResult t=results[i];
             // result / outcome / stdout / stderr
             // leave room for the header row
-            table.setWidget(i+1, 0, new Label(t.success+""));
-            table.setWidget(i+1, 1, new Label(t.message));
+            table.setWidget(i+1, 0, new Label(t.getOutcome()));
+            table.setWidget(i+1, 1, new Label(t.getMessage()));
             table.setWidget(i+1, 2, new Label("stdout"));
             table.setWidget(i+1, 3, new Label("stderr"));
         }

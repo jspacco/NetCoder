@@ -17,9 +17,12 @@
 
 package edu.ycp.cs.netcoder.server.problems;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * I'm going to use the stop() method in thread.  I feel a little dirty.
@@ -34,7 +37,6 @@ import java.util.List;
  * those tasks should be able to be stop()ed without any
  * negative repercussions.
  * 
- * TODO: Track stdout and stderr and return with TestResult.
  * 
  * 
  * @author jspacco
@@ -42,16 +44,53 @@ import java.util.List;
  */
 public class KillableTaskManager<T>
 {
+    /** list of "isolated tasks" to be executed */
     private List<IsolatedTask<T>> tasks;
+    /** List of Outcomes; essentially placeholders objects where tasks will put their results */
     private List<Outcome<T>> results;
-    private T defaultFailure;
     private long maxRunTime;
     private int numPauses=5;
+    // Buffers for stdout/stderr of each task thread
+    private Map<Integer,String> stdOutMap=new HashMap<Integer,String>();
+    private Map<Integer,String> stdErrMap=new HashMap<Integer,String>();
+    private final PrintStream originalStdOut=System.out;
+    private final PrintStream originalStdErr=System.err;
+    /** Handles timeouts by producing a T representing a timeout event */
+    private TimeoutHandler<T> timeoutHandler;
+    /** SecurityManager for sandboxing student code*/
+    private SecurityManager securityManager;
     
-    public KillableTaskManager(List<IsolatedTask<T>> tasks, long maxRunTime, T defaultFailure) {
+    /**
+     * Callback handler to create a new task outcome of type T
+     * when a task times out.
+     * 
+     * It's necessary to have a callback here because several 
+     * task threads may time out, requiring the creation of multiple
+     * objects for each timeout.
+     * 
+     */
+    public interface TimeoutHandler<T> {
+        public T handleTimeout();
+    }
+    
+    public KillableTaskManager(List<IsolatedTask<T>> tasks, 
+            long maxRunTime, 
+            TimeoutHandler<T> timeoutHandler)
+    {
+        // will default to using current security manager
+        this(tasks, maxRunTime, System.getSecurityManager(), timeoutHandler);
+    }
+    
+    public KillableTaskManager(List<IsolatedTask<T>> tasks, 
+            long maxRunTime,
+            SecurityManager securityManager,
+            TimeoutHandler<T> timeoutHandler)
+    {
         this.tasks=tasks;
         this.maxRunTime=maxRunTime;
-        this.defaultFailure=defaultFailure;
+        this.timeoutHandler=timeoutHandler;
+        this.securityManager=securityManager;
+        
         this.results=new ArrayList<Outcome<T>>(tasks.size());
         for (int i=0; i<tasks.size(); i++) {
             results.add(new Outcome<T>());
@@ -70,32 +109,61 @@ public class KillableTaskManager<T>
         }
         return ret;
     }
+    
     public void run() {
+        // re-direct stdout/stderr to print stream monitors
+        // that will buffer the outputs for each thread
+        ThreadedPrintStreamMonitor stdOutMonitor=
+            new ThreadedPrintStreamMonitor(System.out);
+        ThreadedPrintStreamMonitor stdErrMonitor=
+            new ThreadedPrintStreamMonitor(System.err);
+        System.setOut(stdOutMonitor);
+        System.setErr(stdErrMonitor);
+
         Thread[] pool=new Thread[tasks.size()];
-        
         for (int i=0; i<tasks.size(); i++) {
             IsolatedTask<T> task=tasks.get(i);
-            pool[i]=new WorkerThread<T>(task, results.get(i));
+            pool[i]=new WorkerThread<T>(task, results.get(i), securityManager);
             pool[i].setDaemon(true);
             pool[i].start();
         }
+        
         // now pause a couple of times
         for (int i=1; i<=numPauses; i++) {
             if (!pauseAndPoll(maxRunTime/numPauses, pool)) {
-                return;
+                // we can stop pausing
+                break;
             }
         }
         
+        // Go through and kill any threads that haven't finished yet
+        // Also put the buffered output from stdout/stderr into the map
         for (int i=0; i<pool.length; i++) {
             Thread t=pool[i];
             if (t.isAlive()) {
-                //XXX Yes, I know I shouldn't do this.  But this will totally work!
-                //XXX Log that a thread is being stopped
+                //XXX Yes, I know that stop() is deprecated.  
+                //But this is a necessary use of stop!
                 t.stop();
-                // Supply the "default failure"
-                results.set(i, new Outcome<T>(defaultFailure));
+                
+                //TODO Log that a thread is being stopped
+
+                // stop the monitors
+                stdOutMonitor.flush(t);
+                stdOutMonitor.close(t);
+                
+                stdErrMonitor.flush(t);
+                stdErrMonitor.close(t);
+                
+                // handle a timeout
+                results.get(i).result=timeoutHandler.handleTimeout();
             }
+            stdOutMap.put(i, stdOutMonitor.getBufferedOutput(t));
+            stdErrMap.put(i, stdErrMonitor.getBufferedOutput(t));
         }
+        
+        // put stdout/stderr back to normal
+        System.setOut(originalStdOut);
+        System.setErr(originalStdErr);
     }
     
     /**
@@ -140,6 +208,7 @@ public class KillableTaskManager<T>
     {
         private IsolatedTask<T> task;
         private Outcome<T> out;
+        private SecurityManager securityManager;
         
         /**
          * Create a thread that executes the given task and puts
@@ -147,11 +216,14 @@ public class KillableTaskManager<T>
          * 
          * @param task The task to execute
          * @param out The container in which to put the result of the task
+         * @param sm SecurityManager to use for the task
          */
-        public WorkerThread(IsolatedTask<T> task, Outcome<T> out) {
+        public WorkerThread(IsolatedTask<T> task, Outcome<T> out, SecurityManager sm)
+        {
             super();
             this.task=task;
             this.out=out;
+            this.securityManager=sm;
         }
 
         /**
@@ -160,9 +232,15 @@ public class KillableTaskManager<T>
          * Throwable, so that if another thread uses stop() to kill this
          * thread, nothing bad should happen.
          * 
+         * The IsolatedTask to be executed can be run with a different
+         * security manager.
+         * 
          * @see java.lang.Thread#run()
          */
         public void run() {
+            SecurityManager originalSecurityManager=System.getSecurityManager();
+            // set the security manager for the isolated-task to use
+            System.setSecurityManager(securityManager);
             try {
                 T o=task.execute();
                 out.result=o;
@@ -172,6 +250,9 @@ public class KillableTaskManager<T>
                 // "Attaching an exception-catching silencer to my thread-killing gun"
                 // XXX Log this
                 System.err.println("Thread killed in go!");
+            } finally {
+                // revert back to the original security manager
+                System.setSecurityManager(originalSecurityManager);
             }
         }
     }
@@ -186,11 +267,14 @@ public class KillableTaskManager<T>
      */
     private static class Outcome<T> {
         Outcome() {}
-        Outcome(T t) {
-            finished=false;
-            result=t;
-        }
         boolean finished;
         T result;
+    }
+
+    public Map<Integer, String> getBufferedStdout() {
+        return stdOutMap;
+    }
+    public Map<Integer, String> getBufferedStderr() {
+        return stdErrMap;
     }
 }

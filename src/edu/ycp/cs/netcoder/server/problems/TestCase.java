@@ -56,7 +56,7 @@ public class TestCase
         return "test"+getTestCaseName();
     }
     
-    String inputAsString() {
+    public String inputAsString() {
         // TODO: handle array types
         return input.toString();
     }

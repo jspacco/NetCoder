@@ -20,8 +20,6 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
-import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.util.Observable;
 import edu.ycp.cs.netcoder.shared.util.Observer;
