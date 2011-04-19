@@ -83,6 +83,6 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	
 	@Override
 	public void unsubscribeFromAll() {
-		subscriptionRegistrar.unsubscribeAllEventSubscribers();
+		session.unsubscribeFromAll(this);
 	}
 }
