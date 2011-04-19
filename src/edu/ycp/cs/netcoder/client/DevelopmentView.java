@@ -193,6 +193,9 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		// UI is now complete
 		initWidget(layoutPanel);
 		
+		// Register the view as a window resize handler
+		Window.addResizeHandler(this);
+		
 		// Initiate loading of the problem and current editor text.
 		loadProblemAndCurrentText();
 		

@@ -31,5 +31,5 @@ public interface LayoutConstants {
 	public static final int STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
 	
 	/** Height of the results panel in the DevelopmentView. */
-	public static final int RESULTS_PANEL_HEIGHT_PX = 200;
+	public static final int RESULTS_PANEL_HEIGHT_PX = 175;
 }
