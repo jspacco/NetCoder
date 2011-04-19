@@ -29,14 +29,14 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.event.EventType;
-import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
 
 /**
  * Data for an affect data collection event.
  */
 @Entity
 @Table(name="affect_events")
-public class AffectEvent extends Observable implements IsSerializable {
+public class AffectEvent extends Publisher implements IsSerializable {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="id")
@@ -59,16 +59,26 @@ public class AffectEvent extends Observable implements IsSerializable {
 	
 	@Transient
 	private boolean complete;
+	
+	/**
+	 * State change events published to subscribers.
+	 */
+	public enum State {
+		/** The AffectEvent changed in some way. Hint is null. */
+		DATA_MODIFIED,
+		
+		/** The AffectEvent is now complete. Hint is null. */
+		COMPLETE;
+	}
 
 	/**
 	 * Constructor for empty (unintialized) object.
 	 */
 	public AffectEvent() {
 	}
-
-	private void changed() {
-		setChanged();
-		notifyObservers();
+	
+	private void dataModified() {
+		notifySubscribers(State.DATA_MODIFIED, null);
 	}
 	
 	/**
@@ -80,7 +90,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void createEvent(int userId, int problemId, long timestamp) {
 		event = new Event(userId, problemId, EventType.AFFECT_DATA, timestamp);
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -97,7 +107,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setEvent(Event event) {
 		this.event = event;
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -107,7 +117,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setId(int id) {
 		this.id = id;
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -126,7 +136,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setEventId(int eventId) {
 		this.eventId = eventId;
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -145,7 +155,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setEmotion(Emotion emotion) {
 		this.emotion = emotion.ordinal();
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -164,7 +174,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setOtherEmotion(String otherEmotion) {
 		this.otherEmotion = otherEmotion;
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -184,7 +194,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setEmotionLevel(int emotionLevel) {
 		this.emotionLevel = emotionLevel;
-		changed();
+		dataModified();
 	}
 	
 	/**
@@ -201,7 +211,7 @@ public class AffectEvent extends Observable implements IsSerializable {
 	 */
 	public void setComplete(boolean complete) {
 		this.complete = complete;
-		changed();
+		notifySubscribers(State.COMPLETE, null);
 	}
 
 	/**

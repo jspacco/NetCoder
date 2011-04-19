@@ -34,12 +34,10 @@ public class EditorStatusWidget extends InlineLabel implements Subscriber {
 		this.changeList = changeList;
 		
 		// subscribe to state change events
-		for (ChangeList.State state : ChangeList.State.values()) {
-			changeList.subscribe(state, this, registrar);
-		}
-		
-		setText("---");
-		setStylePrimaryName(NORMAL);
+		changeList.subscribeToAll(ChangeList.State.values(), this, registrar);
+
+		// set initial view contents
+		eventOccurred(changeList.getState(), changeList, null);
 	}
 
 	@Override

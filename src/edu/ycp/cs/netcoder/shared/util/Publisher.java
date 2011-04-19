@@ -32,10 +32,25 @@ public abstract class Publisher {
 	 * 
 	 * @param key        key indicating type of event Subscriber wants to be notified of
 	 * @param subscriber the Subscriber
+	 * @param registrar  the SubscriptionRegistrar that will keep track of subscriptions
 	 */
 	public void subscribe(Object key, Subscriber subscriber, SubscriptionRegistrar registrar) {
 		registrationList.add(new Registration(key, subscriber));
 		registrar.addToSubscriptionRegistry(subscriber);
+	}
+	
+	/**
+	 * Called by a Subscriber to subscribe to several types of events published by a Publisher.
+	 * 
+	 * @param key        array of keys indicating types of events Subscriber wants to be notified of
+	 * @param subscriber the Subscriber
+	 * @param registrar  the SubscriptionRegistrar that will keep track of subscriptions
+	 */
+	public void subscribeToAll(Object[] keyList, Subscriber subscriber, SubscriptionRegistrar registrar) {
+		for (Object key : keyList) {
+			registrationList.add(new Registration(key, subscriber));
+			registrar.addToSubscriptionRegistry(subscriber);
+		}
 	}
 	
 	/**
