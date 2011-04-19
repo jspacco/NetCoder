@@ -22,16 +22,20 @@ import java.util.List;
 
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
 
 /**
  * ChangeList stores a list of Change objects representing textual
  * changes in the editor.  It supports scheduling batches of changes
  * to be transmitted to the server.
  */
-public class ChangeList extends Observable {
+public class ChangeList extends Publisher {
 	/**
 	 * State enumeration - represents whether editor is clean,
 	 * contains unsent changes, or is currently transmitting changes.
+	 * The members of this enumeration are used as the event types
+	 * published by the object.  (I.e., each state change
+	 * is published.)
 	 */
 	public enum State {
         /** No unsent changes. */
@@ -87,8 +91,7 @@ public class ChangeList extends Observable {
 		unsent.add(change);
 		if (state == State.CLEAN) {
 			state = State.UNSENT;
-			setChanged();
-			notifyObservers();
+			notifySubscribers(getState(), null);
 		}
 	}
 	
@@ -106,8 +109,7 @@ public class ChangeList extends Observable {
 		unsent.clear();
 		
 		state = State.TRANSMISSION;
-		setChanged();
-		notifyObservers();
+		notifySubscribers(getState(), null);
 		
 		// return a single string containing the entire batch of changes
 		return inTransmission.toArray(new Change[inTransmission.size()]);
@@ -123,7 +125,6 @@ public class ChangeList extends Observable {
 		inTransmission.clear();
 		state = (success && unsent.isEmpty()) ? State.CLEAN : State.UNSENT;
 		transmitSuccess = success;
-		setChanged();
-		notifyObservers();
+		notifySubscribers(getState(), null);
 	}
 }

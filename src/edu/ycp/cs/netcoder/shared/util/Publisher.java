@@ -18,7 +18,7 @@ public abstract class Publisher {
 		}
 	}
 	
-	public List<Registration> registrationList;
+	private List<Registration> registrationList;
 	
 	/**
 	 * Constructor.

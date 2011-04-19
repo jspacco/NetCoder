@@ -44,11 +44,13 @@ import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
 import edu.ycp.cs.netcoder.shared.util.Observable;
 import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
 
 /**
  * View for working on a problem: code editor, submit button, feedback, etc.
  */
-public class DevelopmentView extends NetCoderView implements Observer, ResizeHandler {
+public class DevelopmentView extends NetCoderView implements Subscriber, ResizeHandler {
 	private static final int PROBLEM_ID = 0; // FIXME
 	
 	private enum Mode {
@@ -142,7 +144,7 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 		// Observe ChangeList state.
 		// We do this so that we know when the local editor contents are
 		// up to date with the text on the server.
-		session.get(ChangeList.class).addObserver(this);
+		session.get(ChangeList.class).subscribe(ChangeList.State.CLEAN, this, getSubscriptionRegistrar());
 		
 		// User won't be allowed to edit until the problem (and previous editor contents, if any)
 		// are loaded.
@@ -347,11 +349,11 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 		// Turn off the flush pending events timer
 		flushPendingChangeEventsTimer.cancel();
 
-		// Clear all local session data
-		removeAllSessionObjects();
-		
 		// Unsubscribe all event subscribers
 		getSubscriptionRegistrar().unsubscribeAllEventSubscribers();
+
+		// Clear all local session data
+		removeAllSessionObjects();
 	}
 
 	protected void submitCode() {
@@ -382,6 +384,7 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 		mode = Mode.SUBMIT_IN_PROGRESS;
 	}
 	
+	/*
 	@Override
 	public void update(Observable obj, Object hint) {
 		ChangeList changeList = getSession().get(ChangeList.class);
@@ -415,6 +418,44 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 				submitService.submit(problemId, editor.getText(), callback);
 			}
 		}
+	}
+	*/
+	
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == ChangeList.State.CLEAN && mode == Mode.SUBMIT_IN_PROGRESS) {
+			// Full text of submission has arrived at server,
+			// and because the editor is read-only, we know that the
+			// local text is in-sync.  So, submit the code!
+			
+			AsyncCallback<TestResult[]> callback = new AsyncCallback<TestResult[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					final String msg = "Error sending submission to server for compilation"; 
+					resultWidget.setMessage(msg);
+					GWT.log(msg, caught);
+					// TODO: should set editor back to read/write?
+				}
+
+				@Override
+				public void onSuccess(TestResult[] results) {
+					// Great, got results back from server!
+					resultWidget.setResults(results);
+					
+					// Can resume editing now
+					startEditing();
+				}
+			};
+			
+			// Send editor text to server. 
+			int problemId = getSession().get(Problem.class).getProblemId();
+			submitService.submit(problemId, editor.getText(), callback);
+		}
+	}
+	
+	@Override
+	public void unsubscribeFromAll() {
+		getSession().get(ChangeList.class).unsubscribeFromAll(this);
 	}
 	
 	@Override

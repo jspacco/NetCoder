@@ -20,40 +20,53 @@ package edu.ycp.cs.netcoder.client.status;
 import com.google.gwt.user.client.ui.InlineLabel;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
-public class EditorStatusWidget extends InlineLabel implements Observer {
+public class EditorStatusWidget extends InlineLabel implements Subscriber {
 	private static final String NORMAL = "NetCoderEditorStatusNormal";
 	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
+	
+	private ChangeList changeList;
 
-	public EditorStatusWidget() {
+	public EditorStatusWidget(ChangeList changeList, SubscriptionRegistrar registrar) {
+		this.changeList = changeList;
+		
+		// subscribe to state change events
+		for (ChangeList.State state : ChangeList.State.values()) {
+			changeList.subscribe(state, this, registrar);
+		}
+		
 		setText("---");
 		setStylePrimaryName(NORMAL);
 	}
-	
+
 	@Override
-	public void update(Observable obj, Object hint) {
-		ChangeList model = (ChangeList) obj;
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		ChangeList.State state = (ChangeList.State) key;
 		
-		switch (model.getState()) {
+		switch (state) {
 		case CLEAN:
 			setText("---");
 			break;
-			
 		case TRANSMISSION:
 			setText("<->");
 			break;
-			
 		case UNSENT:
 			setText("-*-");
 			break;
 		}
 		
-		if (model.isTransmitSuccess()) {
+		if (changeList.isTransmitSuccess()) {
 			setStylePrimaryName(NORMAL);
 		} else {
 			setStylePrimaryName(XMIT_FAILURE);
 		}
+	}
+	
+	@Override
+	public void unsubscribeFromAll() {
+		changeList.unsubscribeFromAll(this);
 	}
 }
