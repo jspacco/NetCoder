@@ -1,1 +1,3 @@
-This readme has no useful information in it.
+See the wiki:
+
+  https://github.com/daveho/NetCoder/wiki
