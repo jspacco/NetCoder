@@ -129,9 +129,10 @@ public class LoginView extends NetCoderView {
 					loginStatusLabel.setText("Could not log in. Check your username and password.");
 				} else {
 					// Set the user object in the session!
-					// This will cause the entry point code to switch
-					// views.
 					getSession().add(result);
+					
+					// Publish the LOGIN event.
+					getSession().notifySubscribers(Session.Event.LOGIN, result);
 				}
 			}
 		};

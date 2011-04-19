@@ -22,16 +22,17 @@ import com.google.gwt.user.client.ui.Label;
 
 import edu.ycp.cs.netcoder.client.Session;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
-public class ProblemDescriptionWidget extends Composite implements Observer {
+public class ProblemDescriptionWidget extends Composite implements Subscriber {
 	private Session session;
 	private Label problemDescriptionText;
 	
-	public ProblemDescriptionWidget(Session session) {
+	public ProblemDescriptionWidget(Session session, SubscriptionRegistrar registrar) {
 		this.session = session;
-		session.addObserver(this);
+		session.subscribe(Session.Event.ADDED_OBJECT, this, registrar);
 		
 		problemDescriptionText = new Label("Loading problem description...");
 		
@@ -39,13 +40,18 @@ public class ProblemDescriptionWidget extends Composite implements Observer {
 		
 		this.setStyleName("NetCoderProblemDescription");
 	}
-	
+
 	@Override
-	public void update(Observable obj, Object hint) {
-		Problem problem = session.get(Problem.class);
-		if (problem != null) {
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof Problem) {
+			Problem problem = (Problem) hint;
 			problemDescriptionText.setText(problem.getDescription());
 		}
+	}
+	
+	@Override
+	public void unsubscribeFromAll() {
+		session.unsubscribeFromAll(this);
 	}
 
 	public void setErrorText(String text) {

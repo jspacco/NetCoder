@@ -74,8 +74,10 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 	private Mode mode;
 	private boolean textLoaded;
 	
+	/*
 	// Model objects added to the session.
 	private Object[] sessionObjects;
+	*/
 	
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
@@ -93,11 +95,15 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 	public DevelopmentView(Session session) {
 		super(session);
 		
+		/*
 		// Add ChangeList and AffectEvent to session
 		sessionObjects = new Object[]{ new ChangeList(), new AffectEvent() };
 		for (Object obj : sessionObjects) {
 			getSession().add(obj);
 		}
+		*/
+		addSessionObject(new ChangeList());
+		addSessionObject(new AffectEvent());
 		
 		// Add logout handler.
 		// The goal is to completely purge session data on both server
@@ -121,14 +127,11 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 					}
 
 					protected void clearSessionData() {
-						// Clear all local session data
-						for (Object obj : sessionObjects) {
-							getSession().remove(obj.getClass());
-						}
-						
-						// Clearing the User object from the session
-						// will notify the entry point that this view is done.
+						// Clear the User object from the session.
 						getSession().remove(User.class);
+						
+						// Publish the LOGOUT event.
+						getSession().notifySubscribers(Session.Event.LOGOUT, null);
 					}
 				};
 				
@@ -150,7 +153,7 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 		LayoutPanel layoutPanel = getLayoutPanel();
 		
 		// Add problem description widget
-		problemDescription = new ProblemDescriptionWidget(session);
+		problemDescription = new ProblemDescriptionWidget(session, getSubscriptionRegistrar());
 		layoutPanel.add(problemDescription);
 		layoutPanel.setWidgetTopHeight(
 				problemDescription,
@@ -343,6 +346,12 @@ public class DevelopmentView extends NetCoderView implements Observer, ResizeHan
 	public void deactivate() {
 		// Turn off the flush pending events timer
 		flushPendingChangeEventsTimer.cancel();
+
+		// Clear all local session data
+		removeAllSessionObjects();
+		
+		// Unsubscribe all event subscribers
+		getSubscriptionRegistrar().unsubscribeAllEventSubscribers();
 	}
 
 	protected void submitCode() {

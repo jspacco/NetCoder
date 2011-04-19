@@ -17,16 +17,29 @@
 
 package edu.ycp.cs.netcoder.client;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
+
 /**
  * Common superclass for all NetCoder views.
  * Handles creation of containing LayoutPanel and common UI elements
- * (such as the TopBar).
+ * (such as the TopBar).  Also provides helper methods for
+ * managing session data and event subscribers.
  */
 public abstract class NetCoderView extends Composite {
+	private List<Object> sessionObjectList;
+	private DefaultSubscriptionRegistrar subscriptionRegistrar;
+
 	private Session session;
 	
 	private LayoutPanel layoutPanel;
@@ -38,6 +51,9 @@ public abstract class NetCoderView extends Composite {
 	 * @param session the Session object
 	 */
 	public NetCoderView(Session session) {
+		this.sessionObjectList = new ArrayList<Object>();
+		this.subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+		
 		this.session = session;
 		this.layoutPanel = new LayoutPanel();
 		
@@ -45,6 +61,25 @@ public abstract class NetCoderView extends Composite {
 		layoutPanel.add(topBar);
 		layoutPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
 		topBar.setSession(session);
+	}
+	
+	/**
+	 * Add an object to the Session.
+	 * 
+	 * @param obj  object to add to the Session
+	 */
+	protected void addSessionObject(Object obj) {
+		session.add(obj);
+		sessionObjectList.add(obj);
+	}
+	
+	/**
+	 * Remove all objects added to the Session.
+	 */
+	protected void removeAllSessionObjects() {
+		for (Object obj : sessionObjectList) {
+			session.remove(obj.getClass());
+		}
 	}
 	
 	/**
@@ -66,6 +101,16 @@ public abstract class NetCoderView extends Composite {
 	 */
 	public Session getSession() {
 		return session;
+	}
+	
+	/**
+	 * Get the SubscriptionRegistrar which keeps track of subscribers
+	 * for this view.
+	 * 
+	 * @return the SubscriptionRegistrar
+	 */
+	public SubscriptionRegistrar getSubscriptionRegistrar() {
+		return subscriptionRegistrar;
 	}
 	
 	/**

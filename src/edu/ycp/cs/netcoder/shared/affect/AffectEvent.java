@@ -27,7 +27,6 @@ import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-import edu.ycp.cs.netcoder.client.NetCoder_GWT2;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.event.EventType;
 import edu.ycp.cs.netcoder.shared.util.Observable;

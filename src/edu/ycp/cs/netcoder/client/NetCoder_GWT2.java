@@ -20,18 +20,21 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
-import edu.ycp.cs.netcoder.shared.problems.User;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, Observer {
+public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	// Client session data.
 	private Session session;
 	
-	private boolean block;
+	// Subscription registrar
+	private SubscriptionRegistrar subscriptionRegistrar;
+
+	// Currently-active NetCoderView.
 	private NetCoderView currentView;
 	
 	/**
@@ -41,8 +44,12 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 		// Create session
 		session = new Session();
 		
-		// Observe Session changes so we're notified of successful login
-		session.addObserver(this);
+		// Create a SubscriptionRegistrar
+		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+		
+		// Observe Session changes
+		session.subscribe(Session.Event.LOGIN, this, subscriptionRegistrar);
+		session.subscribe(Session.Event.LOGOUT, this, subscriptionRegistrar);
 		
 		changeView(new LoginView(session));
 	}
@@ -66,17 +73,16 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	}
 	
 	@Override
-	public void update(Observable obj, Object hint) {
-		if (currentView.getClass() == LoginView.class && session.get(User.class) != null) {
-			// User just successfully logged in - switch to development view
-			if (!block) {
-				block = true;
-				changeToDevelopmentView();
-				block = false; // FIXME: need a better event firing/handling mechanism
-			}
-		} else if (currentView.getClass() == DevelopmentView.class && session.get(User.class) == null) {
-			// The user logged out
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.LOGIN) {
+			changeToDevelopmentView();
+		} else if (key == Session.Event.LOGOUT) {
 			changeToLoginView();
 		}
+	}
+	
+	@Override
+	public void unsubscribeFromAll() {
+		subscriptionRegistrar.unsubscribeAllEventSubscribers();
 	}
 }
