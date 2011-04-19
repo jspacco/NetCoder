@@ -396,7 +396,10 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				@Override
 				public void onFailure(Throwable caught) {
 					final String msg = "Error sending submission to server for compilation"; 
-					resultWidget.setMessage(msg);
+					
+					//resultWidget.setMessage(msg);
+					// TODO: create a TestResult object indicating the error
+					
 					GWT.log(msg, caught);
 					// TODO: should set editor back to read/write?
 				}
@@ -444,5 +447,8 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				editor,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				availableForEditor, Unit.PX);
+		
+		getLayoutPanel().setWidgetBottomHeight(resultWidget, 0, Unit.PX, LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
+		resultWidget.setGridSize(Window.getClientWidth() + "px", LayoutConstants.RESULTS_PANEL_HEIGHT_PX + "px");
 	}
 }

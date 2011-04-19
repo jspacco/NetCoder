@@ -1,0 +1,29 @@
+Licenses for third-party libraries used by NetCoder:
+
+Ext-GWT (http://www.sencha.com/products/extgwt/)
+  GPL version 3
+  http://www.sencha.com/products/extgwt/license/
+
+HyperSQL (http://www.hsqldb.org/)
+  BSD-like license
+  http://www.hsqldb.org/web/hsqlLicense.html
+
+antlr
+
+dom4j
+
+gwt-servlet.jar
+
+hibernate
+
+javassist
+
+jta
+
+mysql-connector
+
+junit
+
+hamcrest
+
+slf4j

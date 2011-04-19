@@ -12,6 +12,7 @@
 
   <!-- Other module inherits                                      -->
   <inherits name='edu.ycp.cs.dh.acegwt.AceGWT'/>
+  <inherits name='com.extjs.gxt.ui.GXT'/>
 
   <!-- Specify the app entry point class.                         -->
   <entry-point class='edu.ycp.cs.netcoder.client.NetCoder_GWT2'/>
