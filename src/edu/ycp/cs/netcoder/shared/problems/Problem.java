@@ -34,10 +34,16 @@ public class Problem implements IsSerializable
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column(name="problem_id")
 	private Integer problemId;
+	
+	@Column(name="course_id")
+	private Integer courseId;
 
 	@Column(name="testname")
 	private String testName;
 
+	@Column(name="brief_description")
+	private String briefDescription;
+	
 	@Column(name="description")
 	private String description;
 
@@ -57,6 +63,15 @@ public class Problem implements IsSerializable
 	public void setProblemId(Integer id){
 		this.problemId = id;
 	}
+	
+	public Integer getCourseId() {
+		return courseId;
+	}
+	
+	public void setCourseId(Integer courseId) {
+		this.courseId = courseId;
+	}
+	
 	/**
 	 * @return the testName
 	 */
@@ -69,6 +84,15 @@ public class Problem implements IsSerializable
 	public void setTestName(String testName){
 		this.testName = testName;
 	}
+	
+	public void setBriefDescription(String briefDescription) {
+		this.briefDescription = briefDescription;
+	}
+	
+	public String getBriefDescription() {
+		return briefDescription;
+	}
+	
 	/**
 	 * @return the description
 	 */
