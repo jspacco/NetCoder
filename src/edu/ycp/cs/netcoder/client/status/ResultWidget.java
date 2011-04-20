@@ -17,21 +17,13 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.extjs.gxt.ui.client.data.ModelData;
-import com.extjs.gxt.ui.client.store.ListStore;
-import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
-import com.extjs.gxt.ui.client.widget.grid.ColumnData;
-import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
-import com.extjs.gxt.ui.client.widget.grid.Grid;
-import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
-import com.google.gwt.user.client.Element;
+import com.google.gwt.gen2.table.client.FixedWidthFlexTable;
+import com.google.gwt.gen2.table.client.FixedWidthGrid;
+import com.google.gwt.gen2.table.client.ScrollTable;
+import com.google.gwt.gen2.table.client.SelectionGrid.SelectionPolicy;
+import com.google.gwt.gen2.table.override.client.FlexTable.FlexCellFormatter;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.InlineLabel;
 
 import edu.ycp.cs.netcoder.client.Session;
 import edu.ycp.cs.netcoder.shared.testing.TestResult;
@@ -43,12 +35,12 @@ import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
  * ResultWidget displays TestResults received from the server
  * following a submission.
  */
-public class ResultWidget extends LayoutContainer implements Subscriber
+public class ResultWidget extends Composite implements Subscriber
 {
 	private Session session;
-	private ListStore<TestResultModelData> store;
-	private ColumnModel columnModel;
-	private Grid<TestResultModelData> grid;
+	private FixedWidthFlexTable headerTable;
+	private FixedWidthGrid grid;
+	private ScrollTable table;
 
 	/**
 	 * Constructor.
@@ -61,6 +53,24 @@ public class ResultWidget extends LayoutContainer implements Subscriber
 	public ResultWidget(Session session, SubscriptionRegistrar registrar) {
 		this.session = session;
 		session.subscribe(Session.Event.ADDED_OBJECT, this, registrar);
+
+		headerTable = new FixedWidthFlexTable();
+		FlexCellFormatter formatter = headerTable.getFlexCellFormatter();
+		headerTable.setHTML(0, 0, "Outcome");
+		headerTable.setHTML(0, 1, "Message");
+		headerTable.setHTML(0, 2, "Output");
+		headerTable.setHTML(0, 3, "Error output");
+		formatter.setColSpan(0, 0, 1);
+		formatter.setColSpan(0, 1, 1);
+		formatter.setColSpan(0, 2, 1);
+		formatter.setColSpan(0, 3, 1);
+		
+		grid = new FixedWidthGrid();
+		grid.setSelectionPolicy(SelectionPolicy.ONE_ROW);
+		
+		table = new ScrollTable(grid, headerTable);
+		
+		initWidget(table);
 	}
 	
 	@Override
@@ -74,149 +84,24 @@ public class ResultWidget extends LayoutContainer implements Subscriber
 	public void unsubscribeFromAll() {
 		session.unsubscribeFromAll(this);
 	}
-
-	/**
-	 * Ext-GWT requires model classes to implement its ModelData interface.
-	 * All I can say is: isn't the idea to make your model classes
-	 * NOT depend on your UI?  Feh.
-	 */
-	static class TestResultModelData implements ModelData {
-		private Map<String, Object> properties;
-
-		public TestResultModelData(TestResult testResult) {
-			this.properties = new HashMap<String, Object>();
-			properties.put("outcome", testResult.getOutcome());
-			properties.put("message", testResult.getMessage());
-			properties.put("stdout", testResult.getStdout());
-			properties.put("stderr", testResult.getStderr());
+	
+	private static class OutcomeCell extends InlineLabel {
+		public OutcomeCell(TestResult result) {
+			super(result.getOutcome());
+			setStyleName(result.getOutcome().equals(TestResult.PASSED) ? "NetCoderOutcomePassed" : "NetCoderOutcomeFailed");
 		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <X> X get(String property) {
-			return (X) properties.get(property);
-		}
-
-		@Override
-		public Map<String, Object> getProperties() {
-			return properties;
-		}
-
-		@Override
-		public Collection<String> getPropertyNames() {
-			return properties.keySet();
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <X> X remove(String property) {
-			return (X) properties.remove(property);
-		}
-
-		public <X extends Object> X set(String property, X value) {
-			throw new UnsupportedOperationException();
-		}
-	}
-
-	@Override
-	protected void onRender(Element parent, int index) {
-		// TODO Auto-generated method stub
-		super.onRender(parent, index);
-
-		store = new ListStore<ResultWidget.TestResultModelData>();
-
-		TestResult tr = new TestResult(TestResult.PASSED, "Woo hoo?", "stdout text", "stderr text");
-		store.add(new TestResultModelData(tr));
-		store.commitChanges();
-
-		GridCellRenderer<TestResultModelData> outcomeRenderer = new GridCellRenderer<ResultWidget.TestResultModelData>() {
-			@Override
-			public Object render(TestResultModelData model, String property,
-					ColumnData config, int rowIndex, int colIndex,
-					ListStore<TestResultModelData> store,
-					Grid<TestResultModelData> grid) {
-				String outcome = model.get(property);
-
-				boolean passed = outcome.equals(TestResult.PASSED);
-
-				return "<span style='color: " + (passed ? "green" : "red") + ";'> " + outcome + "</span>";
-			}
-		};
-
-		GridCellRenderer<TestResultModelData> otherStringRenderer = new GridCellRenderer<ResultWidget.TestResultModelData>() {
-			@Override
-			public Object render(TestResultModelData model, String property,
-					ColumnData config, int rowIndex, int colIndex,
-					ListStore<TestResultModelData> store,
-					Grid<TestResultModelData> grid) {
-				return model.get(property);
-			}
-		};
-
-		List<ColumnConfig> columnList = new ArrayList<ColumnConfig>();
-		ColumnConfig column;
-
-		column = new ColumnConfig();
-		column.setId("outcome");
-		column.setHeader("Outcome");
-		column.setWidth(100);
-		column.setRenderer(outcomeRenderer);
-		columnList.add(column);
-
-		column = new ColumnConfig();
-		column.setId("message");
-		column.setHeader("Message");
-		column.setWidth(400);
-		column.setRenderer(otherStringRenderer);
-		columnList.add(column);
-
-		column = new ColumnConfig();
-		column.setId("stdout");
-		column.setHeader("Output");
-		column.setWidth(100);
-		column.setRenderer(otherStringRenderer);
-		columnList.add(column);
-
-		column = new ColumnConfig();
-		column.setId("stderr");
-		column.setHeader("Error output");
-		column.setWidth(100);
-		column.setRenderer(otherStringRenderer);
-		columnList.add(column);
-
-		columnModel = new ColumnModel(columnList);
-
-		grid = new Grid<ResultWidget.TestResultModelData>(store, columnModel);
-
-		add(grid);
-	}
-
-	/**
-	 * I can't figure out how to get an Ext-GWT Grid to
-	 * set its own vertical size correctly, so this is a hack
-	 * to work around that.
-	 * 
-	 * @param width  width to set the Grid to
-	 * @param height height to set the Grid to
-	 */
-	public void setGridSize(String width, String height) {
-		grid.setSize(width, height);
 	}
 
 	private void setResults(TestResult[] results) {
-		if (grid == null) {
-			return; // UI is not initialized yet
-		}
-		
-		store.removeAll();
-
-		List<TestResultModelData> list = new ArrayList<ResultWidget.TestResultModelData>();
+		grid.clear();
+		grid.resize(results.length, 4);
+		int row = 0;
 		for (TestResult testResult : results) {
-			list.add(new TestResultModelData(testResult));
+			grid.setWidget(row, 0, new OutcomeCell(testResult));
+			grid.setWidget(row, 1, new InlineLabel(testResult.getMessage()));
+			grid.setWidget(row, 2, new InlineLabel(testResult.getStdout()));
+			grid.setWidget(row, 3, new InlineLabel(testResult.getStderr()));
+			row++;
 		}
-
-		store.add(list);
-
-		grid.reconfigure(store, columnModel);
 	}
 }

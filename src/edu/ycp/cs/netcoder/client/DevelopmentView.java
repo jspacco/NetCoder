@@ -437,8 +437,8 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		getLayoutPanel().setWidgetBottomHeight(resultsTabPanel, 0, Unit.PX, LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 		
 		// FIXME: I don't know how to get the stupid Grid to expand its vertical size automatically to show the $!@$!! rows.
-		resultWidget.setGridSize(
-				Window.getClientWidth() + "px",
-				(LayoutConstants.RESULTS_PANEL_HEIGHT_PX - (LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX + 4)) + "px");
+//		resultWidget.setGridSize(
+//				Window.getClientWidth() + "px",
+//				(LayoutConstants.RESULTS_PANEL_HEIGHT_PX - (LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX + 4)) + "px");
 	}
 }
