@@ -20,7 +20,7 @@
 }
 
 .NetCoderRoundBox {
-	background: #87CEFA;
+	background: #92c1f0;
 	border-radius: 15px;
 	-moz-border-radius: 15px;
 	padding: 10px;
@@ -53,7 +53,7 @@
 }
 
 .NetCoderProblemDescription {
-	background: silver;
+	background: #d7d5d3;
 	border-radius: 15px;
 	-moz-border-radius: 15px;
 	padding: 10px;
