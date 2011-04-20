@@ -86,7 +86,6 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 	private Timer flushPendingChangeEventsTimer;
 	
 	// RPC services.
-	private LoginServiceAsync loginService = GWT.create(LoginService.class);
 	private LogCodeChangeServiceAsync logCodeChangeService = GWT.create(LogCodeChangeService.class);
 	private SubmitServiceAsync submitService = GWT.create(SubmitService.class);
 	private LoadExerciseServiceAsync loadService = GWT.create(LoadExerciseService.class);
@@ -104,40 +103,6 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		*/
 		addSessionObject(new ChangeList());
 		addSessionObject(new AffectEvent());
-		
-		// Add logout handler.
-		// The goal is to completely purge session data on both server
-		// and client when the user logs out.
-		getTopBar().setLogoutHandler(new Runnable() {
-			@Override
-			public void run() {
-				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						GWT.log("Could not log out?", caught);
-						
-						// well, at least we tried
-						clearSessionData();
-					}
-					
-					@Override
-					public void onSuccess(Void result) {
-						// server has purged the session
-						clearSessionData();
-					}
-
-					protected void clearSessionData() {
-						// Clear the User object from the session.
-						getSession().remove(User.class);
-						
-						// Publish the LOGOUT event.
-						getSession().notifySubscribers(Session.Event.LOGOUT, null);
-					}
-				};
-				
-				loginService.logout(callback);
-			}
-		});
 
 		// Observe ChangeList state.
 		// We do this so that we know when the local editor contents are

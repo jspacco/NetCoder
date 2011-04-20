@@ -18,16 +18,15 @@
 package edu.ycp.cs.netcoder.client;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
-import edu.ycp.cs.netcoder.shared.util.Publisher;
-import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 /**
@@ -44,6 +43,8 @@ public abstract class NetCoderView extends Composite {
 	
 	private LayoutPanel layoutPanel;
 	private TopBar topBar;
+
+	private LoginServiceAsync loginService = GWT.create(LoginService.class);
 	
 	/**
 	 * Constructor.
@@ -61,6 +62,37 @@ public abstract class NetCoderView extends Composite {
 		layoutPanel.add(topBar);
 		layoutPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
 		topBar.setSession(session);
+		
+		topBar.setLogoutHandler(new Runnable() {
+			@Override
+			public void run() {
+				AsyncCallback<Void> callback = new AsyncCallback<Void>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						GWT.log("Could not log out?", caught);
+						
+						// well, at least we tried
+						clearSessionData();
+					}
+					
+					@Override
+					public void onSuccess(Void result) {
+						// server has purged the session
+						clearSessionData();
+					}
+
+					protected void clearSessionData() {
+						// Clear the User object from the session.
+						getSession().remove(User.class);
+						
+						// Publish the LOGOUT event.
+						getSession().notifySubscribers(Session.Event.LOGOUT, null);
+					}
+				};
+				
+				loginService.logout(callback);
+			}
+		});
 	}
 	
 	/**
