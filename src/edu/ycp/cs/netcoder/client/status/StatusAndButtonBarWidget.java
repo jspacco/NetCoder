@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 
 import edu.ycp.cs.netcoder.client.Session;
+import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 public class StatusAndButtonBarWidget extends Composite {
@@ -36,9 +37,13 @@ public class StatusAndButtonBarWidget extends Composite {
 		
 		StatusMessageWidget statusMessageWidget = new StatusMessageWidget(session, registrar);
 		panel.add(statusMessageWidget);
+
 		
+		FlowPanel statusAndSubmitButtonPanel = new FlowPanel();
+		statusAndSubmitButtonPanel.setStyleName("NetCoderEditorStatusAndSubmitButton");
+		EditorStatusWidget editorStatusWidget = new EditorStatusWidget(session.get(ChangeList.class), registrar);
+		statusAndSubmitButtonPanel.add(editorStatusWidget);
 		final Button submitButton = new Button("Submit");
-		submitButton.setStyleName("NetCoderSubmitButton");
 		submitButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -47,7 +52,9 @@ public class StatusAndButtonBarWidget extends Composite {
 				}
 			}
 		});
-		panel.add(submitButton);
+		statusAndSubmitButtonPanel.add(submitButton);
+		
+		panel.add(statusAndSubmitButtonPanel);
 		
 		initWidget(panel);
 	}

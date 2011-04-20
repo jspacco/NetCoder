@@ -17,20 +17,18 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.shared.util.Publisher;
 import edu.ycp.cs.netcoder.shared.util.Subscriber;
 import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
-public class EditorStatusWidget extends InlineLabel implements Subscriber {
-	private static final String NORMAL = "NetCoderEditorStatusNormal";
-	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
-	
+public class EditorStatusWidget extends InlineHTML implements Subscriber {
 	private ChangeList changeList;
 
 	public EditorStatusWidget(ChangeList changeList, SubscriptionRegistrar registrar) {
+		super("X");
 		this.changeList = changeList;
 		
 		// subscribe to state change events
@@ -46,20 +44,14 @@ public class EditorStatusWidget extends InlineLabel implements Subscriber {
 		
 		switch (state) {
 		case CLEAN:
-			setText("---");
+			setStyleName("NetCoderEditorStatusClean");
 			break;
 		case TRANSMISSION:
-			setText("<->");
+			setStyleName("NetCoderEditorStatusTransmit");
 			break;
 		case UNSENT:
-			setText("-*-");
+			setStyleName("NetCoderEditorStatusUnsent");
 			break;
-		}
-		
-		if (changeList.isTransmitSuccess()) {
-			setStylePrimaryName(NORMAL);
-		} else {
-			setStylePrimaryName(XMIT_FAILURE);
 		}
 	}
 	

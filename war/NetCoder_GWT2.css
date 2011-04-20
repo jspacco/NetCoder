@@ -5,20 +5,6 @@
 	margin: 5px;
 }
 
-/* editor status widget */
-.NetCoderEditorStatusNormal {
-	width: 30px;
-	font-size: 14px;
-	border: 4px solid #0F0;
-	text-align: center;
-}
-.NetCoderEditorStatusTransmitFailure {
-	width: 30px;
-	font-size: 14px;
-	border: 4px solid red;
-	text-align: center;
-}
-
 .NetCoderRoundBox {
 	background: #92c1f0;
 	border-radius: 15px;
@@ -75,11 +61,28 @@
 	color: red;
 }
 
-.NetCoderSubmitButton {
+.NetCoderEditorStatusAndSubmitButton {
 	position: absolute;
 	vertical-align: middle;
 	top: 0;
 	right: 0;
+}
+
+/* editor status widget */
+.NetCoderEditorStatusClean {
+	width: 10px;
+	height: 10px;
+	background: #0f0;
+}
+.NetCoderEditorStatusUnsent {
+	width: 10px;
+	height: 10px;
+	background: #afa;
+}
+.NetCoderEditorStatusTransmit {
+	width: 10px;
+	height: 10px;
+	background: #dd0;
 }
 
 .NetCoderProblemDescriptionBrief {
