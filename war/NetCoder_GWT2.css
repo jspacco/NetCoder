@@ -63,8 +63,14 @@
 	position: relative;
 }
 
-.NetCoderStatus {
+.NetCoderStatusInformation {
 	vertical-align: middle;
+	color: black;
+}
+
+.NetCoderStatusError {
+	vertical-align: middle;
+	color: red;
 }
 
 .NetCoderSubmitButton {

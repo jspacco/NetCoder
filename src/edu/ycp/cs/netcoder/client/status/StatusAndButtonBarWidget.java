@@ -24,19 +24,18 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
 
 import edu.ycp.cs.netcoder.client.Session;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 public class StatusAndButtonBarWidget extends Composite {
-	private Session session;
 	private Runnable onSubmit;
 	
-	public StatusAndButtonBarWidget(Session session) {
-		this.session = session;
-		
+	public StatusAndButtonBarWidget(Session session, SubscriptionRegistrar registrar) {
 		FlowPanel panel = new FlowPanel();
 		
 		panel.setStyleName("NetCoderStatusAndButtonBar");
 		
-		// TODO: status widget(s)
+		StatusMessageWidget statusMessageWidget = new StatusMessageWidget(session, registrar);
+		panel.add(statusMessageWidget);
 		
 		final Button submitButton = new Button("Submit");
 		submitButton.setStyleName("NetCoderSubmitButton");

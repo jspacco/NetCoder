@@ -136,7 +136,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				200, Unit.PX);
 
 		// Add the status and button bar widget
-		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(session);
+		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(getSession(), getSubscriptionRegistrar());
 		layoutPanel.add(statusAndButtonBarWidget);
 		layoutPanel.setWidgetBottomHeight(
 				statusAndButtonBarWidget,
@@ -378,8 +378,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				public void onFailure(Throwable caught) {
 					final String msg = "Error sending submission to server for compilation"; 
 					
-					//resultWidget.setMessage(msg);
-					// TODO: create a TestResult object indicating the error
+					getSession().add(new StatusMessage(StatusMessage.Category.ERROR, msg));
 					
 					GWT.log(msg, caught);
 					// TODO: should set editor back to read/write?
@@ -389,6 +388,10 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				public void onSuccess(TestResult[] results) {
 					// Great, got results back from server!
 					getSession().add(results);
+					
+					// Add a status message about the results
+					getSession().add(new StatusMessage(
+							StatusMessage.Category.INFORMATION, "Received " + results.length + " test result(s)"));
 					
 					// Can resume editing now
 					startEditing();
