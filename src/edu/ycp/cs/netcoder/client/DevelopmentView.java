@@ -160,7 +160,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		*/
 		resultsTabPanel = new TabLayoutPanel(LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
 		
-		resultWidget = new ResultWidget();
+		resultWidget = new ResultWidget(getSession(), getSubscriptionRegistrar());
 		resultWidget.setWidth("100%");
 		resultWidget.setHeight("100%");
 		resultsTabPanel.add(resultWidget, "Test results");
@@ -388,7 +388,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				@Override
 				public void onSuccess(TestResult[] results) {
 					// Great, got results back from server!
-					resultWidget.setResults(results);
+					getSession().add(results);
 					
 					// Can resume editing now
 					startEditing();
