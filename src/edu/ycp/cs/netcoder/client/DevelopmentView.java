@@ -26,6 +26,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.TabLayoutPanel;
 
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditor;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorCallback;
@@ -82,6 +83,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
 	private AceEditor editor;
+	private TabLayoutPanel resultsTabPanel;
 	private ResultWidget resultWidget;
 	private Timer flushPendingChangeEventsTimer;
 	
@@ -148,10 +150,24 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		});
 		
 		// Add the ResultWidget
+		/*
 		resultWidget = new ResultWidget();
 		layoutPanel.add(resultWidget);
 		layoutPanel.setWidgetBottomHeight(
 				resultWidget,
+				0, Unit.PX,
+				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
+		*/
+		resultsTabPanel = new TabLayoutPanel(LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
+		
+		resultWidget = new ResultWidget();
+		resultWidget.setWidth("100%");
+		resultWidget.setHeight("100%");
+		resultsTabPanel.add(resultWidget, "Test results");
+		
+		layoutPanel.add(resultsTabPanel);
+		layoutPanel.setWidgetBottomHeight(
+				resultsTabPanel,
 				0, Unit.PX,
 				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 		
@@ -413,7 +429,11 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				availableForEditor, Unit.PX);
 		
-		getLayoutPanel().setWidgetBottomHeight(resultWidget, 0, Unit.PX, LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
-		resultWidget.setGridSize(Window.getClientWidth() + "px", LayoutConstants.RESULTS_PANEL_HEIGHT_PX + "px");
+		getLayoutPanel().setWidgetBottomHeight(resultsTabPanel, 0, Unit.PX, LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
+		
+		// FIXME: I don't know how to get the stupid Grid to expand its vertical size automatically to show the $!@$!! rows.
+		resultWidget.setGridSize(
+				Window.getClientWidth() + "px",
+				(LayoutConstants.RESULTS_PANEL_HEIGHT_PX - (LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX + 4)) + "px");
 	}
 }

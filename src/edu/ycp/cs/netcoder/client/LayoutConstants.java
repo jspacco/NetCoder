@@ -32,4 +32,7 @@ public interface LayoutConstants {
 	
 	/** Height of the results panel in the DevelopmentView. */
 	public static final int RESULTS_PANEL_HEIGHT_PX = 175;
+
+	/** Height of tab bar for results tab panel. */
+	public static final int RESULTS_TAB_BAR_HEIGHT_PX = 18;
 }
