@@ -199,6 +199,8 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 						public void onFailure(Throwable caught) {
 							changeList.endTransmit(false);
 							GWT.log("Failed to send change batch to server");
+							
+							getSession().add(new StatusMessage(StatusMessage.Category.ERROR, "Could not save code to server!"));
 						}
 
 						@Override
