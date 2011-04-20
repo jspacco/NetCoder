@@ -68,11 +68,21 @@ public class ResultWidget extends Composite implements Subscriber
 		grid = new FixedWidthGrid();
 		grid.setSelectionPolicy(SelectionPolicy.ONE_ROW);
 		
+		setColumnWidth(0, 100);
+		setColumnWidth(1, 400);
+		setColumnWidth(2, 100);
+		setColumnWidth(3, 100);
+		
 		table = new ScrollTable(grid, headerTable);
 		
 		initWidget(table);
 	}
 	
+	private void setColumnWidth(int col, int width) {
+		headerTable.setColumnWidth(col, width);
+		grid.setColumnWidth(col, width);
+	}
+
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint.getClass() == new TestResult[0].getClass()) {

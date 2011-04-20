@@ -89,6 +89,14 @@
 .NetCoderProblemDescriptionDetailed {
 }
 
+.NetCoderOutcomePassed {
+	color: green;
+}
+
+.NetCoderOutcomeFailed {
+	color: red;
+}
+
 /* GWT Incubator ScrollPanel demo CSS. */
 /*
  * ScrollTable

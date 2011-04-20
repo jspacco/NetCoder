@@ -1,8 +1,7 @@
 Licenses for third-party libraries used by NetCoder:
 
-Ext-GWT (http://www.sencha.com/products/extgwt/)
-  GPL version 3
-  http://www.sencha.com/products/extgwt/license/
+GWT-Incubator (http://code.google.com/p/google-web-toolkit-incubator/)
+  Apache License 2.0
 
 HyperSQL (http://www.hsqldb.org/)
   BSD-like license
