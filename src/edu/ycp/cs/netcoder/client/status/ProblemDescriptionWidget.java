@@ -18,7 +18,8 @@
 package edu.ycp.cs.netcoder.client.status;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.Session;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
@@ -28,15 +29,23 @@ import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 public class ProblemDescriptionWidget extends Composite implements Subscriber {
 	private Session session;
-	private Label problemDescriptionText;
+	private InlineHTML briefProblemDescription;
+	private InlineHTML problemDescription;
 	
 	public ProblemDescriptionWidget(Session session, SubscriptionRegistrar registrar) {
 		this.session = session;
 		session.subscribe(Session.Event.ADDED_OBJECT, this, registrar);
+
+		FlowPanel panel = new FlowPanel();
+		briefProblemDescription = new InlineHTML("Loading problem description...");
+		briefProblemDescription.setStyleName("NetCoderProblemDescriptionBrief");
+		panel.add(briefProblemDescription);
 		
-		problemDescriptionText = new Label("Loading problem description...");
+		problemDescription = new InlineHTML("");
+		problemDescription.setStyleName("NetCoderProblemDescriptionDetailed");
+		panel.add(problemDescription);
 		
-		initWidget(problemDescriptionText);
+		initWidget(panel);
 		
 		this.setStyleName("NetCoderProblemDescription");
 	}
@@ -45,7 +54,8 @@ public class ProblemDescriptionWidget extends Composite implements Subscriber {
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint instanceof Problem) {
 			Problem problem = (Problem) hint;
-			problemDescriptionText.setText(problem.getDescription());
+			briefProblemDescription.setText(problem.getBriefDescription());
+			problemDescription.setText(" - " + problem.getDescription());
 		}
 	}
 	
@@ -55,6 +65,7 @@ public class ProblemDescriptionWidget extends Composite implements Subscriber {
 	}
 
 	public void setErrorText(String text) {
-		problemDescriptionText.setText("Error: " + text);
+		briefProblemDescription.setText(text);
+		problemDescription.setText("");
 	}
 }

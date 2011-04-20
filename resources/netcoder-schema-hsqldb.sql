@@ -43,7 +43,7 @@ CREATE CACHED TABLE problems (
   FOREIGN KEY (course_id) REFERENCES courses(id)
 );
 
-INSERT INTO problems VALUES(NULL, 0, 'sq', 'Square a number', 'Write a method that returns the square of an integer parameter.');
+INSERT INTO problems VALUES(NULL, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
 
 CREATE CACHED TABLE test_cases (
   test_case_id integer IDENTITY,
