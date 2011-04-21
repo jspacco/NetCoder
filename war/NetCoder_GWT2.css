@@ -1,8 +1,9 @@
 /* NetCoder CSS rules. */
 
-/* Put a bit of space around the editor. */
+/* Put a bit of space above and below the editor. */
 .NetCoderEditor {
-	margin: 5px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 .NetCoderRoundBox {
@@ -19,6 +20,11 @@
 
 .NetCoderLogo {
 	vertical-align: middle;
+}
+
+.NetCoderAGPLLogo {
+	vertical-align: middle;
+	margin-left: 5px;
 }
 
 .NetCoderProductName {
