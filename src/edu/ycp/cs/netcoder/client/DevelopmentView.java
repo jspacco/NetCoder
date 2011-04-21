@@ -50,6 +50,7 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
  * View for working on a problem: code editor, submit button, feedback, etc.
  */
 public class DevelopmentView extends NetCoderView implements Subscriber, ResizeHandler {
+	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	private static final int PROBLEM_ID = 0; // FIXME
 	
 	private enum Mode {
@@ -75,11 +76,6 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 	private Mode mode;
 	private boolean textLoaded;
 	
-	/*
-	// Model objects added to the session.
-	private Object[] sessionObjects;
-	*/
-	
 	// Widgets
 	private ProblemDescriptionWidget problemDescription;
 	private AceEditor editor;
@@ -96,13 +92,6 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 	public DevelopmentView(Session session) {
 		super(session);
 		
-		/*
-		// Add ChangeList and AffectEvent to session
-		sessionObjects = new Object[]{ new ChangeList(), new AffectEvent() };
-		for (Object obj : sessionObjects) {
-			getSession().add(obj);
-		}
-		*/
 		addSessionObject(new ChangeList());
 		addSessionObject(new AffectEvent());
 
@@ -149,17 +138,10 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 			}
 		});
 		
-		// Add the ResultWidget
-		/*
-		resultWidget = new ResultWidget();
-		layoutPanel.add(resultWidget);
-		layoutPanel.setWidgetBottomHeight(
-				resultWidget,
-				0, Unit.PX,
-				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
-		*/
+		// Tab panel for test results and other information
 		resultsTabPanel = new TabLayoutPanel(LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
 		
+		// Test results widget
 		resultWidget = new ResultWidget(getSession(), getSubscriptionRegistrar());
 		resultWidget.setWidth("100%");
 		resultWidget.setHeight("100%");
@@ -213,7 +195,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 				}
 			}
 		};
-		flushPendingChangeEventsTimer.scheduleRepeating(1000);
+		flushPendingChangeEventsTimer.scheduleRepeating(FLUSH_CHANGES_INTERVAL_MS);
 	}
 
 	/**

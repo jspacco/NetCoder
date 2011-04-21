@@ -121,9 +121,25 @@ public class ChangeList extends Publisher {
 	 */
 	public void endTransmit(boolean success) {
 		assert state == State.TRANSMISSION;
-		inTransmission.clear();
-		state = (success && unsent.isEmpty()) ? State.CLEAN : State.UNSENT;
+
+		if (success) {
+			// can now discard the in-transmission changes
+			inTransmission.clear();
+			
+			// set state (noting that unsent changes may have accumulated)
+			state = unsent.isEmpty() ? State.CLEAN : State.UNSENT;
+		} else {
+			// Next attempt will need to send
+			//   - the changes we just failed to transmit
+			//   - any additional changes that have accumulated in the meantime
+			inTransmission.addAll(unsent);
+			List<Change> tmp = inTransmission;
+			inTransmission = unsent;
+			unsent = tmp;
+			state = State.UNSENT;
+		}
 		transmitSuccess = success;
+		//GWT.log("Setting transmitSuccess to " + transmitSuccess);
 		notifySubscribers(getState(), null);
 	}
 }

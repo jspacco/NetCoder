@@ -29,6 +29,7 @@ import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 
 public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
 	private static final long serialVersionUID = 1L;
@@ -44,22 +45,32 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 			session.setAttribute("doc", doc);
 		}
 
-		EntityManager eman=HibernateUtil.getManager();
-		
-		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-		eman.getTransaction().begin();
-		for (Change change : changeList) {
-			applicator.apply(change, doc);
-			
-			// Insert the generic Event object
-			Event event = change.getEvent();
-			eman.persist(event);
-			
-			// Link the Change object to the Event, and insert it
-			change.setEventId(event.getId());
-			eman.persist(change);
+		EntityManager eman = HibernateUtil.getManager();
+
+		boolean successfulCommit = false;
+		try {
+
+			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+			eman.getTransaction().begin();
+			for (Change change : changeList) {
+				applicator.apply(change, doc);
+
+				// Insert the generic Event object
+				Event event = change.getEvent();
+				eman.persist(event);
+
+				// Link the Change object to the Event, and insert it
+				change.setEventId(event.getId());
+				eman.persist(change);
+			}
+			eman.getTransaction().commit();
+			successfulCommit = true;
+		} finally {
+			if (!successfulCommit) {
+				eman.getTransaction().rollback();
+			}
 		}
-		eman.getTransaction().commit();
+		
 		System.out.println("Document is now:\n" + doc.getText());
 		
 		return true;

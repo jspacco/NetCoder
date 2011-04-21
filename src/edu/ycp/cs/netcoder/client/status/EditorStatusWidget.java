@@ -17,6 +17,7 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
@@ -35,26 +36,37 @@ public class EditorStatusWidget extends InlineHTML implements Subscriber {
 		changeList.subscribeToAll(ChangeList.State.values(), this, registrar);
 
 		// set initial view contents
-		eventOccurred(changeList.getState(), changeList, null);
+		syncView();
 		
 		getElement().setId("NetCoderEditorStatusWidget");
 	}
 
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		ChangeList.State state = (ChangeList.State) key;
+		syncView();
+	}
+
+	private void syncView() {
+		ChangeList.State state = changeList.getState();
+		
+		String styleName = "";
 		
 		switch (state) {
 		case CLEAN:
-			setStyleName("NetCoderEditorStatusClean");
+			styleName = "NetCoderEditorStatusClean";
 			break;
 		case TRANSMISSION:
-			setStyleName("NetCoderEditorStatusTransmit");
+			styleName = "NetCoderEditorStatusTransmit";
 			break;
 		case UNSENT:
-			setStyleName("NetCoderEditorStatusUnsent");
+			styleName = changeList.isTransmitSuccess()
+					? "NetCoderEditorStatusUnsent"
+					: "NetCoderEditorStatusError";
 			break;
 		}
+		
+		//GWT.log("Setting style name to " + styleName);
+		setStyleName(styleName);
 	}
 	
 	@Override

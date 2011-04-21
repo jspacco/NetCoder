@@ -77,17 +77,21 @@
 	margin-right: 5px; 
 }
 
-.NetCoderEditorStatusClean {
+.NetCoderEditorStatusClean { /* editor is up to date */
 	background: #0f0;
 	color: #0f0;
 }
-.NetCoderEditorStatusUnsent {
+.NetCoderEditorStatusUnsent { /* unsent changes scheduled for transmission */
 	background: #8f8;
 	color: #8f8;
 }
-.NetCoderEditorStatusTransmit {
+.NetCoderEditorStatusTransmit { /* transmission in progress */
 	background: #dd0;
 	color: #dd0;
+}
+.NetCoderEditorStatusError { /* last transmission failed */
+	background: #f00;
+	color: #f00;
 }
 
 .NetCoderProblemDescriptionBrief {
