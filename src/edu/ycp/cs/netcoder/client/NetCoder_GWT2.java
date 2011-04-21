@@ -76,6 +76,7 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
 			changeToDevelopmentView();
+//			changeView(new CourseAndProblemView(session));
 		} else if (key == Session.Event.LOGOUT) {
 			changeToLoginView();
 		}

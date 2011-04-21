@@ -46,10 +46,6 @@ public class LoginView extends NetCoderView {
 
 		LayoutPanel loginViewPanel = getLayoutPanel();
 		
-		TopBar topBar = new TopBar();
-		loginViewPanel.add(topBar);
-		loginViewPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
-		
 		FlowPanel panel = new FlowPanel();
 		panel.add(new Label("Username:"));
 		userNameTextBox = new TextBox();

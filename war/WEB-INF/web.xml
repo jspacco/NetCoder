@@ -49,6 +49,10 @@
     <servlet-name>Login</servlet-name>
     <servlet-class>edu.ycp.cs.netcoder.server.LoginServiceImpl</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>GetCoursesAndProblems</servlet-name>
+    <servlet-class>edu.ycp.cs.netcoder.server.GetCoursesAndProblemsServiceImpl</servlet-class>
+  </servlet>
   
   <!--  Servlet mappings -->
   <servlet-mapping>
@@ -74,6 +78,10 @@
   <servlet-mapping>
     <servlet-name>Login</servlet-name>
     <url-pattern>/netcoder_gwt2/login</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>GetCoursesAndProblems</servlet-name>
+    <url-pattern>/netcoder_gwt2/getCoursesAndProblems</url-pattern>
   </servlet-mapping>
 
 </web-app>

@@ -18,6 +18,8 @@
 		<class>edu.ycp.cs.netcoder.shared.event.Event</class>
 		<class>edu.ycp.cs.netcoder.shared.affect.AffectEvent</class>
 		<class>edu.ycp.cs.netcoder.shared.problems.User</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.Course</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.CourseRegistration</class>
 
 		<!--
 			Setup for MySQL 
