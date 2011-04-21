@@ -69,20 +69,25 @@
 }
 
 /* editor status widget */
-.NetCoderEditorStatusClean {
-	width: 10px;
+
+#NetCoderEditorStatusWidget {
+	vertical-align: middle;
+	width: 15px;
 	height: 10px;
+	margin-right: 5px; 
+}
+
+.NetCoderEditorStatusClean {
 	background: #0f0;
+	color: #0f0;
 }
 .NetCoderEditorStatusUnsent {
-	width: 10px;
-	height: 10px;
-	background: #afa;
+	background: #8f8;
+	color: #8f8;
 }
 .NetCoderEditorStatusTransmit {
-	width: 10px;
-	height: 10px;
 	background: #dd0;
+	color: #dd0;
 }
 
 .NetCoderProblemDescriptionBrief {

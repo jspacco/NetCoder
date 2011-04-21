@@ -28,7 +28,7 @@ public class EditorStatusWidget extends InlineHTML implements Subscriber {
 	private ChangeList changeList;
 
 	public EditorStatusWidget(ChangeList changeList, SubscriptionRegistrar registrar) {
-		super("X");
+		super("XX");
 		this.changeList = changeList;
 		
 		// subscribe to state change events
@@ -36,6 +36,8 @@ public class EditorStatusWidget extends InlineHTML implements Subscriber {
 
 		// set initial view contents
 		eventOccurred(changeList.getState(), changeList, null);
+		
+		getElement().setId("NetCoderEditorStatusWidget");
 	}
 
 	@Override
