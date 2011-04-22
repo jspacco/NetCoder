@@ -1,0 +1,53 @@
+package edu.ycp.cs.netcoder.shared.problems;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+@Entity
+@Table(name="terms")
+public class Term implements IsSerializable {
+	@Id
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Column(name="id")
+	private int id;
+	
+	@Column(name="name")
+	private String name;
+	
+	@Column(name="seq")
+	private int seq;
+	
+	public Term() {
+		
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public int getId() {
+		return id;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setSeq(int seq) {
+		this.seq = seq;
+	}
+	
+	public int getSeq() {
+		return seq;
+	}
+}

@@ -54,14 +54,6 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 		changeView(new LoginView(session));
 	}
 	
-	private void changeToLoginView() {
-		changeView(new LoginView(session));
-	}
-	
-	private void changeToDevelopmentView() {
-		changeView(new DevelopmentView(session));
-	}
-	
 	public void changeView(NetCoderView view) {
 		if (currentView != null) {
 			currentView.deactivate();
@@ -75,10 +67,10 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-			changeToDevelopmentView();
-//			changeView(new CourseAndProblemView(session));
+//			changeView(new DevelopmentView(session));
+			changeView(new CourseAndProblemView(session));
 		} else if (key == Session.Event.LOGOUT) {
-			changeToLoginView();
+			changeView(new LoginView(session));
 		}
 	}
 	

@@ -11,15 +11,31 @@ CREATE UNIQUE INDEX users_username_index on users (username);
 -- test account: username "user", password "abc"
 insert into users values (NULL, 'user', 'b252713e97d2b96b51ab0b5422258daa', '5011ffcedffe0a14');
 
-CREATE CACHED TABLE courses (
+CREATE CACHED TABLE terms (
   id integer IDENTITY,
-  name varchar(20),            -- e.g., "CS 101"
-  title longvarchar,           -- e.g., "Introduction to Computer Science I"
-  url longvarchar,             -- course web page
-  semester varchar(20)         -- e.g., "Spring 2011"
+  name varchar(20) NOT NULL,
+  seq integer NOT NULL
 );
 
-INSERT INTO courses values(NULL, 'CS 101', 'Introduction to Computer Science I', 'http://cs.unseen.edu/s11/cs101', 'Spring 2011');
+INSERT INTO terms VALUES (NULL, 'Winter', 1);
+INSERT INTO terms VALUES (NULL, 'Spring', 2);
+INSERT INTO terms VALUES (NULL, 'Summer', 3);
+INSERT INTO terms VALUES (NULL, 'Summer I', 4);
+INSERT INTO terms VALUES (NULL, 'Summer II', 5);
+INSERT INTO terms VALUES (NULL, 'Fall', 6);
+
+CREATE CACHED TABLE courses (
+  id integer IDENTITY,
+  name varchar(20) NOT NULL,            -- e.g., "CS 101"
+  title longvarchar NOT NULL,           -- e.g., "Introduction to Computer Science I"
+  url longvarchar NOT NULL,             -- course web page
+  term_id integer NOT NULL,
+  year integer NOT NULL,
+  
+  FOREIGN KEY (term_id) REFERENCES terms(id)
+);
+
+INSERT INTO courses values(NULL, 'CS 101', 'Introduction to Computer Science I', 'http://cs.unseen.edu/s11/cs101', 1, 2011);
 
 CREATE CACHED TABLE course_registrations (
   id integer IDENTITY,

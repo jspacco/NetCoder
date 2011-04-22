@@ -20,6 +20,7 @@
 		<class>edu.ycp.cs.netcoder.shared.problems.User</class>
 		<class>edu.ycp.cs.netcoder.shared.problems.Course</class>
 		<class>edu.ycp.cs.netcoder.shared.problems.CourseRegistration</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.Term</class>
 
 		<!--
 			Setup for MySQL 

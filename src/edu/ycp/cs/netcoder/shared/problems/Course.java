@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -25,9 +26,15 @@ public class Course implements IsSerializable {
 	
 	@Column(name="url")
 	private String url;
+
+	@Column(name="term_id")
+	private int termId;
 	
-	@Column(name="semester")
-	private String semester;
+	@Column(name="year")
+	private int year;
+	
+	@Transient
+	private Term term;
 	
 	public Course() {
 		
@@ -65,16 +72,32 @@ public class Course implements IsSerializable {
 		this.url = url;
 	}
 	
-	public String getSemester() {
-		return semester;
+	public void setTermId(int termId) {
+		this.termId = termId;
 	}
 	
-	public void setSemester(String semester) {
-		this.semester = semester;
+	public int getTermId() {
+		return termId;
+	}
+	
+	public void setYear(int year) {
+		this.year = year;
+	}
+	
+	public int getYear() {
+		return year;
+	}
+	
+	public void setTerm(Term term) {
+		this.term = term;
+	}
+	
+	public Term getTerm() {
+		return term;
 	}
 	
 	@Override
 	public String toString() {
-		return semester + " " + name + " - " + title;
+		return name + " - " + title;
 	}
 }
