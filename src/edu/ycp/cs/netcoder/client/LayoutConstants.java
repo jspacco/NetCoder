@@ -37,16 +37,19 @@ public interface LayoutConstants {
 	/** Height of the results panel in the DevelopmentView. */
 	public static final int DEV_RESULTS_PANEL_HEIGHT_PX = 175;
 
-	/** Height of tab bar for results tab panel. */
+	/** Height of tab bar for results tab panel in DevelopmentView. */
 	public static final int DEV_RESULTS_TAB_BAR_HEIGHT_PX = 18;
 	
 	//
 	// CourseAndProblemView layout constants
 	//
 	
+	/** Width of course tree in CourseAndProblemView.  */
 	public static final int CP_COURSE_TREE_WIDTH_PX = 300;
 
+	/** Height of status and button bar in CourseAndProblemView. */
 	public static final int CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
 
+	/** Height of problem description in CourseAndProblemView. */
 	public static final int CP_PROBLEM_DESC_HEIGHT_PX = DEV_PROBLEM_DESC_HEIGHT_PX;
 }
