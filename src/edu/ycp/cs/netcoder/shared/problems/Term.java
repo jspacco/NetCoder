@@ -50,4 +50,21 @@ public class Term implements IsSerializable {
 	public int getSeq() {
 		return seq;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || obj.getClass() != this.getClass()) {
+			return false;
+		}
+		Term other = (Term) obj;
+		return id == other.id && name.equals(other.name) && seq == other.seq;
+	}
+	
+	@Override
+	public int hashCode() {
+		return id;
+	}
 }
