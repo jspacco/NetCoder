@@ -54,6 +54,7 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber, ResizeHandler {
 		// Observe Session changes
 		session.subscribe(Session.Event.LOGIN, this, subscriptionRegistrar);
 		session.subscribe(Session.Event.LOGOUT, this, subscriptionRegistrar);
+		session.subscribe(Session.Event.PROBLEM_CHOSEN, this, subscriptionRegistrar);
 		
 		// Get window ResizeEvents so we can publish them to views
 		Window.addResizeHandler(this);
@@ -80,10 +81,11 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber, ResizeHandler {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-			changeView(new DevelopmentView(session));
-//			changeView(new CourseAndProblemView(session));
+			changeView(new CourseAndProblemView(session));
 		} else if (key == Session.Event.LOGOUT) {
 			changeView(new LoginView(session));
+		} else if (key == Session.Event.PROBLEM_CHOSEN) {
+			changeView(new DevelopmentView(session));
 		}
 	}
 	

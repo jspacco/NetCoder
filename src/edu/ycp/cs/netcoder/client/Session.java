@@ -47,6 +47,9 @@ public class Session extends Publisher {
 		
 		/** The user logged out.  Hint is null. */
 		LOGOUT,
+		
+		/** A Problem was chosen.  Hint is the problem. */
+		PROBLEM_CHOSEN,
 	}
 	
 	/**

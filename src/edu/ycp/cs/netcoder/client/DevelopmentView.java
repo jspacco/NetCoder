@@ -54,7 +54,6 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
  */
 public class DevelopmentView extends NetCoderView implements Subscriber {
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
-	private static final int PROBLEM_ID = 0; // FIXME
 	
 	private enum Mode {
 		/** Loading problem and current text - editing not allowed. */
@@ -145,13 +144,6 @@ public class DevelopmentView extends NetCoderView implements Subscriber {
 				statusAndButtonBarWidget,
 				LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX, Unit.PX,
 				LayoutConstants.DEV_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
-
-//		statusAndButtonBarWidget.setOnSubmit(new Runnable() {
-//			@Override
-//			public void run() {
-//				submitCode();
-//			}
-//		});
 		
 		// Tab panel for test results and other information
 		resultsTabPanel = new TabLayoutPanel(LayoutConstants.DEV_RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
@@ -221,7 +213,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber {
 	 */
 	protected void loadProblemAndCurrentText() {
 		// Load the problem.
-		loadService.load(PROBLEM_ID, new AsyncCallback<Problem>() {
+		loadService.load(getSession().get(Problem.class).getProblemId(), new AsyncCallback<Problem>() {
 			@Override
 			public void onSuccess(Problem result) {
 				if (result != null) {
@@ -240,7 +232,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber {
 		});
 		
 		// Load current text.
-		loadService.loadCurrentText(PROBLEM_ID, new AsyncCallback<String>() {
+		loadService.loadCurrentText(getSession().get(Problem.class).getProblemId(), new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				GWT.log("Could not load current text", caught);

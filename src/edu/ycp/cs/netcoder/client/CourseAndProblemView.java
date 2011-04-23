@@ -17,23 +17,33 @@
 
 package edu.ycp.cs.netcoder.client;
 
+import java.util.Set;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.gen2.table.client.FixedWidthFlexTable;
 import com.google.gwt.gen2.table.client.FixedWidthGrid;
 import com.google.gwt.gen2.table.client.ScrollTable;
 import com.google.gwt.gen2.table.client.SelectionGrid.SelectionPolicy;
+import com.google.gwt.gen2.table.event.client.RowSelectionEvent;
+import com.google.gwt.gen2.table.event.client.RowSelectionHandler;
+import com.google.gwt.gen2.table.event.client.TableEvent.Row;
 import com.google.gwt.gen2.table.override.client.FlexTable.FlexCellFormatter;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
+import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
+import edu.ycp.cs.netcoder.client.status.StatusMessageWidget;
 import edu.ycp.cs.netcoder.shared.problems.Course;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.TermAndYear;
@@ -56,6 +66,8 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	
 	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
 		GWT.create(GetCoursesAndProblemsService.class);
+
+	private StatusAndButtonBarWidget statusAndButtonBar;
 	
 	/**
 	 * Object to manage current Course selection.
@@ -136,12 +148,50 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		
 		grid = new FixedWidthGrid();
 		grid.setSelectionPolicy(SelectionPolicy.ONE_ROW);
+		grid.setSelectionEnabled(true);
+		grid.addRowSelectionHandler(new RowSelectionHandler() {
+			@Override
+			public void onRowSelection(RowSelectionEvent event) {
+				//Window.alert("Row selection event!");
+				CourseSelection courseSelection = getSession().get(CourseSelection.class);
+				Problem[] problemList = courseSelection.getProblemList();
+				Set<Row> selectedRows = event.getSelectedRows();
+				//Window.alert(selectedRows.size() + " rows selected");
+				if (selectedRows.size() == 1) {
+					// A problem has been selected
+					Row row = selectedRows.iterator().next();
+					int index = row.getRowIndex();
+					Problem problem = problemList[index];
+					//Window.alert("Setting problem " + problem.getBriefDescription() + " in session");
+					getSession().add(problem);
+				}
+			}
+		});
 		
 		setColumnWidth(0, 100);
-		setColumnWidth(1, 200);
+		setColumnWidth(1, 300);
 		
 		table = new ScrollTable(grid, headerTable);
+		
 		layoutPanel.add(table);
+		
+		// Status and button bar widget
+		this.statusAndButtonBar = new StatusAndButtonBarWidget(getSession(), getSubscriptionRegistrar());
+		statusAndButtonBar.addToLeftPanel(new StatusMessageWidget(getSession(), getSubscriptionRegistrar()));
+		Button selectProblemButton = new Button("Select problem");
+		selectProblemButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Problem problem = getSession().get(Problem.class);
+				if (problem != null) {
+					// Woot!!!
+					//Window.alert("firing PROBLEM_CHOSEN for " + problem.getBriefDescription());
+					getSession().notifySubscribers(Session.Event.PROBLEM_CHOSEN, problem);
+				}
+			}
+		});
+		statusAndButtonBar.addToRightPanel(selectProblemButton);
+		layoutPanel.add(statusAndButtonBar);
 		
 		initWidget(layoutPanel);
 		
@@ -168,9 +218,9 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 			this.termAndYear = termAndYear;
 		}
 		
-		public TermAndYear getTermAndYear() {
-			return termAndYear;
-		}
+//		public TermAndYear getTermAndYear() {
+//			return termAndYear;
+//		}
 	}
 	
 	private static class CourseNode extends InlineLabel {
@@ -312,5 +362,10 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 				table,
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
 				availHeight, Unit.PX);
+		
+		getLayoutPanel().setWidgetTopHeight(
+				statusAndButtonBar,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + availHeight, Unit.PX,
+				LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
 	}
 }
