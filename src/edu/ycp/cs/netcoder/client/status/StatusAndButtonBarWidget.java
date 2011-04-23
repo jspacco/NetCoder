@@ -22,44 +22,59 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import edu.ycp.cs.netcoder.client.Session;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
 import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 public class StatusAndButtonBarWidget extends Composite {
-	private Runnable onSubmit;
+//	private Runnable onSubmit;
+	private FlowPanel leftPanel;
+	private FlowPanel rightPanel;
+	
 	
 	public StatusAndButtonBarWidget(Session session, SubscriptionRegistrar registrar) {
 		FlowPanel panel = new FlowPanel();
 		
 		panel.setStyleName("NetCoderStatusAndButtonBar");
 		
-		StatusMessageWidget statusMessageWidget = new StatusMessageWidget(session, registrar);
-		panel.add(statusMessageWidget);
-
+		leftPanel = new FlowPanel();
 		
-		FlowPanel statusAndSubmitButtonPanel = new FlowPanel();
-		statusAndSubmitButtonPanel.setStyleName("NetCoderEditorStatusAndSubmitButton");
-		EditorStatusWidget editorStatusWidget = new EditorStatusWidget(session.get(ChangeList.class), registrar);
-		statusAndSubmitButtonPanel.add(editorStatusWidget);
-		final Button submitButton = new Button("Submit");
-		submitButton.addClickHandler(new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				if (onSubmit != null) {
-					onSubmit.run();
-				}
-			}
-		});
-		statusAndSubmitButtonPanel.add(submitButton);
+//		StatusMessageWidget statusMessageWidget = new StatusMessageWidget(session, registrar);
+//		leftPanel.add(statusMessageWidget);
 		
-		panel.add(statusAndSubmitButtonPanel);
+		this.rightPanel = new FlowPanel();
+		rightPanel.setStyleName("NetCoderEditorStatusAndSubmitButton");
+		
+//		EditorStatusWidget editorStatusWidget = new EditorStatusWidget(session.get(ChangeList.class), registrar);
+//		rightPanel.add(editorStatusWidget);
+//		final Button submitButton = new Button("Submit");
+//		submitButton.addClickHandler(new ClickHandler() {
+//			@Override
+//			public void onClick(ClickEvent event) {
+//				if (onSubmit != null) {
+//					onSubmit.run();
+//				}
+//			}
+//		});
+//		rightPanel.add(submitButton);
+		
+		panel.add(leftPanel);
+		panel.add(rightPanel);
 		
 		initWidget(panel);
 	}
 	
-	public void setOnSubmit(Runnable onSubmit) {
-		this.onSubmit = onSubmit;
+//	public void setOnSubmit(Runnable onSubmit) {
+//		this.onSubmit = onSubmit;
+//	}
+	
+	public void addToLeftPanel(Widget w) {
+		leftPanel.add(w);
+	}
+	
+	public void addToRightPanel(Widget w) {
+		rightPanel.add(w);
 	}
 }

@@ -20,9 +20,12 @@ package edu.ycp.cs.netcoder.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 
@@ -32,9 +35,11 @@ import edu.ycp.cs.dh.acegwt.client.ace.AceEditorMode;
 import edu.ycp.cs.dh.acegwt.client.ace.AceEditorTheme;
 import edu.ycp.cs.netcoder.client.logchange.ChangeFromAceOnChangeEvent;
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
+import edu.ycp.cs.netcoder.client.status.EditorStatusWidget;
 import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
 import edu.ycp.cs.netcoder.client.status.ResultWidget;
 import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
+import edu.ycp.cs.netcoder.client.status.StatusMessageWidget;
 import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
@@ -124,17 +129,29 @@ public class DevelopmentView extends NetCoderView implements Subscriber {
 
 		// Add the status and button bar widget
 		StatusAndButtonBarWidget statusAndButtonBarWidget = new StatusAndButtonBarWidget(getSession(), getSubscriptionRegistrar());
+		statusAndButtonBarWidget.addToLeftPanel(new StatusMessageWidget(getSession(), getSubscriptionRegistrar()));
+		statusAndButtonBarWidget.addToRightPanel(new EditorStatusWidget(getSession().get(ChangeList.class), getSubscriptionRegistrar()));
+		Button submitButton = new Button("Submit");
+		submitButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				submitCode();
+			}
+		});
+		statusAndButtonBarWidget.addToRightPanel(submitButton);
+		
 		layoutPanel.add(statusAndButtonBarWidget);
 		layoutPanel.setWidgetBottomHeight(
 				statusAndButtonBarWidget,
 				LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX, Unit.PX,
 				LayoutConstants.DEV_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
-		statusAndButtonBarWidget.setOnSubmit(new Runnable() {
-			@Override
-			public void run() {
-				submitCode();
-			}
-		});
+
+//		statusAndButtonBarWidget.setOnSubmit(new Runnable() {
+//			@Override
+//			public void run() {
+//				submitCode();
+//			}
+//		});
 		
 		// Tab panel for test results and other information
 		resultsTabPanel = new TabLayoutPanel(LayoutConstants.DEV_RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
