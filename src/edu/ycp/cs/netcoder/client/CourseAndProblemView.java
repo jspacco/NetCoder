@@ -17,10 +17,6 @@
 
 package edu.ycp.cs.netcoder.client;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -30,8 +26,6 @@ import com.google.gwt.gen2.table.client.FixedWidthGrid;
 import com.google.gwt.gen2.table.client.ScrollTable;
 import com.google.gwt.gen2.table.client.SelectionGrid.SelectionPolicy;
 import com.google.gwt.gen2.table.override.client.FlexTable.FlexCellFormatter;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.InlineLabel;
@@ -39,11 +33,6 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.ListDataProvider;
-import com.google.gwt.view.client.SelectionChangeEvent;
-import com.google.gwt.view.client.SingleSelectionModel;
-import com.google.gwt.view.client.TreeViewModel;
-import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import edu.ycp.cs.netcoder.shared.problems.Course;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
@@ -57,128 +46,78 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
  * TODO: refactor out some widgets out of this class (course tree, problem list, etc.)
  */
 public class CourseAndProblemView extends NetCoderView implements Subscriber {
-	//private CellTree courseTree;
+	// Tree for displaying user's courses (organized by term/year)
 	private Tree courseTree;
-	private SingleSelectionModel<Course> selectionModel = new SingleSelectionModel<Course>();
 	
+	// Table for displaying available problems for selected course
 	private FixedWidthFlexTable headerTable;
 	private FixedWidthGrid grid;
 	private ScrollTable table;
 	
 	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
 		GWT.create(GetCoursesAndProblemsService.class);
-
-	/*
-	private static class TermNode extends AbstractCell<TermAndYear> {
-		@Override
-		public void render(Context context, TermAndYear value, SafeHtmlBuilder sb) {
-			String text = value.getTerm().getName() + " " + value.getYear();
-			sb.appendHtmlConstant("<span class='NetCoderCourseTreeTerm'>");
-			sb.appendEscaped(text);
-			sb.appendHtmlConstant("</span>");
-		}
-	}
 	
-	private static class CourseNode extends AbstractCell<Course> {
-		@Override
-		public void render(Context context, Course value, SafeHtmlBuilder sb) {
-			String text = value.toString();
-			sb.appendHtmlConstant("<span class='NetCoderCourseTreeCourse'>");
-			sb.appendEscaped(text);
-			sb.appendHtmlConstant("</span>");
-		}
-	}
-	
-	private class CourseTreeModel implements TreeViewModel {
-		private Course[] courseList;
-		
-		public CourseTreeModel(Course[] courseList) {
-			this.courseList = courseList;
-		}
-		
-		@Override
-		public <T> NodeInfo<?> getNodeInfo(T value) {
-			if (value == null) {
-				// root node
-				
-				// Get a representative Course for each term/year combination
-				List<TermAndYear> termList = new ArrayList<TermAndYear>();
-				TermAndYear last = null;
-				for (Course course : courseList) {
-					TermAndYear courseTermAndYear = new TermAndYear(course.getTerm(), course.getYear());
-					if (last == null || !courseTermAndYear.equals(last)) {
-						termList.add(courseTermAndYear);
-					}
-					last = courseTermAndYear;
-				}
-				
-				ListDataProvider<TermAndYear> dataProvider = new ListDataProvider<TermAndYear>(termList);
-				
-				TermNode cell = new TermNode();
-				
-				return new DefaultNodeInfo<TermAndYear>(dataProvider, cell);
-			} else if (value instanceof TermAndYear) {
-				TermAndYear termAndYear = (TermAndYear) value;
-				
-				List<Course> coursesForTermAndYear = new ArrayList<Course>();
-				for (Course course : courseList) {
-					if (course.getTerm().equals(termAndYear.getTerm()) && course.getYear() == termAndYear.getYear()) {
-						coursesForTermAndYear.add(course);
-					}
-				}
-				
-				ListDataProvider<Course> dataProvider = new ListDataProvider<Course>(coursesForTermAndYear);
-				
-				CourseNode cell = new CourseNode();
-				return new DefaultNodeInfo<Course>(dataProvider, cell, selectionModel, null);
-			}
-			
-			// should not happen
-			throw new IllegalStateException();
-		}
-
-		@Override
-		public boolean isLeaf(Object value) {
-			return value instanceof Course;
-		}
-		
-	}
-	*/
-	
+	/**
+	 * Object to manage current Course selection.
+	 */
 	private static class CourseSelection extends Publisher {
+		/**
+		 * Event types broadcast to subscribers.
+		 */
 		public enum Event {
+			/** A course was selected. */
 			COURSE_SELECTED,
+			
+			/** A course was loaded, and its problems are available. */
 			COURSE_LOADED,
 		}
 		
 		private Course current;    // course currently loading (most recent selection)
 		private Problem[] problemList;
 		
+		/**
+		 * Called to select a course.
+		 * Initiates loading of course.
+		 * 
+		 * @param course the selected Course
+		 */
 		public void courseSelected(Course course) {
 			current = course;
 			notifySubscribers(Event.COURSE_SELECTED, course);
 		}
 		
+		/**
+		 * Called to indicate that a course has been loaded
+		 * (along with its problems).
+		 * 
+		 * @param course       the loaded Course
+		 * @param problemList  the Course's Problems
+		 */
 		public void courseLoaded(Course course, Problem[] problemList) {
 			// Only update the current course if it is the one most
 			// recently selected.
 			if (course == this.current) {
-//				current = next;
 				this.current = null;
 				this.problemList = problemList;
 				notifySubscribers(Event.COURSE_LOADED, course);
 			}
 		}
-		
-		public Course getCurrent() {
-			return current;
-		}
-		
+
+		/**
+		 * Get list of Problems for the currently-loaded course.
+		 * 
+		 * @return list of Problems
+		 */
 		public Problem[] getProblemList() {
 			return problemList;
 		}
 	}
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param session the Session
+	 */
 	public CourseAndProblemView(Session session) {
 		super(session);
 		
@@ -250,28 +189,9 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
-			/*
-			if (courseTree != null) {
-				getLayoutPanel().remove(courseTree);
-			}
-			courseTree = new CellTree(new CourseTreeModel((Course[]) hint), null);
-			getLayoutPanel().add(courseTree);
-			
-			selectionModel.addSelectionChangeHandler(new Handler() {
-				@Override
-				public void onSelectionChange(SelectionChangeEvent event) {
-					Course course = (Course) selectionModel.getSelectedObject();
-					
-					CourseSelection courseSelection = getSession().get(CourseSelection.class);
-					if (courseSelection.getCurrent() != course) {
-						courseSelection.courseSelected(course);
-					}
-				}
-			});
-			*/
 			Course[] courseList = (Course[]) hint;
 			
-			// Build the tree
+			// Build the course tree
 			courseTree = new Tree();
 			TreeItem curTermAndYearTreeItem = null;
 			TermAndYear curTermAndYear = null;
@@ -286,6 +206,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 				curTermAndYearTreeItem.addItem(new CourseNode(course));
 			}
 			
+			// Handle selection events
 			courseTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
 				@Override
 				public void onSelection(SelectionEvent<TreeItem> event) {
@@ -323,7 +244,6 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	}
 	
 	private void showProblems(Problem[] problemList) {
-		//GWT.log("Loading problems!");
 		grid.clear();
 		grid.resize(problemList.length, 2);
 		int row = 0;

@@ -17,7 +17,6 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;

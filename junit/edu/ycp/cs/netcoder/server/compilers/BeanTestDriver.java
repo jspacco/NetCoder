@@ -1,5 +1,7 @@
 package edu.ycp.cs.netcoder.server.compilers;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -8,8 +10,6 @@ import org.junit.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
-
-import static org.junit.Assert.*;
 
 import edu.ycp.cs.netcoder.server.problems.StudentSandboxSecurityManager;
 import edu.ycp.cs.netcoder.server.problems.TestCreator;

@@ -29,7 +29,6 @@ import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
-import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
 
 public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
 	private static final long serialVersionUID = 1L;
