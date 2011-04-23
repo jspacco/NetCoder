@@ -23,6 +23,8 @@ import java.util.List;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.gen2.table.client.FixedWidthFlexTable;
 import com.google.gwt.gen2.table.client.FixedWidthGrid;
 import com.google.gwt.gen2.table.client.ScrollTable;
@@ -36,6 +38,7 @@ import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -282,6 +285,17 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 				}
 				curTermAndYearTreeItem.addItem(new CourseNode(course));
 			}
+			
+			courseTree.addSelectionHandler(new SelectionHandler<TreeItem>() {
+				@Override
+				public void onSelection(SelectionEvent<TreeItem> event) {
+					TreeItem treeItem = event.getSelectedItem();
+					Widget w = treeItem.getWidget();
+					if (w instanceof CourseNode) {
+						getSession().get(CourseSelection.class).courseSelected(((CourseNode)w).getCourse());
+					}
+				}
+			});
 			
 			getLayoutPanel().add(courseTree);
 			
