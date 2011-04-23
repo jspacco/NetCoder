@@ -45,7 +45,7 @@ public interface LayoutConstants {
 	//
 	
 	/** Width of course tree in CourseAndProblemView.  */
-	public static final int CP_COURSE_TREE_WIDTH_PX = 300;
+	public static final int CP_COURSE_TREE_WIDTH_PX = 350;
 
 	/** Height of status and button bar in CourseAndProblemView. */
 	public static final int CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;

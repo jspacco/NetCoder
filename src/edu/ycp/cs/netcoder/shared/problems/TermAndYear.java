@@ -62,4 +62,9 @@ public class TermAndYear {
 	public int hashCode() {
 		return term.hashCode() * 39 + year;
 	}
+	
+	@Override
+	public String toString() {
+		return term.toString() + " " + year;
+	}
 }

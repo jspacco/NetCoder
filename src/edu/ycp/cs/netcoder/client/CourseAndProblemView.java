@@ -34,6 +34,8 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Tree;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -52,15 +54,18 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
  * TODO: refactor out some widgets out of this class (course tree, problem list, etc.)
  */
 public class CourseAndProblemView extends NetCoderView implements Subscriber {
-	private CellTree courseTree;
+	//private CellTree courseTree;
+	private Tree courseTree;
 	private SingleSelectionModel<Course> selectionModel = new SingleSelectionModel<Course>();
 	
-	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
-		GWT.create(GetCoursesAndProblemsService.class);
 	private FixedWidthFlexTable headerTable;
 	private FixedWidthGrid grid;
 	private ScrollTable table;
 	
+	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
+		GWT.create(GetCoursesAndProblemsService.class);
+
+	/*
 	private static class TermNode extends AbstractCell<TermAndYear> {
 		@Override
 		public void render(Context context, TermAndYear value, SafeHtmlBuilder sb) {
@@ -135,6 +140,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		}
 		
 	}
+	*/
 	
 	private static class CourseSelection extends Publisher {
 		public enum Event {
@@ -211,10 +217,37 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		headerTable.setColumnWidth(col, width);
 		grid.setColumnWidth(col, width);
 	}
+	
+	private static class TermAndYearNode extends InlineLabel {
+		private TermAndYear termAndYear;
+		
+		public TermAndYearNode(TermAndYear termAndYear) {
+			super(termAndYear.toString());
+			this.termAndYear = termAndYear;
+		}
+		
+		public TermAndYear getTermAndYear() {
+			return termAndYear;
+		}
+	}
+	
+	private static class CourseNode extends InlineLabel {
+		private Course course;
+		
+		public CourseNode(Course course) {
+			super(course.toString());
+			this.course = course;
+		}
+		
+		public Course getCourse() {
+			return course;
+		}
+	}
 
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
+			/*
 			if (courseTree != null) {
 				getLayoutPanel().remove(courseTree);
 			}
@@ -232,6 +265,25 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 					}
 				}
 			});
+			*/
+			Course[] courseList = (Course[]) hint;
+			
+			// Build the tree
+			courseTree = new Tree();
+			TreeItem curTermAndYearTreeItem = null;
+			TermAndYear curTermAndYear = null;
+			for (Course course : courseList) {
+				TermAndYear courseTermAndYear = new TermAndYear(course.getTerm(), course.getYear()); 
+				if (curTermAndYear == null
+						|| !curTermAndYear.equals(courseTermAndYear)) {
+					curTermAndYearTreeItem = new TreeItem(new TermAndYearNode(courseTermAndYear));
+					courseTree.addItem(curTermAndYearTreeItem);
+					curTermAndYear = courseTermAndYear;
+				}
+				curTermAndYearTreeItem.addItem(new CourseNode(course));
+			}
+			
+			getLayoutPanel().add(courseTree);
 			
 			doResize();
 		} else if (key == WindowResizeNotifier.WINDOW_RESIZED) {
@@ -321,7 +373,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		getLayoutPanel().setWidgetRightWidth(
 				table,
 				0, Unit.PX,
-				Window.getClientWidth() - LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
+				Window.getClientWidth() - LayoutConstants.CP_COURSE_TREE_WIDTH_PX - 8, Unit.PX);
 		getLayoutPanel().setWidgetTopHeight(
 				table,
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
