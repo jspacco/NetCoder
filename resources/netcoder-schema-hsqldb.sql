@@ -36,6 +36,9 @@ CREATE CACHED TABLE courses (
 );
 
 INSERT INTO courses values(NULL, 'CS 101', 'Introduction to Computer Science I', 'http://cs.unseen.edu/s11/cs101', 1, 2011);
+INSERT INTO courses values(NULL, 'CS 201', 'Introduction to Computer Science II', 'http://cs.unseen.edu/f10/cs201', 5, 2010);
+INSERT INTO courses values(NULL, 'CS 340', 'Programming Language Design', 'http://cs.unseen.edu/f10/cs340', 5, 2010);
+INSERT INTO courses values(NULL, 'CS 350', 'Data Structures', 'http://cs.unseen.edu/s10/cs350', 1, 2010);
 
 CREATE CACHED TABLE course_registrations (
   id integer IDENTITY,
@@ -48,6 +51,9 @@ CREATE CACHED TABLE course_registrations (
 );
 
 INSERT INTO course_registrations VALUES (NULL, 0, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 1, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 2, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 3, 0, 0);
 
 CREATE CACHED TABLE problems (
   problem_id integer IDENTITY,

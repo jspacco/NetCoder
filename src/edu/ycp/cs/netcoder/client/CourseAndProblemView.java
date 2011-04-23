@@ -8,6 +8,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTree;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.view.client.ListDataProvider;
@@ -21,8 +22,6 @@ import edu.ycp.cs.netcoder.shared.util.Publisher;
 import edu.ycp.cs.netcoder.shared.util.Subscriber;
 
 public class CourseAndProblemView extends NetCoderView implements Subscriber {
-	
-//	private ListBox coursesListBox;
 	private CellTree courseTree;
 	
 	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
@@ -110,18 +109,10 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	public CourseAndProblemView(Session session) {
 		super(session);
 		
+		// Subscribe to session ADDED_OBJECT events (to find out when course list is loaded)
 		getSession().subscribe(Session.Event.ADDED_OBJECT, this, getSubscriptionRegistrar());
 		
 		LayoutPanel layoutPanel = getLayoutPanel();
-		
-//		coursesListBox = new ListBox();
-//		coursesListBox.setVisibleItemCount(10);
-//		coursesListBox.setWidth("30em");
-//		layoutPanel.add(coursesListBox);
-//		layoutPanel.setWidgetTopHeight(
-//				coursesListBox,
-//				LayoutConstants.TOP_BAR_HEIGHT_PX + 50, Unit.PX,
-//				100, Unit.PX);
 		
 		AsyncCallback<Course[]> callback = new AsyncCallback<Course[]>() {
 			@Override
@@ -131,36 +122,46 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 			
 			@Override
 			public void onSuccess(Course[] result) {
-				onCoursesLoaded(result);
+				getSession().add(result);
 			}
 		};
 		getCoursesAndProblemsService.getCourses(getSession().get(User.class), callback);
 		
 		initWidget(layoutPanel);
+		
+		// Subscribe to window resize events
+		getSession().get(WindowResizeNotifier.class).subscribe(WindowResizeNotifier.WINDOW_RESIZED, this, getSubscriptionRegistrar());
 	}
-	
-	protected void onCoursesLoaded(Course[] result) {
-		courseTree = new CellTree(new CourseTreeModel(result), null);
-		getLayoutPanel().add(courseTree);
+
+	private void doResize() {
+		int availHeight = Window.getClientHeight()
+			- LayoutConstants.TOP_BAR_HEIGHT_PX
+			- LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX
+			- LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX;
+		
 		
 		getLayoutPanel().setWidgetLeftWidth(
 				courseTree,
 				0, Unit.PX,
-				250, Unit.PX);
+				LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
 		getLayoutPanel().setWidgetTopHeight(
 				courseTree,
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
-				400, Unit.PX);
+				availHeight, Unit.PX);
 	}
 
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
-		if (hint.getClass() == new Course[0].getClass()) {
-			Course[] courseList = (Course[]) hint;
-//			coursesListBox.clear();
-//			for (Course course : courseList) {
-//				coursesListBox.addItem(course.toString());
-//			}
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof Course[]) {
+			if (courseTree != null) {
+				getLayoutPanel().remove(courseTree);
+			}
+			courseTree = new CellTree(new CourseTreeModel((Course[]) hint), null);
+			getLayoutPanel().add(courseTree);
+			
+			doResize();
+		} else if (key == WindowResizeNotifier.WINDOW_RESIZED) {
+			doResize();
 		}
 	}
 	
@@ -188,6 +189,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 
 	@Override
 	public void deactivate() {
+		getSubscriptionRegistrar().unsubscribeAllEventSubscribers();
 	}
 
 }

@@ -18,6 +18,9 @@
 package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import edu.ycp.cs.netcoder.shared.util.Publisher;
@@ -27,7 +30,7 @@ import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, Subscriber {
+public class NetCoder_GWT2 implements EntryPoint, Subscriber, ResizeHandler {
 	// Client session data.
 	private Session session;
 	
@@ -43,6 +46,7 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	public void onModuleLoad() {
 		// Create session
 		session = new Session();
+		session.add(new WindowResizeNotifier());
 		
 		// Create a SubscriptionRegistrar
 		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
@@ -51,7 +55,16 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 		session.subscribe(Session.Event.LOGIN, this, subscriptionRegistrar);
 		session.subscribe(Session.Event.LOGOUT, this, subscriptionRegistrar);
 		
+		// Get window ResizeEvents so we can publish them to views
+		Window.addResizeHandler(this);
+		
 		changeView(new LoginView(session));
+	}
+	
+	@Override
+	public void onResize(ResizeEvent event) {
+		// Publish window ResizeEvent
+		session.get(WindowResizeNotifier.class).notifySubscribers(WindowResizeNotifier.WINDOW_RESIZED, event);
 	}
 	
 	public void changeView(NetCoderView view) {
@@ -67,8 +80,8 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-			changeView(new DevelopmentView(session));
-//			changeView(new CourseAndProblemView(session));
+//			changeView(new DevelopmentView(session));
+			changeView(new CourseAndProblemView(session));
 		} else if (key == Session.Event.LOGOUT) {
 			changeView(new LoginView(session));
 		}

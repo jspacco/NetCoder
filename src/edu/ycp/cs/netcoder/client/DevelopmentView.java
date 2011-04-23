@@ -49,7 +49,7 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
 /**
  * View for working on a problem: code editor, submit button, feedback, etc.
  */
-public class DevelopmentView extends NetCoderView implements Subscriber, ResizeHandler {
+public class DevelopmentView extends NetCoderView implements Subscriber {
 	public static final int FLUSH_CHANGES_INTERVAL_MS = 2000;
 	private static final int PROBLEM_ID = 0; // FIXME
 	
@@ -114,14 +114,14 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		layoutPanel.setWidgetTopHeight(
 				problemDescription,
 				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
-				LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX);
+				LayoutConstants.DEV_PROBLEM_DESC_HEIGHT_PX, Unit.PX);
 		
 		// Add AceEditor widget
 		editor = new AceEditor();
 		editor.setStyleName("NetCoderEditor");
 		layoutPanel.add(editor);
 		layoutPanel.setWidgetTopHeight(editor,
-				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.DEV_PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				200, Unit.PX);
 
 		// Add the status and button bar widget
@@ -129,8 +129,8 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		layoutPanel.add(statusAndButtonBarWidget);
 		layoutPanel.setWidgetBottomHeight(
 				statusAndButtonBarWidget,
-				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX,
-				LayoutConstants.STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
+				LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX, Unit.PX,
+				LayoutConstants.DEV_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
 		statusAndButtonBarWidget.setOnSubmit(new Runnable() {
 			@Override
 			public void run() {
@@ -139,7 +139,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		});
 		
 		// Tab panel for test results and other information
-		resultsTabPanel = new TabLayoutPanel(LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
+		resultsTabPanel = new TabLayoutPanel(LayoutConstants.DEV_RESULTS_TAB_BAR_HEIGHT_PX, Unit.PX);
 		
 		// Test results widget
 		resultWidget = new ResultWidget(getSession(), getSubscriptionRegistrar());
@@ -151,13 +151,14 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		layoutPanel.setWidgetBottomHeight(
 				resultsTabPanel,
 				0, Unit.PX,
-				LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
+				LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 		
 		// UI is now complete
 		initWidget(layoutPanel);
 		
-		// Register the view as a window resize handler
-		Window.addResizeHandler(this);
+		// Subscribe to window ResizeEvents
+		getSession().get(WindowResizeNotifier.class).subscribe(
+				WindowResizeNotifier.WINDOW_RESIZED, this, getSubscriptionRegistrar());
 		
 		// Initiate loading of the problem and current editor text.
 		loadProblemAndCurrentText();
@@ -385,6 +386,8 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 			// Send editor text to server. 
 			int problemId = getSession().get(Problem.class).getProblemId();
 			submitService.submit(problemId, editor.getText(), callback);
+		} else if (key == WindowResizeNotifier.WINDOW_RESIZED) {
+			doResize();
 		}
 	}
 	
@@ -392,20 +395,15 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 	public void unsubscribeFromAll() {
 		getSession().get(ChangeList.class).unsubscribeFromAll(this);
 	}
-	
-	@Override
-	public void onResize(ResizeEvent event) {
-		doResize();
-	}
 
 	protected void doResize() {
 		int height = Window.getClientHeight();
 		
 		int availableForEditor = height -
 				(LayoutConstants.TOP_BAR_HEIGHT_PX +
-				 LayoutConstants.PROBLEM_DESC_HEIGHT_PX +
-				 LayoutConstants.STATUS_AND_BUTTON_BAR_HEIGHT_PX +
-				 LayoutConstants.RESULTS_PANEL_HEIGHT_PX);
+				 LayoutConstants.DEV_PROBLEM_DESC_HEIGHT_PX +
+				 LayoutConstants.DEV_STATUS_AND_BUTTON_BAR_HEIGHT_PX +
+				 LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX);
 		
 		if (availableForEditor < 0) {
 			availableForEditor = 0;
@@ -413,14 +411,9 @@ public class DevelopmentView extends NetCoderView implements Subscriber, ResizeH
 		
 		getLayoutPanel().setWidgetTopHeight(
 				editor,
-				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.PROBLEM_DESC_HEIGHT_PX, Unit.PX,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.DEV_PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				availableForEditor, Unit.PX);
 		
-		getLayoutPanel().setWidgetBottomHeight(resultsTabPanel, 0, Unit.PX, LayoutConstants.RESULTS_PANEL_HEIGHT_PX, Unit.PX);
-		
-		// FIXME: I don't know how to get the stupid Grid to expand its vertical size automatically to show the $!@$!! rows.
-//		resultWidget.setGridSize(
-//				Window.getClientWidth() + "px",
-//				(LayoutConstants.RESULTS_PANEL_HEIGHT_PX - (LayoutConstants.RESULTS_TAB_BAR_HEIGHT_PX + 4)) + "px");
+		getLayoutPanel().setWidgetBottomHeight(resultsTabPanel, 0, Unit.PX, LayoutConstants.DEV_RESULTS_PANEL_HEIGHT_PX, Unit.PX);
 	}
 }
