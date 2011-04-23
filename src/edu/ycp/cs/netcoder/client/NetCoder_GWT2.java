@@ -80,8 +80,8 @@ public class NetCoder_GWT2 implements EntryPoint, Subscriber, ResizeHandler {
 	@Override
 	public void eventOccurred(Object key, Publisher publisher, Object hint) {
 		if (key == Session.Event.LOGIN) {
-			changeView(new DevelopmentView(session));
-//			changeView(new CourseAndProblemView(session));
+//			changeView(new DevelopmentView(session));
+			changeView(new CourseAndProblemView(session));
 		} else if (key == Session.Event.LOGOUT) {
 			changeView(new LoginView(session));
 		}

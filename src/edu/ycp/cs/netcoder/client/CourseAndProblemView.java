@@ -23,16 +23,25 @@ import java.util.List;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.gen2.table.client.FixedWidthFlexTable;
+import com.google.gwt.gen2.table.client.FixedWidthGrid;
+import com.google.gwt.gen2.table.client.ScrollTable;
+import com.google.gwt.gen2.table.client.SelectionGrid.SelectionPolicy;
+import com.google.gwt.gen2.table.override.client.FlexTable.FlexCellFormatter;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.user.cellview.client.CellTree;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.InlineLabel;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.view.client.ListDataProvider;
+import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.view.client.TreeViewModel;
+import com.google.gwt.view.client.SelectionChangeEvent.Handler;
 
 import edu.ycp.cs.netcoder.shared.problems.Course;
+import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.TermAndYear;
 import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.util.Publisher;
@@ -40,12 +49,17 @@ import edu.ycp.cs.netcoder.shared.util.Subscriber;
 
 /**
  * View for browsing courses and problems.
+ * TODO: refactor out some widgets out of this class (course tree, problem list, etc.)
  */
 public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	private CellTree courseTree;
+	private SingleSelectionModel<Course> selectionModel = new SingleSelectionModel<Course>();
 	
 	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
 		GWT.create(GetCoursesAndProblemsService.class);
+	private FixedWidthFlexTable headerTable;
+	private FixedWidthGrid grid;
+	private ScrollTable table;
 	
 	private static class TermNode extends AbstractCell<TermAndYear> {
 		@Override
@@ -67,9 +81,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		}
 	}
 	
-	private static final SingleSelectionModel<Course> selectionModel = new SingleSelectionModel<Course>();
-	
-	private static class CourseTreeModel implements TreeViewModel {
+	private class CourseTreeModel implements TreeViewModel {
 		private Course[] courseList;
 		
 		public CourseTreeModel(Course[] courseList) {
@@ -124,6 +136,40 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		
 	}
 	
+	private static class CourseSelection extends Publisher {
+		public enum Event {
+			COURSE_SELECTED,
+			COURSE_LOADED,
+		}
+		
+		private Course current;    // course currently loading (most recent selection)
+		private Problem[] problemList;
+		
+		public void courseSelected(Course course) {
+			current = course;
+			notifySubscribers(Event.COURSE_SELECTED, course);
+		}
+		
+		public void courseLoaded(Course course, Problem[] problemList) {
+			// Only update the current course if it is the one most
+			// recently selected.
+			if (course == this.current) {
+//				current = next;
+				this.current = null;
+				this.problemList = problemList;
+				notifySubscribers(Event.COURSE_LOADED, course);
+			}
+		}
+		
+		public Course getCurrent() {
+			return current;
+		}
+		
+		public Problem[] getProblemList() {
+			return problemList;
+		}
+	}
+	
 	public CourseAndProblemView(Session session) {
 		super(session);
 		
@@ -132,40 +178,38 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		
 		LayoutPanel layoutPanel = getLayoutPanel();
 		
-		AsyncCallback<Course[]> callback = new AsyncCallback<Course[]>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				GWT.log("Could not load courses");
-			}
-			
-			@Override
-			public void onSuccess(Course[] result) {
-				getSession().add(result);
-			}
-		};
-		getCoursesAndProblemsService.getCourses(getSession().get(User.class), callback);
+		// Add grid to display problems
+		headerTable = new FixedWidthFlexTable();
+		FlexCellFormatter formatter = headerTable.getFlexCellFormatter();
+		headerTable.setHTML(0, 0, "Problem name");
+		headerTable.setHTML(0, 1, "Description");
+		formatter.setColSpan(0, 0, 1);
+		formatter.setColSpan(0, 1, 1);
+		
+		grid = new FixedWidthGrid();
+		grid.setSelectionPolicy(SelectionPolicy.ONE_ROW);
+		
+		setColumnWidth(0, 100);
+		setColumnWidth(1, 200);
+		
+		table = new ScrollTable(grid, headerTable);
+		layoutPanel.add(table);
 		
 		initWidget(layoutPanel);
 		
 		// Subscribe to window resize events
 		getSession().get(WindowResizeNotifier.class).subscribe(WindowResizeNotifier.WINDOW_RESIZED, this, getSubscriptionRegistrar());
+		
+		// Subscribe to changes in selected course
+		CourseSelection courseSelection = new CourseSelection(); 
+		addSessionObject(courseSelection);
+		courseSelection.subscribe(CourseSelection.Event.COURSE_SELECTED, this, getSubscriptionRegistrar());
+		courseSelection.subscribe(CourseSelection.Event.COURSE_LOADED, this, getSubscriptionRegistrar());
 	}
 
-	private void doResize() {
-		int availHeight = Window.getClientHeight()
-			- LayoutConstants.TOP_BAR_HEIGHT_PX
-			- LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX
-			- LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX;
-		
-		
-		getLayoutPanel().setWidgetLeftWidth(
-				courseTree,
-				0, Unit.PX,
-				LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
-		getLayoutPanel().setWidgetTopHeight(
-				courseTree,
-				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
-				availHeight, Unit.PX);
+	private void setColumnWidth(int col, int width) {
+		headerTable.setColumnWidth(col, width);
+		grid.setColumnWidth(col, width);
 	}
 
 	@Override
@@ -177,14 +221,57 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 			courseTree = new CellTree(new CourseTreeModel((Course[]) hint), null);
 			getLayoutPanel().add(courseTree);
 			
+			selectionModel.addSelectionChangeHandler(new Handler() {
+				@Override
+				public void onSelectionChange(SelectionChangeEvent event) {
+					Course course = (Course) selectionModel.getSelectedObject();
+					
+					CourseSelection courseSelection = getSession().get(CourseSelection.class);
+					if (courseSelection.getCurrent() != course) {
+						courseSelection.courseSelected(course);
+					}
+				}
+			});
+			
 			doResize();
 		} else if (key == WindowResizeNotifier.WINDOW_RESIZED) {
 			doResize();
+		} else if (key == CourseSelection.Event.COURSE_SELECTED) {
+			final Course selectedCourse = (Course) hint;
+			AsyncCallback<Problem[]> callback = new AsyncCallback<Problem[]>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					GWT.log("Could not load problems for course", caught);
+				}
+				
+				@Override
+				public void onSuccess(Problem[] result) {
+					getSession().get(CourseSelection.class).courseLoaded(selectedCourse, result);
+				}
+			};
+			
+			getCoursesAndProblemsService.getProblems(selectedCourse, callback);
+		} else if (key == CourseSelection.Event.COURSE_LOADED) {
+			showProblems(getSession().get(CourseSelection.class).getProblemList());
 		}
 	}
 	
+	private void showProblems(Problem[] problemList) {
+		//GWT.log("Loading problems!");
+		grid.clear();
+		grid.resize(problemList.length, 2);
+		int row = 0;
+		for (Problem problem : problemList) {
+			grid.setWidget(row, 0, new InlineLabel(problem.getTestName()));
+			grid.setWidget(row, 1, new InlineLabel(problem.getBriefDescription()));
+			row++;
+		}
+	}
+
 	@Override
 	public void unsubscribeFromAll() {
+		getSession().get(WindowResizeNotifier.class).unsubscribeFromAll(this);
+		getSession().get(CourseSelection.class).unsubscribeFromAll(this);
 		getSession().unsubscribeFromAll(this);
 	}
 
@@ -203,11 +290,41 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		};
 		
 		getCoursesAndProblemsService.getCourses(getSession().get(User.class), callback);
+		
+		doResize(); // size the problems table
 	}
 
 	@Override
 	public void deactivate() {
 		getSubscriptionRegistrar().unsubscribeAllEventSubscribers();
+		
+		removeAllSessionObjects();
 	}
 
+	private void doResize() {
+		int availHeight = Window.getClientHeight()
+			- LayoutConstants.TOP_BAR_HEIGHT_PX
+			- LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX
+			- LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX;
+		
+		if (courseTree != null) {
+			getLayoutPanel().setWidgetLeftWidth(
+					courseTree,
+					0, Unit.PX,
+					LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
+			getLayoutPanel().setWidgetTopHeight(
+					courseTree,
+					LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
+					availHeight, Unit.PX);
+		}
+		
+		getLayoutPanel().setWidgetRightWidth(
+				table,
+				0, Unit.PX,
+				Window.getClientWidth() - LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
+		getLayoutPanel().setWidgetTopHeight(
+				table,
+				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
+				availHeight, Unit.PX);
+	}
 }

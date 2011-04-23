@@ -1,12 +1,7 @@
 package edu.ycp.cs.netcoder.server;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -62,8 +57,18 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 
 	@Override
 	public Problem[] getProblems(Course course) {
-		// TODO Auto-generated method stub
-		return null;
+		EntityManager eman = HibernateUtil.getManager();
+		
+		TypedQuery<Problem> q = eman.createQuery(
+				"select p from Problem p, Course c " +
+				" where p.courseId = c.id " +
+				"   and c.id = :courseId", // TODO: descending order by due date
+				Problem.class);
+		q.setParameter("courseId", course.getId());
+		
+		List<Problem> resultList = q.getResultList();
+		
+		return resultList.toArray(new Problem[resultList.size()]);
 	}
 
 }
