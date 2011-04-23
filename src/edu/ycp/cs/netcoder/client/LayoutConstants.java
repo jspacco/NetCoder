@@ -51,5 +51,5 @@ public interface LayoutConstants {
 	public static final int CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX = 28;
 
 	/** Height of problem description in CourseAndProblemView. */
-	public static final int CP_PROBLEM_DESC_HEIGHT_PX = DEV_PROBLEM_DESC_HEIGHT_PX;
+	public static final int CP_PROBLEM_DESC_HEIGHT_PX = 150;
 }

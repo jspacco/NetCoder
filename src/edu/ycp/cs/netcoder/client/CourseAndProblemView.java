@@ -42,6 +42,7 @@ import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
+import edu.ycp.cs.netcoder.client.status.ProblemDescriptionWidget;
 import edu.ycp.cs.netcoder.client.status.StatusAndButtonBarWidget;
 import edu.ycp.cs.netcoder.client.status.StatusMessageWidget;
 import edu.ycp.cs.netcoder.shared.problems.Course;
@@ -63,11 +64,12 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	private FixedWidthFlexTable headerTable;
 	private FixedWidthGrid grid;
 	private ScrollTable table;
+
+	private StatusAndButtonBarWidget statusAndButtonBar;
+	private ProblemDescriptionWidget problemDescriptionWidget;
 	
 	private GetCoursesAndProblemsServiceAsync getCoursesAndProblemsService =
 		GWT.create(GetCoursesAndProblemsService.class);
-
-	private StatusAndButtonBarWidget statusAndButtonBar;
 	
 	/**
 	 * Object to manage current Course selection.
@@ -192,6 +194,10 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 		});
 		statusAndButtonBar.addToRightPanel(selectProblemButton);
 		layoutPanel.add(statusAndButtonBar);
+		
+		// Problem description
+		this.problemDescriptionWidget = new ProblemDescriptionWidget(getSession(), getSubscriptionRegistrar());
+		layoutPanel.add(problemDescriptionWidget);
 		
 		initWidget(layoutPanel);
 		
@@ -367,5 +373,10 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 				statusAndButtonBar,
 				LayoutConstants.TOP_BAR_HEIGHT_PX + availHeight, Unit.PX,
 				LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
+		
+		getLayoutPanel().setWidgetBottomHeight(
+				problemDescriptionWidget,
+				0, Unit.PX,
+				LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX, Unit.PX);
 	}
 }
