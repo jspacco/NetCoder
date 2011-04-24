@@ -48,7 +48,6 @@ import edu.ycp.cs.netcoder.client.status.StatusMessageWidget;
 import edu.ycp.cs.netcoder.shared.problems.Course;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.TermAndYear;
-import edu.ycp.cs.netcoder.shared.problems.User;
 import edu.ycp.cs.netcoder.shared.util.Publisher;
 import edu.ycp.cs.netcoder.shared.util.Subscriber;
 
@@ -324,7 +323,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 			}
 		};
 		
-		getCoursesAndProblemsService.getCourses(getSession().get(User.class), callback);
+		getCoursesAndProblemsService.getCourses(callback);
 		
 		doResize(); // size the problems table
 	}

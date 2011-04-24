@@ -20,9 +20,7 @@ package edu.ycp.cs.netcoder.server;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.servlet.http.HttpSession;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import javax.persistence.TypedQuery;
 
 import edu.ycp.cs.netcoder.client.LoadExerciseService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
@@ -30,51 +28,79 @@ import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
 import edu.ycp.cs.netcoder.shared.logchange.ChangeType;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.User;
 
-public class LoadExerciseServiceImpl extends RemoteServiceServlet implements LoadExerciseService 
+public class LoadExerciseServiceImpl extends NetCoderServiceImpl implements LoadExerciseService 
 {
     private static final long serialVersionUID = 1L;
     
-    public Problem load(int problemId) {
-//        if (problemId<=0) {
-//            return "Cannot find problem with id "+problemId;
-//        }
-        EntityManager eman=HibernateUtil.getManager();
-        List<Problem> problems=eman.createQuery("select p from Problem p where p.id = :id", 
-                Problem.class).setParameter("id", problemId).
-                getResultList();
+    public Problem load(int problemId) throws NetCoderAuthenticationException {
+    	// make sure client is authenticated
+    	User user = checkClientIsAuthenticated();
+    	
+        EntityManager eman = HibernateUtil.getManager();
+        
+        // We do this as a join to ensure that the client
+        // can't retrieve a problem in a course they are not registered for.
+        TypedQuery<Problem> q = eman.createQuery(
+        		"select p from Problem p, Course c, CourseRegistration r " +
+        		" where p.id = :id " +
+        		"   and c.id = p.courseId " +
+        		"   and r.courseId = c.id " +
+        		"   and r.userId = :userId", 
+                Problem.class);
+        
+        q.setParameter("id", problemId);
+        q.setParameter("userId", user.getId());
+                
+        List<Problem> problems = q.getResultList();
         if (problems.size()==0) {
             return null;//"Cannot find problem with id "+problemId;
         }
+        
+        Problem problem = problems.get(0);
+        
+        // Store the Problem in the HttpSession - that way, the servlets
+        // that depend on knowing the problem have access to a known-authentic
+        // problem. (I.e., we don't have to trust a problem id sent as
+        // an RPC parameter which might have been forged.)
+        getThreadLocalRequest().getSession().setAttribute("problem", problem);
+        
         return problems.get(0); //.getDescription();
     }
     
     @Override
-    public String loadCurrentText(int problemId) {
-    	HttpSession session = getThreadLocalRequest().getSession();
+    public String loadCurrentText() throws NetCoderAuthenticationException {
+    	// make sure client is authenticated
+    	User user = checkClientIsAuthenticated();
+    	
+    	// make sure a problem has been loaded
+    	Problem problem = (Problem) getThreadLocalRequest().getSession().getAttribute("problem");
+    	
+    	if (problem == null) {
+    		// Can't load current text unless a Problem has been loaded
+    		throw new NetCoderAuthenticationException();
+    	}
 
-    	String text = doLoadCurrentText(problemId, session);
+    	String text = doLoadCurrentText(user, problem.getProblemId());
     	
     	// FIXME: this is only necessary because (for debugging purposes) LogCodeChangeServiceImpl expects to have the full document
     	TextDocument doc = new TextDocument();
     	doc.setText(text);
-    	session.setAttribute("doc", doc);
+    	getThreadLocalRequest().getSession().setAttribute("doc", doc);
     	
     	return text;
     }
 
-	protected String doLoadCurrentText(int problemId, HttpSession session) {
-		// Make sure user is authenticated
-    	User user = (User) session.getAttribute("user");
-    	if (user == null) {
-    		throw new IllegalArgumentException("Not logged in!");
-    	}
-
+	protected String doLoadCurrentText(User user, int problemId) {
     	List<Change> result;
     	
     	// Find the most recent Change event for user on this problem.
+    	// Note that this is fairly safe in the case that the problem id
+    	// is not one the user should be able to access: we won't
+    	// leak information from any other user.
     	EntityManager eman = HibernateUtil.getManager();
     	result = eman.createQuery(
     			"select c from Change c, Event e " +

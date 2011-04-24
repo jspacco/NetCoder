@@ -21,8 +21,12 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
 
+/**
+ * RPC interface for recording affect event data.
+ */
 @RemoteServiceRelativePath("affectEvent")
 public interface AffectEventService extends RemoteService {
-	public void recordAffectEvent(AffectEvent affectEvent);
+	public void recordAffectEvent(AffectEvent affectEvent) throws NetCoderAuthenticationException;
 }

@@ -21,12 +21,18 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import edu.ycp.cs.netcoder.shared.problems.Course;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
-import edu.ycp.cs.netcoder.shared.problems.User;
 
 @RemoteServiceRelativePath("getCoursesAndProblems")
 public interface GetCoursesAndProblemsService extends RemoteService {
-	public Course[] getCourses(User user);
+	/**
+	 * Get the courses the client user is registered for.
+	 * 
+	 * @return list of courses the client user is registered for
+	 * @throws NetCoderAuthenticationException if the client is not authenticated
+	 */
+	public Course[] getCourses() throws NetCoderAuthenticationException;
 	
-	public Problem[] getProblems(Course course);
+	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException;
 }

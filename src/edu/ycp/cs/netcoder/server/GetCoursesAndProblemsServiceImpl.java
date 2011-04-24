@@ -6,31 +6,25 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
 import edu.ycp.cs.netcoder.client.GetCoursesAndProblemsService;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.problems.Course;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
 import edu.ycp.cs.netcoder.shared.problems.Term;
 import edu.ycp.cs.netcoder.shared.problems.User;
 
-public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
+public class GetCoursesAndProblemsServiceImpl extends NetCoderServiceImpl
 		implements GetCoursesAndProblemsService {
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Course[] getCourses(User user) {
-		EntityManager eman = HibernateUtil.getManager();
+	public Course[] getCourses() throws NetCoderAuthenticationException {
+		// make sure the client has authenticated
+		User user = checkClientIsAuthenticated();
 		
-		/*
-		List<Course> courseList = eman.createQuery(
-				"select c from Course c, CourseRegistration r " +
-				"  where c.id = r.courseId " +
-				"  and r.userId = :userId",
-				Course.class).setParameter("userId", user.getId()).getResultList();
-		*/
+		EntityManager eman = HibernateUtil.getManager();
 		
 		Query q = eman.createQuery(
 				"select c, t from Course c, Term t, CourseRegistration r " +
@@ -56,14 +50,24 @@ public class GetCoursesAndProblemsServiceImpl extends RemoteServiceServlet
 	}
 
 	@Override
-	public Problem[] getProblems(Course course) {
+	public Problem[] getProblems(Course course) throws NetCoderAuthenticationException {
+		// Make sure user is authenticated
+		User user = checkClientIsAuthenticated();
+		
 		EntityManager eman = HibernateUtil.getManager();
 		
+		//
+		// Note that we have to join on course registrations to ensure
+		// that we return courses that the user is actually registered for.
+		//
 		TypedQuery<Problem> q = eman.createQuery(
-				"select p from Problem p, Course c " +
+				"select p from Problem p, Course c, CourseRegistration r " +
 				" where p.courseId = c.id " +
+				"   and r.courseId = c.id " +
+				"   and r.userId = :userId " +
 				"   and c.id = :courseId", // TODO: descending order by due date
 				Problem.class);
+		q.setParameter("userId", user.getId());
 		q.setParameter("courseId", course.getId());
 		
 		List<Problem> resultList = q.getResultList();

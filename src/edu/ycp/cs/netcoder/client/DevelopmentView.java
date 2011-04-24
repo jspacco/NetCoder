@@ -232,7 +232,7 @@ public class DevelopmentView extends NetCoderView implements Subscriber {
 		});
 		
 		// Load current text.
-		loadService.loadCurrentText(getSession().get(Problem.class).getProblemId(), new AsyncCallback<String>() {
+		loadService.loadCurrentText(new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				GWT.log("Could not load current text", caught);

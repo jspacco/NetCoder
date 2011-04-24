@@ -21,20 +21,30 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
 import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
+import edu.ycp.cs.netcoder.shared.problems.User;
 
-public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
+public class LogCodeChangeServiceImpl extends NetCoderServiceImpl implements LogCodeChangeService {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public Boolean logChange(Change[] changeList) {
+	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException {
+		// make sure client is authenticated
+		User user = checkClientIsAuthenticated();
+		
+		// Make sure all Changes have proper user id
+		for (Change change : changeList) {
+			if (change.getEvent().getUserId() != user.getId()) {
+				throw new NetCoderAuthenticationException();
+			}
+		}
+		
 		HttpServletRequest req = this.getThreadLocalRequest();
 		HttpSession session = req.getSession();
 		
