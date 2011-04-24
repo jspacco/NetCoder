@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="NetCoder_GWT2">
+    <property environment="env"/>
+    <property name="ECLIPSE_HOME" value="/home/dhovemey/linux/java/eclipse"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="GWT SDK [GWT - 2.2.0].libraryclasspath">
+        <pathelement location="${ECLIPSE_HOME}/plugins/com.google.gwt.eclipse.sdkbundle.2.2.0_2.2.0.v201102111810/gwt-2.2.0/gwt-user.jar"/>
+        <pathelement location="${ECLIPSE_HOME}/plugins/com.google.gwt.eclipse.sdkbundle.2.2.0_2.2.0.v201102111810/gwt-2.2.0/gwt-dev.jar"/>
+    </path>
+    <path id="NetCoder_GWT2.classpath">
+        <pathelement location="war/WEB-INF/classes"/>
+        <pathelement location="war/WEB-INF/lib/junit.jar"/>
+        <pathelement location="war/WEB-INF/lib/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
+        <pathelement location="war/WEB-INF/lib/hsqldb.jar"/>
+        <pathelement location="lib/gwt-incubator-20101117-r1766.jar"/>
+        <path refid="GWT SDK [GWT - 2.2.0].libraryclasspath"/>
+        <pathelement location="war/WEB-INF/lib/bsh-2.0b4.jar"/>
+        <pathelement location="war/WEB-INF/lib/hibernate3.jar"/>
+        <pathelement location="war/WEB-INF/lib/hibernate-jpa-2.0-api-1.0.0.Final.jar"/>
+        <pathelement location="war/WEB-INF/lib/dom4j-1.6.1.jar"/>
+        <pathelement location="war/WEB-INF/lib/antlr-2.7.6.jar"/>
+        <pathelement location="war/WEB-INF/lib/commons-collections-3.1.jar"/>
+        <pathelement location="war/WEB-INF/lib/javassist-3.12.0.GA.jar"/>
+        <pathelement location="war/WEB-INF/lib/jta-1.1.jar"/>
+        <pathelement location="war/WEB-INF/lib/slf4j-api-1.6.1.jar"/>
+        <pathelement location="war/WEB-INF/lib/mysql-connector-java.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="war/WEB-INF/classes"/>
+        <copy includeemptydirs="false" todir="war/WEB-INF/classes">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="war/WEB-INF/classes">
+            <fileset dir="junit">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="war/WEB-INF/classes"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="war/WEB-INF/classes" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="NetCoder_GWT2.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="war/WEB-INF/classes" source="${source}" target="${target}">
+            <src path="junit"/>
+            <classpath refid="NetCoder_GWT2.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="DatabaseManagerSwing">
+        <java classname="org.hsqldb.util.DatabaseManagerSwing" failonerror="true" fork="yes">
+            <classpath refid="NetCoder_GWT2.classpath"/>
+        </java>
+    </target>
+</project>
