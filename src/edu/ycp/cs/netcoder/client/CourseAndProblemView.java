@@ -217,16 +217,9 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	}
 	
 	private static class TermAndYearNode extends InlineLabel {
-		private TermAndYear termAndYear;
-		
 		public TermAndYearNode(TermAndYear termAndYear) {
 			super(termAndYear.toString());
-			this.termAndYear = termAndYear;
 		}
-		
-//		public TermAndYear getTermAndYear() {
-//			return termAndYear;
-//		}
 	}
 	
 	private static class CourseNode extends InlineLabel {
@@ -344,6 +337,12 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 	}
 
 	private void doResize() {
+		
+		getLayoutPanel().setWidgetTopHeight(
+				problemDescriptionWidget,
+				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
+				LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX, Unit.PX);
+
 		int availHeight = Window.getClientHeight()
 			- LayoutConstants.TOP_BAR_HEIGHT_PX
 			- LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX
@@ -356,7 +355,7 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 					LayoutConstants.CP_COURSE_TREE_WIDTH_PX, Unit.PX);
 			getLayoutPanel().setWidgetTopHeight(
 					courseTree,
-					LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
+					LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 					availHeight, Unit.PX);
 		}
 		
@@ -366,17 +365,12 @@ public class CourseAndProblemView extends NetCoderView implements Subscriber {
 				Window.getClientWidth() - LayoutConstants.CP_COURSE_TREE_WIDTH_PX - 8, Unit.PX);
 		getLayoutPanel().setWidgetTopHeight(
 				table,
-				LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX,
+				LayoutConstants.TOP_BAR_HEIGHT_PX + LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX, Unit.PX,
 				availHeight, Unit.PX);
 		
-		getLayoutPanel().setWidgetTopHeight(
-				statusAndButtonBar,
-				LayoutConstants.TOP_BAR_HEIGHT_PX + availHeight, Unit.PX,
-				LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
-		
 		getLayoutPanel().setWidgetBottomHeight(
-				problemDescriptionWidget,
+				statusAndButtonBar,
 				0, Unit.PX,
-				LayoutConstants.CP_PROBLEM_DESC_HEIGHT_PX, Unit.PX);
+				LayoutConstants.CP_STATUS_AND_BUTTON_BAR_HEIGHT_PX, Unit.PX);
 	}
 }
