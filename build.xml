@@ -13,6 +13,8 @@
     <path id="GWT SDK [GWT - 2.2.0].libraryclasspath">
         <pathelement location="${ECLIPSE_HOME}/plugins/com.google.gwt.eclipse.sdkbundle.2.2.0_2.2.0.v201102111810/gwt-2.2.0/gwt-user.jar"/>
         <pathelement location="${ECLIPSE_HOME}/plugins/com.google.gwt.eclipse.sdkbundle.2.2.0_2.2.0.v201102111810/gwt-2.2.0/gwt-dev.jar"/>
+        <pathelement location="/usr/local/gwt-2.2.0/gwt-user.jar"/>
+        <pathelement location="/usr/local/gwt-2.2.0/gwt-dev.jar"/>
     </path>
     <path id="NetCoder_GWT2.classpath">
         <pathelement location="war/WEB-INF/classes"/>
