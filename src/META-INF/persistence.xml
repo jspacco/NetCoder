@@ -18,11 +18,14 @@
 		<class>edu.ycp.cs.netcoder.shared.event.Event</class>
 		<class>edu.ycp.cs.netcoder.shared.affect.AffectEvent</class>
 		<class>edu.ycp.cs.netcoder.shared.problems.User</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.Course</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.CourseRegistration</class>
+		<class>edu.ycp.cs.netcoder.shared.problems.Term</class>
 
 		<!--
 			Setup for MySQL 
 		-->
-
+		<!-- 
 		<properties>
 			<property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" />
 			<property name="hibernate.show_sql" value="true" />
@@ -32,6 +35,7 @@
 			<property name="hibernate.max_fetch_depth" value="3" />
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
 		</properties>
+		 -->
 
 		<!--<property name="javax.persistence.jdbc.connection.url" value="jdbc:mysql://127.0.0.1:8889/netcoder" /> -->
 		<!--<property name="hibernate.hbm2ddl.auto" value="create-drop" /> -->
@@ -39,7 +43,6 @@
 		<!--
 			Setup for HSQLDB 
 		-->
-		<!-- 
 		<properties>
 			<property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver" />
 			<property name="hibernate.show_sql" value="true" />
@@ -49,6 +52,5 @@
 			<property name="hibernate.max_fetch_depth" value="3" />
 			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
 		</properties>
-		 -->
 	</persistence-unit>
 </persistence>
