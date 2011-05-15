@@ -11,13 +11,61 @@ CREATE UNIQUE INDEX users_username_index on users (username);
 -- test account: username "user", password "abc"
 insert into users values (NULL, 'user', 'b252713e97d2b96b51ab0b5422258daa', '5011ffcedffe0a14');
 
-CREATE CACHED TABLE problems (
-  problem_id integer IDENTITY,
-  testname varchar(255) NOT NULL,
-  description longvarchar NOT NULL
+CREATE CACHED TABLE terms (
+  id integer IDENTITY,
+  name varchar(20) NOT NULL,
+  seq integer NOT NULL
 );
 
-INSERT INTO problems VALUES(NULL, 'sq', 'Square a number.');
+INSERT INTO terms VALUES (NULL, 'Winter', 1);
+INSERT INTO terms VALUES (NULL, 'Spring', 2);
+INSERT INTO terms VALUES (NULL, 'Summer', 3);
+INSERT INTO terms VALUES (NULL, 'Summer I', 4);
+INSERT INTO terms VALUES (NULL, 'Summer II', 5);
+INSERT INTO terms VALUES (NULL, 'Fall', 6);
+
+CREATE CACHED TABLE courses (
+  id integer IDENTITY,
+  name varchar(20) NOT NULL,            -- e.g., "CS 101"
+  title longvarchar NOT NULL,           -- e.g., "Introduction to Computer Science I"
+  url longvarchar NOT NULL,             -- course web page
+  term_id integer NOT NULL,
+  year integer NOT NULL,
+  
+  FOREIGN KEY (term_id) REFERENCES terms(id)
+);
+
+INSERT INTO courses values(NULL, 'CS 101', 'Introduction to Computer Science I', 'http://cs.unseen.edu/s11/cs101', 1, 2011);
+INSERT INTO courses values(NULL, 'CS 201', 'Introduction to Computer Science II', 'http://cs.unseen.edu/f10/cs201', 5, 2010);
+INSERT INTO courses values(NULL, 'CS 340', 'Programming Language Design', 'http://cs.unseen.edu/f10/cs340', 5, 2010);
+INSERT INTO courses values(NULL, 'CS 350', 'Data Structures', 'http://cs.unseen.edu/s10/cs350', 1, 2010);
+
+CREATE CACHED TABLE course_registrations (
+  id integer IDENTITY,
+  course_id integer NOT NULL,
+  user_id integer NOT NULL,
+  registration_type integer NOT NULL,    -- enum: student, instructor
+  
+  FOREIGN KEY (course_id) REFERENCES courses(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+INSERT INTO course_registrations VALUES (NULL, 0, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 1, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 2, 0, 0);
+INSERT INTO course_registrations VALUES (NULL, 3, 0, 0);
+
+CREATE CACHED TABLE problems (
+  problem_id integer IDENTITY,
+  course_id integer NOT NULL,
+  testname varchar(255) NOT NULL,
+  brief_description varchar(60) NOT NULL,
+  description longvarchar NOT NULL,
+  
+  FOREIGN KEY (course_id) REFERENCES courses(id)
+);
+
+INSERT INTO problems VALUES(NULL, 0, 'sq', 'Square a number', 'Write a method called "sq" that returns the square of an integer parameter.');
 
 CREATE CACHED TABLE test_cases (
   test_case_id integer IDENTITY,

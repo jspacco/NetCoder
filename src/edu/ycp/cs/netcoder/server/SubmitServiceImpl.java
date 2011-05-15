@@ -42,8 +42,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
     @Override
     public TestResult[] submit(int problemId, String programText)
     {
-        // TODO return type should be either a CompileResult or TestResults
-        // TODO use problemID to look up the problem in filesystem/DB
+        //TODO: Use logger
         System.out.println("problemId: " +problemId);
         EntityManager eman=HibernateUtil.getManager();
         Problem problem=eman.createQuery("select p from Problem p where p.id = :id", 
@@ -55,7 +54,7 @@ public class SubmitServiceImpl extends RemoteServiceServlet implements SubmitSer
         TestCreator creator=new TestCreator("edu.ycp.cs.netcoder.server.junit.online",
                 "RunDude", 
                 problem.getTestName(),
-                programText.replace("\n", " "));
+                programText);
         
         // Make sure the code snippet compiles
         OnTheFlyCompiler compiler=new OnTheFlyCompiler();

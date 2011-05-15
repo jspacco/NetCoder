@@ -1,59 +1,13 @@
-/** Add css rules here for your application. */
+/* NetCoder CSS rules. */
 
-
-/** Example rules used by the template application (remove for your app) */
-h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
-}
-
-.sendButton {
-  display: block;
-  font-size: 16pt;
-}
-
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
-}
-
-.dialogVPanel {
-  margin: 5px;
-}
-
-.serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
-}
-	
-/* center the ACE editor */
+/* Put a bit of space above and below the editor. */
 .NetCoderEditor {
-	border: medium solid white;
-}
-
-/* editor status widget */
-.NetCoderEditorStatusNormal {
-	width: 30px;
-	font-size: 14px;
-	border: 4px solid #0F0;
-	text-align: center;
-}
-.NetCoderEditorStatusTransmitFailure {
-	width: 30px;
-	font-size: 14px;
-	border: 4px solid red;
-	text-align: center;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 .NetCoderRoundBox {
-	background: #87CEFA;
+	background: #92c1f0;
 	border-radius: 15px;
 	-moz-border-radius: 15px;
 	padding: 10px;
@@ -66,6 +20,11 @@ h1 {
 
 .NetCoderLogo {
 	vertical-align: middle;
+}
+
+.NetCoderAGPLLogo {
+	vertical-align: middle;
+	margin-left: 5px;
 }
 
 .NetCoderProductName {
@@ -86,7 +45,7 @@ h1 {
 }
 
 .NetCoderProblemDescription {
-	background: silver;
+	background: #d7d5d3;
 	border-radius: 15px;
 	-moz-border-radius: 15px;
 	padding: 10px;
@@ -96,13 +55,162 @@ h1 {
 	position: relative;
 }
 
-.NetCoderStatus {
+.NetCoderStatusInformation {
+	padding-left: 4px;
 	vertical-align: middle;
+	color: black;
 }
 
-.NetCoderSubmitButton {
+.NetCoderStatusError {
+	padding-left: 4px;
+	vertical-align: middle;
+	color: red;
+}
+
+.NetCoderEditorStatusAndSubmitButton {
 	position: absolute;
 	vertical-align: middle;
 	top: 0;
 	right: 0;
+}
+
+/* editor status widget */
+
+#NetCoderEditorStatusWidget {
+	vertical-align: middle;
+	width: 15px;
+	height: 10px;
+	margin-right: 5px; 
+}
+
+.NetCoderEditorStatusClean { /* editor is up to date */
+	background: #0f0;
+	color: #0f0;
+}
+.NetCoderEditorStatusUnsent { /* unsent changes scheduled for transmission */
+	background: #8f8;
+	color: #8f8;
+}
+.NetCoderEditorStatusTransmit { /* transmission in progress */
+	background: #dd0;
+	color: #dd0;
+}
+.NetCoderEditorStatusError { /* last transmission failed */
+	background: #f00;
+	color: #f00;
+}
+
+.NetCoderProblemDescriptionBrief {
+	font-weight: bold;
+}
+
+.NetCoderProblemDescriptionDetailed {
+}
+
+.NetCoderOutcomePassed {
+	color: green;
+}
+
+.NetCoderOutcomeFailed {
+	color: red;
+}
+
+/* GWT Incubator ScrollPanel demo CSS. */
+/*
+ * ScrollTable
+ */
+.gwt-ScrollTable {
+  border-color: #aaa;
+  border-style: solid;
+  border-width: 1px 0px 1px 1px;
+}
+
+.gwt-ScrollTable .headerWrapper {
+  background: #8bd url(images/bg_header_gradient.gif) repeat-x bottom left;
+}
+
+.gwt-ScrollTable .footerWrapper {
+  border-top: 1px solid #aaa;
+  background: #8bd url(images/bg_header_gradient.gif) repeat-x bottom left;
+}
+
+.gwt-ScrollTable .dataTable td,
+.gwt-ScrollTable .headerTable td,
+.gwt-ScrollTable .footerTable td {
+  border-color: #aaa;
+  border-style: solid;
+  border-width: 0px 1px 1px 0px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.gwt-ScrollTable .headerTable td,
+.gwt-ScrollTable .footerTable td {
+  color: #fff;
+}
+        
+.gwt-ScrollTable .dataTable tr.highlighted {
+  background: #C3D9FF;
+}
+
+.gwt-ScrollTable .dataTable td.highlighted {
+  background: #FFFFAA;
+  cursor: hand;
+  cursor: pointer;
+}
+
+.gwt-ScrollTable .dataTable tr.selected {
+  background: #7AA5D6;
+}
+
+.badGPA {
+        background: #FFAAAA;
+}
+.goodGPA {
+  background: #AAAAFF;
+}
+.greatGPA {
+  background: #AAFFAA;
+}
+
+/**
+ * Applied to the options at the bottom of the page.
+ */
+.gwt-PagingOptions {
+  background: #e8eef7;
+  border: 1px solid #aaa;
+  border-top: none;
+}
+
+.gwt-PagingOptions .errorMessage {
+        color: red;
+}
+
+.pagingOptionsFirstPage,
+.pagingOptionsLastPage,
+.pagingOptionsNextPage,
+.pagingOptionsPrevPage {
+  cursor: hand;
+  cursor: pointer;
+}
+
+.gwt-InlineCellEditor {
+  border: 3px solid #7AA5D6;
+  padding: 4px;
+  background: white;
+  overflow: auto;
+}
+.gwt-InlineCellEditor .accept {
+  cursor: pointer;
+  cursor: hand;
+}
+.gwt-InlineCellEditor .cancel {
+  cursor: pointer;
+  cursor: hand;
+}
+
+/** Applied to AbstractOptions */
+.AbstractOption-Label {
+  font-weight: bold;
+  text-align: right;
 }

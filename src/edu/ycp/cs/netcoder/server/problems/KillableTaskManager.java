@@ -57,6 +57,9 @@ public class KillableTaskManager<T>
     private final PrintStream originalStdErr=System.err;
     /** Handles timeouts by producing a T representing a timeout event */
     private TimeoutHandler<T> timeoutHandler;
+    /** All threads will be in a thread group of worker threads */
+    public static final ThreadGroup WORKER_THREAD_GROUP=new ThreadGroup("WorkerThreads");
+    public static int numThreads=1;
     
     /**
      * Callback handler to create a new task outcome of type T
@@ -106,7 +109,9 @@ public class KillableTaskManager<T>
             new ThreadedPrintStreamMonitor(System.out);
         ThreadedPrintStreamMonitor stdErrMonitor=
             new ThreadedPrintStreamMonitor(System.err);
-        System.setOut(stdOutMonitor);
+        
+        //XXX Debug
+        //System.setOut(stdOutMonitor);
         //System.setErr(stdErrMonitor);
 
         Thread[] pool=new Thread[tasks.size()];
@@ -204,11 +209,10 @@ public class KillableTaskManager<T>
          * 
          * @param task The task to execute
          * @param out The container in which to put the result of the task
-         * @param sm SecurityManager to use for the task
          */
         public WorkerThread(IsolatedTask<T> task, Outcome<T> out)
         {
-            super();
+            super(WORKER_THREAD_GROUP, "Thread"+(numThreads++));
             this.task=task;
             this.out=out;
         }
@@ -219,13 +223,10 @@ public class KillableTaskManager<T>
          * Throwable, so that if another thread uses stop() to kill this
          * thread, nothing bad should happen.
          * 
-         * The IsolatedTask to be executed can be run with a different
-         * security manager.
          * 
          * @see java.lang.Thread#run()
          */
         public void run() {
-            SecurityManager secman=System.getSecurityManager();
             try {
                 T o=task.execute();
                 out.result=o;
@@ -234,14 +235,11 @@ public class KillableTaskManager<T>
                 // Make sure that the thread dies very quietly
                 // "Attaching an exception-catching silencer to my thread-killing gun"
                 // XXX Log this
-                System.err.println("Thread killed in go!");
-                System.out.println("Thread killed in go!");
+                System.err.println("Thread killed in go! "+e);
+                System.out.println("Thread killed in go! "+e);
             } finally {
-                // revert back to the original security manager
-                //System.setSecurityManager(originalSecurityManager);
-                System.setSecurityManager(secman);
-                System.err.println(System.getSecurityManager());
-                System.out.println(System.getSecurityManager());
+                //System.err.println(System.getSecurityManager());
+                //System.out.println(System.getSecurityManager());
             }
         }
     }

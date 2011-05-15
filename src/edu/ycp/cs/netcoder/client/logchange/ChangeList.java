@@ -21,17 +21,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ycp.cs.netcoder.shared.logchange.Change;
-import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
 
 /**
  * ChangeList stores a list of Change objects representing textual
  * changes in the editor.  It supports scheduling batches of changes
  * to be transmitted to the server.
  */
-public class ChangeList extends Observable {
+public class ChangeList extends Publisher {
 	/**
 	 * State enumeration - represents whether editor is clean,
 	 * contains unsent changes, or is currently transmitting changes.
+	 * The members of this enumeration are used as the event types
+	 * published by the object.  (I.e., each state change
+	 * is published.)
 	 */
 	public enum State {
         /** No unsent changes. */
@@ -87,8 +90,7 @@ public class ChangeList extends Observable {
 		unsent.add(change);
 		if (state == State.CLEAN) {
 			state = State.UNSENT;
-			setChanged();
-			notifyObservers();
+			notifySubscribers(getState(), null);
 		}
 	}
 	
@@ -106,8 +108,7 @@ public class ChangeList extends Observable {
 		unsent.clear();
 		
 		state = State.TRANSMISSION;
-		setChanged();
-		notifyObservers();
+		notifySubscribers(getState(), null);
 		
 		// return a single string containing the entire batch of changes
 		return inTransmission.toArray(new Change[inTransmission.size()]);
@@ -120,10 +121,25 @@ public class ChangeList extends Observable {
 	 */
 	public void endTransmit(boolean success) {
 		assert state == State.TRANSMISSION;
-		inTransmission.clear();
-		state = (success && unsent.isEmpty()) ? State.CLEAN : State.UNSENT;
+
+		if (success) {
+			// can now discard the in-transmission changes
+			inTransmission.clear();
+			
+			// set state (noting that unsent changes may have accumulated)
+			state = unsent.isEmpty() ? State.CLEAN : State.UNSENT;
+		} else {
+			// Next attempt will need to send
+			//   - the changes we just failed to transmit
+			//   - any additional changes that have accumulated in the meantime
+			inTransmission.addAll(unsent);
+			List<Change> tmp = inTransmission;
+			inTransmission = unsent;
+			unsent = tmp;
+			state = State.UNSENT;
+		}
 		transmitSuccess = success;
-		setChanged();
-		notifyObservers();
+		//GWT.log("Setting transmitSuccess to " + transmitSuccess);
+		notifySubscribers(getState(), null);
 	}
 }

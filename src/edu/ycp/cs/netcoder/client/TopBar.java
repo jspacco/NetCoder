@@ -55,6 +55,10 @@ public class TopBar extends Composite {
 		logoImg.setAltText("[logo]");
 		logoImg.setStyleName("NetCoderLogo");
 		hPanel.add(logoImg);
+		Image agplImg = new Image(urlBase + "/images/agplv3-88x31.png");
+		agplImg.setAltText("[agpl logo]");
+		agplImg.setStyleName("NetCoderAGPLLogo");
+		hPanel.add(agplImg);
 
 		hPanel2 = new FlowPanel();
 		hPanel2.setStyleName("NetCoderUsernameAndLogout");

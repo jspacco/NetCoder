@@ -56,13 +56,12 @@ public class TestCreator
         
         buf.append("public class "+className+" {\n");
         //TODO: Create inner class for the 
-        String classToBeTested="StudentTest";
+        String classToBeTested="StudentCode";
         
         buf.append("private static class "+classToBeTested+" {\n");
         buf.append(body+"\n");
         buf.append("}\n");
         for (TestCase t : tests) {
-            buf.append("@Test\n");
             buf.append(t.toJUnitTestCase(classToBeTested, functionName)+"\n");
         }
         buf.append("}\n");
@@ -84,7 +83,6 @@ public class TestCreator
         buf.append("public class "+className+" {\n");
         
         for (TestCase t : tests) {
-            buf.append("@Test\n");
             buf.append(t.toBeanShellTestCase(functionName, body)+"\n");
         }
 

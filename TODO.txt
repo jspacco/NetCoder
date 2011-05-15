@@ -1,4 +1,17 @@
 * TestRunner:
+  - ProtectionDomain:
+    > OnTheFlyCompiler should be a SecureClassLoader
+    		not a regular classloader
+    > somehow create a CodeSource for everything that is compiled
+    		by OnTheFlyCompiler (since we want to restrict everything)
+    	> create a new ProtectionDomain with the compiler
+    	> each student class is compiled/loaded by a separate classloader
+    		so should be totally isolated
+  - What if I allow student code to call stop()?  
+  	> Make sure that it can't access any other threads (should be easy)
+  	> otherwise the container instance needs to be
+  		called by whoever calls stop
+  
   - currently student code cannot disable its security manager
   - timeouts from calling stop() screw up JUnit
   - not sure where the ThreadDeath exception is actually going 
@@ -20,7 +33,11 @@
     > maybe have a scrollable "more" option
   - link to the exception for a failure 
 * Scrollable main panel
-* User accounts
 * problem creation workflow
 * Jython support
   - compile Jython in-memory?
+  - for Jython, the "StudentCode" class should encapsulate
+  	the Jython code using whatever layer lets it look like
+  	a regular Java class.  This keeps the interface the same.
+ 
+	

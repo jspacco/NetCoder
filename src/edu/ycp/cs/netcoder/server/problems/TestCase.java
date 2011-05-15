@@ -61,27 +61,40 @@ public class TestCase
         return input.toString();
     }
     
+    /**
+     * Convert the test case into a String representing a JUnit test case
+     * method.  Includes a "sandboxing" security manager that student code 
+     * cannot disable.
+     * TODO Ensure student code cannot perform a field access
+     *      or use reflection to get at the container variable inside
+     *      the security manager.
+     * @param className
+     * @param functionName
+     * @return
+     */
     String toJUnitTestCase(String className, String functionName) {
-        return "public void "+getJUnitTestCaseName()+"() throws Exception {\n"+
-        "SecurityManager originalSecurityManager=System.getSecurityManager();\n"+
-        "StudentCodeSecurityManager.SandboxBooleanContainer container=new StudentCodeSecurityManager.SandboxBooleanContainer();\n"+
-        "StudentCodeSecurityManager sman=new StudentCodeSecurityManager(container);\n"+
-        "container.enableSandbox();"+
-        "System.setSecurityManager(sman);\n"+
+        return "@Test\n"+
+        "public void "+getJUnitTestCaseName()+"() throws Exception {\n"+
+        //"SecurityManager originalSecurityManager=System.getSecurityManager();\n"+
+        //"StudentCodeSecurityManager.SandboxBooleanContainer container=new StudentCodeSecurityManager.SandboxBooleanContainer();\n"+
+        //"StudentCodeSecurityManager sman=new StudentCodeSecurityManager(container);\n"+
+        //"container.enableSandbox();\n"+
+        //"System.setSecurityManager(sman);\n"+
         "try {\n"+
         className+" theInstance=new "+className+"();\n"+
             "assertEquals(\"input:<"+input+">\", "+
             this.correctOutput+", theInstance."+functionName+"("+this.input+"));\n"+
             "} finally {\n"+
-            "container.disableSandbox();\n"+
-            "System.setSecurityManager(originalSecurityManager);\n"+
+            //"     container.disableSandbox();\n"+
+            //"     System.setSecurityManager(originalSecurityManager);\n"+
             "}\n"+
             "}";
         
     }
     
     String toBeanShellTestCase(String functionName, String body) {
-        return "public void "+getJUnitTestCaseName()+"() throws Exception {\n"+
+        return "@Test\n"+
+        "public void "+getJUnitTestCaseName()+"() throws Exception {\n"+
         "Interpreter bsh=new Interpreter();\n"+
             "assertEquals(\"input:<"+input+">\", "+
             this.correctOutput+", bsh.eval(\""+body+"; "+

@@ -18,37 +18,54 @@
 package edu.ycp.cs.netcoder.client.status;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.Session;
 import edu.ycp.cs.netcoder.shared.problems.Problem;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
-public class ProblemDescriptionWidget extends Composite implements Observer {
+public class ProblemDescriptionWidget extends Composite implements Subscriber {
 	private Session session;
-	private Label problemDescriptionText;
+	private InlineHTML briefProblemDescription;
+	private InlineHTML problemDescription;
 	
-	public ProblemDescriptionWidget(Session session) {
+	public ProblemDescriptionWidget(Session session, SubscriptionRegistrar registrar) {
 		this.session = session;
-		session.addObserver(this);
+		session.subscribe(Session.Event.ADDED_OBJECT, this, registrar);
+
+		FlowPanel panel = new FlowPanel();
+		briefProblemDescription = new InlineHTML("Loading problem description...");
+		briefProblemDescription.setStyleName("NetCoderProblemDescriptionBrief");
+		panel.add(briefProblemDescription);
 		
-		problemDescriptionText = new Label("Loading problem description...");
+		problemDescription = new InlineHTML("");
+		problemDescription.setStyleName("NetCoderProblemDescriptionDetailed");
+		panel.add(problemDescription);
 		
-		initWidget(problemDescriptionText);
+		initWidget(panel);
 		
 		this.setStyleName("NetCoderProblemDescription");
 	}
+
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.ADDED_OBJECT && hint instanceof Problem) {
+			Problem problem = (Problem) hint;
+			briefProblemDescription.setText(problem.getBriefDescription());
+			problemDescription.setText(" - " + problem.getDescription());
+		}
+	}
 	
 	@Override
-	public void update(Observable obj, Object hint) {
-		Problem problem = session.get(Problem.class);
-		if (problem != null) {
-			problemDescriptionText.setText(problem.getDescription());
-		}
+	public void unsubscribeFromAll() {
+		session.unsubscribeFromAll(this);
 	}
 
 	public void setErrorText(String text) {
-		problemDescriptionText.setText("Error: " + text);
+		briefProblemDescription.setText(text);
+		problemDescription.setText("");
 	}
 }

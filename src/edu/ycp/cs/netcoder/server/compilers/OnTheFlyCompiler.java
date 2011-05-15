@@ -18,7 +18,15 @@
 package edu.ycp.cs.netcoder.server.compilers;
 
 import java.io.ByteArrayOutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
+import java.security.ProtectionDomain;
+import java.security.SecureClassLoader;
+import java.security.cert.Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,14 +37,14 @@ import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileObject.Kind;
 
-public class OnTheFlyCompiler extends ClassLoader
+public class OnTheFlyCompiler extends SecureClassLoader
 {
     private JavaCompiler compiler;
     private MemoryFileManager memoryFileManager;
@@ -45,23 +53,25 @@ public class OnTheFlyCompiler extends ClassLoader
     // the optionsList.
     private List<String> classpath;
     private List<String> optionsList;
-    
+    private Map<String, CodeSource> codeSourceMap;
+
     public OnTheFlyCompiler() {
         super(OnTheFlyCompiler.class.getClassLoader()); 
         this.compiler=ToolProvider.getSystemJavaCompiler();
         this.memoryFileManager=new MemoryFileManager(this.compiler);
         this.classpath=new LinkedList<String>();
         this.optionsList=new LinkedList<String>();
+        this.codeSourceMap=new HashMap<String, CodeSource>();
         addToClasspath(System.getProperty("java.class.path"));
-        
+
         // Will we need to hard-code some paths?  sort of like the next line
         //addToClasspath("war/WEB-INF/lib/junit.jar");
     }
-    
+
     public void addToClasspath(String path) {
         classpath.add(path);
     }
-    
+
     private String getClasspath() {
         StringBuffer buf=new StringBuffer();
         for (String s : classpath) {
@@ -73,11 +83,11 @@ public class OnTheFlyCompiler extends ClassLoader
         }
         return buf.toString();
     }
-    
+
     public CompileResult compile(String className, String programText)
     {
         Source source = new Source(className, Kind.SOURCE, programText);
-        
+
         // set compiler's classpath to be same as the runtime's
         optionsList.addAll(Arrays.asList("-classpath",getClasspath()));
         //XXX Debug
@@ -97,7 +107,7 @@ public class OnTheFlyCompiler extends ClassLoader
 
         return new CompileResult(success, diagnostics);
     }
-    
+
     static class Source extends SimpleJavaFileObject {
         private final String content;
 
@@ -135,11 +145,11 @@ public class OnTheFlyCompiler extends ClassLoader
         MemoryFileManager(JavaCompiler compiler) {
             super(compiler.getStandardFileManager(null, null, null));
         }
-        
+
         boolean contains(String name) {
             return map.containsKey(name);
         }
-        
+
         Output get(String name) {
             if (map.containsKey(name)) {
                 return map.get(name);
@@ -158,8 +168,7 @@ public class OnTheFlyCompiler extends ClassLoader
             return mc;
         }
     }
-  
-    
+
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         synchronized (memoryFileManager) {
@@ -167,6 +176,35 @@ public class OnTheFlyCompiler extends ClassLoader
             Output mc = memoryFileManager.get(name);
             if (mc != null) {
                 byte[] array = mc.toByteArray();
+                /*
+                if (!codeSourceMap.containsKey(name)) {
+                    try {
+                        codeSourceMap.put(name, 
+                                new CodeSource(
+                                        new URL("file:///foo.bar.bazzle"), 
+                                        //new URL("file:///" + name), 
+                                        //new URL("file:///" + name.replace('.', '/')), 
+                                        new Certificate[0]));
+                    } catch (MalformedURLException e){
+                        throw new ClassNotFoundException("Bad URL", e);
+                    }
+                }
+                //defineClass(name, array, 0, array.length, )
+                //return defineClass(name, array, 0, array.length, codeSourceMap.get(name));
+                PermissionCollection pc=getPermissions(codeSourceMap.get(name));
+                // Add the permissions
+                //Permission p=new RuntimePermission("exitVM");
+                //pc.add(p);
+                
+                //Permission p2=new RuntimePermission("accessClassInPackage."+name+"$StudentTest");
+                //Permission p2=new RuntimePermission("accessClassInPackage.edu.ycp.cs.netcoder.server.compilers");
+                Permission p2=new RuntimePermission("accessClassInPackage.edu/ycp/cs/netcoder/server/compilers");
+                pc.add(p2);
+                
+                ProtectionDomain pd=new ProtectionDomain(codeSourceMap.get(name), pc, this, null);
+                return defineClass(name, array, 0, array.length, pd);
+                */
+                
                 return defineClass(name, array, 0, array.length);
             }
         }

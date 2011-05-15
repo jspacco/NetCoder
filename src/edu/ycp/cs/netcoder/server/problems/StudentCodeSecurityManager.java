@@ -1,55 +1,95 @@
 package edu.ycp.cs.netcoder.server.problems;
 
-import java.security.AccessControlException;
 import java.security.Permission;
 
 public class StudentCodeSecurityManager extends SecurityManager
 {
-    // Extra level of indirection:
-    // To create a sandbox, first create a container.
-    // Then create an instance of StudentCodeSecurityManager using the container
-    // Now enable the container
-    // There is no way to get a reference to the container from the sanboxed code
-    // even if you can get a reference to the security manager.
-    // So, only the thread that created the container and still has a reference to it
-    // can disable the security manager and then get rid of it.
-    private SandboxBooleanContainer container;
-    public StudentCodeSecurityManager(SandboxBooleanContainer container) {
-        this.container=container;
+    private ThreadGroup WORKER_THREAD_GROUP=KillableTaskManager.WORKER_THREAD_GROUP;
+    
+    @Override
+    public void checkAccess(Thread t) {
+        if (isWorkerThread()) {
+            throw new SecurityException("Cannot access Thread");
+        }
     }
     
-    public static class SandboxBooleanContainer {
-        private boolean sandboxed=false;
-        public void enableSandbox() {
-            sandboxed=true;
-        }
-        public void disableSandbox() {
-            sandboxed=false;
-        }
-        private boolean isSandboxed() {
-            return this.sandboxed;
+    @Override
+    public void checkAccess(ThreadGroup g) {
+        if (isWorkerThread()) {
+            throw new SecurityException("Cannot access ThreadGroup");
         }
     }
+
     @Override
     public void checkPermission(Permission perm) {
         check(perm);
-    } 
-
+        
+    }
+    
     @Override
     public void checkPermission(Permission perm, Object context) {
         check(perm);
     }
-    private void check(Permission perm) {
-        //if (true) return;
-        if (!container.isSandboxed()) {
-            return;
+    
+    /* (non-Javadoc)
+     * @see java.lang.SecurityManager#checkCreateClassLoader()
+     */
+    @Override
+    public void checkCreateClassLoader() {
+        if (isWorkerThread()) {
+            throw new SecurityException("Cannot create classloader");
         }
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.SecurityManager#getThreadGroup()
+     */
+    @Override
+    public ThreadGroup getThreadGroup() {
+        //if (isStudentCode()) {
+          //  throw new SecurityException("Student code should not get the ThreadGroup");
+        //}
+        return super.getThreadGroup();
+    }
+    /*
+    private boolean isStudentCode() {
+        if (true) return isWorkerThread();
+        Class<?>[] contextArr=getClassContext();
+        for (Class<?> c : contextArr) {
+            //System.out.println("class for context: "+c+" classloader: "+c.getClassLoader());
+            System.out.println("class for context: "+c);
+            //System.out.println("class for context: "+c+" classloader: "+c.getClassLoader()+
+                    //" "+(cl instanceof OnTheFlyCompiler));
+            //System.out.println("code source: "+c.getProtectionDomain().getCodeSource());
+//            ClassLoader cl=c.getClassLoader();
+//            if (cl instanceof OnTheFlyCompiler) {
+//                return true;
+//            }
+        }
+        return false;
+    }
+    */
+    
+    private boolean isWorkerThread() {
+        ThreadGroup group=getThreadGroup();
+        if (group==WORKER_THREAD_GROUP) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void check(Permission perm) {
         // allow reading the line separator
         if (perm.getName().equals("line.separator") && perm.getActions().contains("read")) {
             return;
         }
+        if (perm.getName().equals("accessDeclaredMembers")) {
+            return;
+        }
+        if (isWorkerThread()) {
+            throw new SecurityException("Student code doing " +perm.getName());
+        }
         
-        throw new SecurityException("Permission denied: " + perm);
     }
 
     /* (non-Javadoc)
@@ -57,8 +97,11 @@ public class StudentCodeSecurityManager extends SecurityManager
      */
     @Override
     public void checkExit(int status) {
-        if (!container.isSandboxed()) return;
-        throw new AccessControlException("Student code should not call System.exit(int i)");
+        System.out.println("Trying to call system.exit");
+        if (isWorkerThread()) {
+            throw new SecurityException("Student code should not call System.exit(int i)");
+        }
+        System.out.println("system.exit is sadly OK");
     }
 
     /* (non-Javadoc)
@@ -66,7 +109,20 @@ public class StudentCodeSecurityManager extends SecurityManager
      */
     @Override
     public void checkExec(String cmd) {
-        if (!container.isSandboxed()) return;
-        throw new AccessControlException("Student code should not create a process");
+        if (isWorkerThread()) {
+            throw new SecurityException("Student code cannot execute commands");
+        }
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.SecurityManager#checkPackageDefinition(java.lang.String)
+     */
+    @Override
+    public void checkPackageDefinition(String pkg) {
+        System.out.println("checkPackageDefinition");
+        if (pkg.equals("edu.ycp.cs.netcoder.server.compilers")) {
+            return;
+        }
+    }
+    
 }

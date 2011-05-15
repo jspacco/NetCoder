@@ -21,20 +21,30 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
 import edu.ycp.cs.netcoder.client.LogCodeChangeService;
 import edu.ycp.cs.netcoder.server.logchange.ApplyChangeToTextDocument;
 import edu.ycp.cs.netcoder.server.logchange.TextDocument;
 import edu.ycp.cs.netcoder.server.util.HibernateUtil;
 import edu.ycp.cs.netcoder.shared.event.Event;
 import edu.ycp.cs.netcoder.shared.logchange.Change;
+import edu.ycp.cs.netcoder.shared.problems.NetCoderAuthenticationException;
+import edu.ycp.cs.netcoder.shared.problems.User;
 
-public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements LogCodeChangeService {
+public class LogCodeChangeServiceImpl extends NetCoderServiceImpl implements LogCodeChangeService {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public Boolean logChange(Change[] changeList) {
+	public Boolean logChange(Change[] changeList) throws NetCoderAuthenticationException {
+		// make sure client is authenticated
+		User user = checkClientIsAuthenticated();
+		
+		// Make sure all Changes have proper user id
+		for (Change change : changeList) {
+			if (change.getEvent().getUserId() != user.getId()) {
+				throw new NetCoderAuthenticationException();
+			}
+		}
+		
 		HttpServletRequest req = this.getThreadLocalRequest();
 		HttpSession session = req.getSession();
 		
@@ -44,22 +54,32 @@ public class LogCodeChangeServiceImpl extends RemoteServiceServlet implements Lo
 			session.setAttribute("doc", doc);
 		}
 
-		EntityManager eman=HibernateUtil.getManager();
-		
-		ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
-		eman.getTransaction().begin();
-		for (Change change : changeList) {
-			applicator.apply(change, doc);
-			
-			// Insert the generic Event object
-			Event event = change.getEvent();
-			eman.persist(event);
-			
-			// Link the Change object to the Event, and insert it
-			change.setEventId(event.getId());
-			eman.persist(change);
+		EntityManager eman = HibernateUtil.getManager();
+
+		boolean successfulCommit = false;
+		try {
+
+			ApplyChangeToTextDocument applicator = new ApplyChangeToTextDocument();
+			eman.getTransaction().begin();
+			for (Change change : changeList) {
+				applicator.apply(change, doc);
+
+				// Insert the generic Event object
+				Event event = change.getEvent();
+				eman.persist(event);
+
+				// Link the Change object to the Event, and insert it
+				change.setEventId(event.getId());
+				eman.persist(change);
+			}
+			eman.getTransaction().commit();
+			successfulCommit = true;
+		} finally {
+			if (!successfulCommit) {
+				eman.getTransaction().rollback();
+			}
 		}
-		eman.getTransaction().commit();
+		
 		System.out.println("Document is now:\n" + doc.getText());
 		
 		return true;

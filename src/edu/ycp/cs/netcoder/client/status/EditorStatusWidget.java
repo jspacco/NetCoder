@@ -17,43 +17,59 @@
 
 package edu.ycp.cs.netcoder.client.status;
 
-import com.google.gwt.user.client.ui.InlineLabel;
+import com.google.gwt.user.client.ui.InlineHTML;
 
 import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
-public class EditorStatusWidget extends InlineLabel implements Observer {
-	private static final String NORMAL = "NetCoderEditorStatusNormal";
-	private static final String XMIT_FAILURE = "NetCoderEditorStatusTransmitFailure";
+public class EditorStatusWidget extends InlineHTML implements Subscriber {
+	private ChangeList changeList;
 
-	public EditorStatusWidget() {
-		setText("---");
-		setStylePrimaryName(NORMAL);
+	public EditorStatusWidget(ChangeList changeList, SubscriptionRegistrar registrar) {
+		super("XX");
+		this.changeList = changeList;
+		
+		// subscribe to state change events
+		changeList.subscribeToAll(ChangeList.State.values(), this, registrar);
+
+		// set initial view contents
+		syncView();
+		
+		getElement().setId("NetCoderEditorStatusWidget");
+	}
+
+	@Override
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		syncView();
+	}
+
+	private void syncView() {
+		ChangeList.State state = changeList.getState();
+		
+		String styleName = "";
+		
+		switch (state) {
+		case CLEAN:
+			styleName = "NetCoderEditorStatusClean";
+			break;
+		case TRANSMISSION:
+			styleName = "NetCoderEditorStatusTransmit";
+			break;
+		case UNSENT:
+			styleName = changeList.isTransmitSuccess()
+					? "NetCoderEditorStatusUnsent"
+					: "NetCoderEditorStatusError";
+			break;
+		}
+		
+		//GWT.log("Setting style name to " + styleName);
+		setStyleName(styleName);
 	}
 	
 	@Override
-	public void update(Observable obj, Object hint) {
-		ChangeList model = (ChangeList) obj;
-		
-		switch (model.getState()) {
-		case CLEAN:
-			setText("---");
-			break;
-			
-		case TRANSMISSION:
-			setText("<->");
-			break;
-			
-		case UNSENT:
-			setText("-*-");
-			break;
-		}
-		
-		if (model.isTransmitSuccess()) {
-			setStylePrimaryName(NORMAL);
-		} else {
-			setStylePrimaryName(XMIT_FAILURE);
-		}
+	public void unsubscribeFromAll() {
+		changeList.unsubscribeFromAll(this);
 	}
 }

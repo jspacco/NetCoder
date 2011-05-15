@@ -20,6 +20,7 @@ package edu.ycp.cs.netcoder.server.problems;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.net.URL;
+import java.security.AccessControlException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.Map;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Request;
 import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 
 import edu.ycp.cs.netcoder.server.compilers.CompilationException;
 import edu.ycp.cs.netcoder.server.compilers.CompileResult;
@@ -39,6 +41,7 @@ import edu.ycp.cs.netcoder.shared.testing.TestResult;
 public class TestRunner
 {
     public static final long TIMEOUT_LIMIT=2000;
+    public static final boolean DEBUG=true;
     
     public TestRunner() {}
     
@@ -74,8 +77,9 @@ public class TestRunner
             ByteArrayOutputStream baosErr=new ByteArrayOutputStream();
             PrintStream err=new PrintStream(baosErr);
             
-            System.setOut(out);
-            System.setErr(err);
+            //XXX for debugging
+            //System.setOut(out);
+            //System.setErr(err);
             
             // run tests
             TestResult testResult=runOneTestCase(testClass, test);
@@ -94,14 +98,36 @@ public class TestRunner
     
     private TestResult runOneTestCase(Class<?> testClass, TestCase test) {
         JUnitCore core=new JUnitCore();
-        // This is probably where the security manager should be set
-        //SecurityManager originalSecurityManager=System.getSecurityManager();
-        //StudentCodeSecurityManager sman=new StudentCodeSecurityManager();
-        //sman.enableSandbox();
         Result result=core.run(Request.method(testClass, test.getJUnitTestCaseName()));
-        //sman.disableSandbox();
-        //System.setSecurityManager(originalSecurityManager);
-        return new TestResult(result, test);
+        TestResult outcome=new TestResult();
+        if (result.getFailureCount()>0) {
+            Failure failure=result.getFailures().get(0);
+            
+            if (DEBUG) failure.getException().printStackTrace();
+            
+            Throwable t=failure.getException();
+            if (t instanceof AssertionError) {
+                // JUnit failure due to failed assertion
+                outcome.setOutcome(TestResult.FAILED_ASSERTION);
+                outcome.setMessage("input:<"+test.inputAsString()+"> "+failure.getMessage());
+            } else if (t instanceof AccessControlException ||
+                    t instanceof SecurityException)
+            {
+                outcome.setOutcome(TestResult.FAILED_BY_SECURITY_MANAGER);
+                outcome.setMessage("input:<"+test.inputAsString()+"> "+failure.getTrace());
+            } else {
+                // JUnit failure due to runtime exception in student code
+                outcome.setOutcome(TestResult.FAILED_WITH_EXCEPTION);
+                outcome.setMessage("input:<"+test.inputAsString()+"> "+"<expected "+
+                    test.getCorrectOutput()+"> but instead exception raised: "+
+                    failure.getTrace());
+            }
+        } else {
+            // succeeded
+            outcome.setOutcome(TestResult.PASSED);
+            outcome.setMessage("correct! "+test.inputAsString()+" output:<"+test.getCorrectOutput()+">");
+        }
+        return outcome;
     }
 
     public List<TestResult> run(TestCreator creator)
@@ -166,7 +192,7 @@ public class TestRunner
                 creator.toJUnitTestCase());
 
         //DEBUG: print source file
-        System.out.println(creator.toJUnitTestCase());
+        //System.out.println(creator.toJUnitTestCase());
         if (!compileResult.success) {
             // must receive a class that compiled or we throw exception
             throw new CompilationException(compileResult);

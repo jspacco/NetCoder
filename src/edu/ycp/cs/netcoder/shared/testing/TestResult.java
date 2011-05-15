@@ -1,20 +1,15 @@
 package edu.ycp.cs.netcoder.shared.testing;
 
 import java.io.Serializable;
-import java.security.AccessControlException;
-
-import org.junit.runner.Result;
-import org.junit.runner.notification.Failure;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-
-import edu.ycp.cs.netcoder.server.problems.TestCase;
 
 public class TestResult implements Serializable, IsSerializable
 {
     public static final long serialVersionUID=1L;
     
-    //TODO: Replace with enum?
+    //TODO: Replace with enum?  
+    //TODO: Add 6 separate methods for each possible outcome
     public static final String PASSED="passed";
     public static final String FAILED_ASSERTION="failed";
     public static final String FAILED_WITH_EXCEPTION="runtime_exception";
@@ -43,37 +38,6 @@ public class TestResult implements Serializable, IsSerializable
     }
     
     public TestResult() {}
-    
-    public TestResult(Result result, TestCase test) {
-        if (result.getFailureCount()>0) {
-            Failure failure=result.getFailures().get(0);
-            
-            //XXX: Debug
-            failure.getException().printStackTrace();
-            
-            Throwable t=failure.getException();
-            if (t instanceof AssertionError) {
-                // JUnit failure due to failed assertion
-                this.outcome=FAILED_ASSERTION;
-                this.message="input:<"+test.inputAsString()+"> "+failure.getMessage();
-            } else if (t instanceof AccessControlException ||
-                    t instanceof SecurityException)
-            {
-                this.outcome=FAILED_BY_SECURITY_MANAGER;
-                this.message="input:<"+test.inputAsString()+"> "+failure.getTrace();
-            } else {
-                // JUnit failure due to runtime exception in student code
-                this.outcome=FAILED_WITH_EXCEPTION;
-                this.message="input:<"+test.inputAsString()+"> "+"<expected "+
-                    test.getCorrectOutput()+"> but instead exception raised: "+
-                    failure.getTrace();
-            }
-        } else {
-            // succeeded
-            this.outcome=PASSED;
-            this.message="correct! "+test.inputAsString()+" output:<"+test.getCorrectOutput()+">";
-        }
-    }
 
     public String toString() {
         return message;

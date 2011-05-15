@@ -20,16 +20,37 @@ package edu.ycp.cs.netcoder.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.ycp.cs.netcoder.shared.problems.User;
-import edu.ycp.cs.netcoder.shared.util.Observable;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
 
 /**
  * Client-side session object.
  * Can hold any number of objects, but only one object of any given
- * class is allowed.
+ * class is allowed.  The session is also used to distribute events
+ * (such as logging in, logging out, switching views, etc.)
+ * that various view objects will want to know about.
  */
-public class Session extends Observable {
+public class Session extends Publisher {
 	private Map<Class<?>, Object> data;
+	
+	/**
+	 * Event types.
+	 */
+	public enum Event {
+		/** An object was added to the session. The hint is the object added. */
+		ADDED_OBJECT,
+		
+		/** An object was removed from the session. The hint is the object removed. */
+		REMOVED_OBJECT,
+		
+		/** The user logged in. Hint is the User object. */
+		LOGIN,
+		
+		/** The user logged out.  Hint is null. */
+		LOGOUT,
+		
+		/** A Problem was chosen.  Hint is the problem. */
+		PROBLEM_CHOSEN,
+	}
 	
 	/**
 	 * Constructor.
@@ -45,9 +66,8 @@ public class Session extends Observable {
 	 * @param obj object to add to the session
 	 */
 	public void add(Object obj) {
+		notifySubscribers(Event.ADDED_OBJECT, obj);
 		data.put(obj.getClass(), obj);
-		setChanged();
-		notifyObservers(obj);
 	}
 
 	/**
@@ -56,11 +76,13 @@ public class Session extends Observable {
 	 * @param cls the class of the object to be removed
 	 */
 	public void remove(Class<?> cls) {
-		data.remove(cls);
-		setChanged();
-		notifyObservers();
+		Object obj = get(cls);
+		if (obj != null) {
+			notifySubscribers(Event.REMOVED_OBJECT, obj);
+			data.remove(cls);
+		}
 	}
-	
+
 	/**
 	 * Get an object from the session.
 	 * 

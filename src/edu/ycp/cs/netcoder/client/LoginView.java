@@ -24,7 +24,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -46,10 +45,6 @@ public class LoginView extends NetCoderView {
 		super(session);
 
 		LayoutPanel loginViewPanel = getLayoutPanel();
-		
-		TopBar topBar = new TopBar();
-		loginViewPanel.add(topBar);
-		loginViewPanel.setWidgetTopHeight(topBar, 0, Unit.PX, LayoutConstants.TOP_BAR_HEIGHT_PX, Unit.PX);
 		
 		FlowPanel panel = new FlowPanel();
 		panel.add(new Label("Username:"));
@@ -128,10 +123,13 @@ public class LoginView extends NetCoderView {
 				if (result == null) {
 					loginStatusLabel.setText("Could not log in. Check your username and password.");
 				} else {
+					//MessageBox.info("Message", "Using Ext-GWT, yo!", null);
+					
 					// Set the user object in the session!
-					// This will cause the entry point code to switch
-					// views.
 					getSession().add(result);
+					
+					// Publish the LOGIN event.
+					getSession().notifySubscribers(Session.Event.LOGIN, result);
 				}
 			}
 		};

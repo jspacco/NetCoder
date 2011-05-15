@@ -12,7 +12,9 @@
 
   <!-- Other module inherits                                      -->
   <inherits name='edu.ycp.cs.dh.acegwt.AceGWT'/>
-
+  <inherits name='com.google.gwt.gen2.Gen2'/>
+  <inherits name='com.google.gwt.gen2.table.ScrollTable'/>
+  
   <!-- Specify the app entry point class.                         -->
   <entry-point class='edu.ycp.cs.netcoder.client.NetCoder_GWT2'/>
 

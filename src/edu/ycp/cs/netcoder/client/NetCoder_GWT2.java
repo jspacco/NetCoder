@@ -18,22 +18,26 @@
 package edu.ycp.cs.netcoder.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.event.logical.shared.ResizeEvent;
+import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
-import edu.ycp.cs.netcoder.client.logchange.ChangeList;
-import edu.ycp.cs.netcoder.shared.affect.AffectEvent;
-import edu.ycp.cs.netcoder.shared.problems.User;
-import edu.ycp.cs.netcoder.shared.util.Observable;
-import edu.ycp.cs.netcoder.shared.util.Observer;
+import edu.ycp.cs.netcoder.shared.util.Publisher;
+import edu.ycp.cs.netcoder.shared.util.Subscriber;
+import edu.ycp.cs.netcoder.shared.util.SubscriptionRegistrar;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
-public class NetCoder_GWT2 implements EntryPoint, Observer {
+public class NetCoder_GWT2 implements EntryPoint, Subscriber, ResizeHandler {
 	// Client session data.
 	private Session session;
 	
-	private boolean block;
+	// Subscription registrar
+	private SubscriptionRegistrar subscriptionRegistrar;
+
+	// Currently-active NetCoderView.
 	private NetCoderView currentView;
 	
 	/**
@@ -42,19 +46,26 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	public void onModuleLoad() {
 		// Create session
 		session = new Session();
+		session.add(new WindowResizeNotifier());
 		
-		// Observe Session changes so we're notified of successful login
-		session.addObserver(this);
+		// Create a SubscriptionRegistrar
+		subscriptionRegistrar = new DefaultSubscriptionRegistrar();
+		
+		// Observe Session changes
+		session.subscribe(Session.Event.LOGIN, this, subscriptionRegistrar);
+		session.subscribe(Session.Event.LOGOUT, this, subscriptionRegistrar);
+		session.subscribe(Session.Event.PROBLEM_CHOSEN, this, subscriptionRegistrar);
+		
+		// Get window ResizeEvents so we can publish them to views
+		Window.addResizeHandler(this);
 		
 		changeView(new LoginView(session));
 	}
 	
-	private void changeToLoginView() {
-		changeView(new LoginView(session));
-	}
-	
-	private void changeToDevelopmentView() {
-		changeView(new DevelopmentView(session));
+	@Override
+	public void onResize(ResizeEvent event) {
+		// Publish window ResizeEvent
+		session.get(WindowResizeNotifier.class).notifySubscribers(WindowResizeNotifier.WINDOW_RESIZED, event);
 	}
 	
 	public void changeView(NetCoderView view) {
@@ -68,17 +79,18 @@ public class NetCoder_GWT2 implements EntryPoint, Observer {
 	}
 	
 	@Override
-	public void update(Observable obj, Object hint) {
-		if (currentView.getClass() == LoginView.class && session.get(User.class) != null) {
-			// User just successfully logged in - switch to development view
-			if (!block) {
-				block = true;
-				changeToDevelopmentView();
-				block = false; // FIXME: need a better event firing/handling mechanism
-			}
-		} else if (currentView.getClass() == DevelopmentView.class && session.get(User.class) == null) {
-			// The user logged out
-			changeToLoginView();
+	public void eventOccurred(Object key, Publisher publisher, Object hint) {
+		if (key == Session.Event.LOGIN) {
+			changeView(new CourseAndProblemView(session));
+		} else if (key == Session.Event.LOGOUT) {
+			changeView(new LoginView(session));
+		} else if (key == Session.Event.PROBLEM_CHOSEN) {
+			changeView(new DevelopmentView(session));
 		}
+	}
+	
+	@Override
+	public void unsubscribeFromAll() {
+		session.unsubscribeFromAll(this);
 	}
 }
